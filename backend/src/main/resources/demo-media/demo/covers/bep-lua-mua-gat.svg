@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9a3412"/><stop offset="1" stop-color="#fb923c"/></linearGradient></defs>
+<style>.t{font:700 64px sans-serif;fill:#fff;text-anchor:middle}.s{font:500 30px sans-serif;fill:#fff;fill-opacity:.85;text-anchor:middle}</style>
+<rect width="600" height="800" fill="url(#g)"/>
+<circle cx="500" cy="120" r="180" fill="#fff" fill-opacity=".08"/><circle cx="80" cy="720" r="140" fill="#fff" fill-opacity=".06"/>
+<rect x="40" y="40" width="520" height="720" rx="18" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3"/>
+<text x="300" y="120" class="s">TRUYỆN TRANH</text>
+<text x="300" y="358" class="t">Bếp Lửa Mùa</text><text x="300" y="442" class="t">Gặt</text>
+<text x="300" y="700" class="s">Trúc Lâm Cư Sĩ</text>
+</svg>

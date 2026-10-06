@@ -9,10 +9,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
@@ -73,11 +74,13 @@ public class Story extends AuditableEntity {
     @JoinColumn(name = "author_id", nullable = false)
     private UserAccount author;
 
+    /** Sắp theo thứ tự hiển thị của thể loại để nhãn trên thẻ truyện luôn ổn định giữa các lần tải. */
     @ManyToMany
+    @OrderBy("sortOrder ASC")
     @JoinTable(name = "story_genre",
             joinColumns = @JoinColumn(name = "story_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Genre> genres = new LinkedHashSet<>();
 
     /** Chỉ đếm chương đã đăng (PUBLISHED). */
     @Column(name = "chapter_count", nullable = false, updatable = false)

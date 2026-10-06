@@ -22,12 +22,18 @@ public final class ViewConstants {
 
     // ----- Công khai -----
     public static final String HOME = "home";
+    public static final String STORY_LIST = "story/list";
+    public static final String STORY_DETAIL = "story/detail";
+    public static final String STORY_RANKINGS = "story/rankings";
+    public static final String CHAPTER_READ = "chapter/read";
 
     // ----- Xác thực & tài khoản -----
     public static final String AUTH_LOGIN = "auth/login";
     public static final String AUTH_REGISTER = "auth/register";
     public static final String ME_PROFILE = "me/profile";
     public static final String ME_PASSWORD = "me/password";
+    public static final String ME_LIBRARY = "me/library";
+    public static final String ME_HISTORY = "me/history";
 
     // ----- Tác giả -----
     public static final String STUDIO_DASHBOARD = "studio/dashboard";

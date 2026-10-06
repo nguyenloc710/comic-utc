@@ -25,6 +25,11 @@ spring:
   thymeleaf:
     cache: false
 
+app:
+  storage:
+    # Ảnh bìa và trang truyện của dữ liệu demo nằm sẵn trong classpath, phục vụ chung dưới /media/**
+    demo-media-location: classpath:/demo-media/
+
 logging:
   level:
     vn.edu.utc.comic: DEBUG

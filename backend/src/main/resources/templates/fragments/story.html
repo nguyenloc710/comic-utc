@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Thẻ truyện dùng ở mọi danh sách. story: StoryCardResponse -->
+<a th:fragment="card(story)" class="story-card" th:href="@{/stories/{slug}(slug=${story.slug})}">
+    <div class="story-cover">
+        <img th:if="${story.coverUrl != null}" th:src="${story.coverUrl}" th:alt="${story.title}" loading="lazy">
+        <div th:if="${story.coverUrl == null}" class="story-cover-empty"><i class="bi bi-book"></i></div>
+        <span class="story-badge story-badge-type" th:classappend="'story-type-' + ${#strings.toLowerCase(story.type)}"
+              th:text="#{'enum.StoryType.' + ${story.type}}">Truyện tranh</span>
+        <span class="story-badge story-badge-status" th:if="${story.status.name() == 'COMPLETED'}"
+              th:text="#{enum.StoryStatus.COMPLETED}">Hoàn thành</span>
+    </div>
+    <div class="story-card-title" th:text="${story.title}">Tên truyện</div>
+    <div class="story-card-meta">
+        <span th:text="#{story.chapter.count(${story.chapterCount})}">120 chương</span>
+        <span><i class="bi bi-eye"></i> <span th:text="${#numbers.formatInteger(story.viewCount, 1, 'POINT')}">12.345</span></span>
+    </div>
+</a>
+
+<!-- Lưới thẻ truyện: 2 cột trên điện thoại, 6 cột trên màn hình rộng. stories: List<StoryCardResponse> -->
+<div th:fragment="grid(stories)" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+    <div class="col" th:each="story : ${stories}">
+        <a th:replace="~{fragments/story :: card(${story})}"></a>
+    </div>
+</div>
+
+<!-- Tiêu đề một khối truyện kèm link "Xem tất cả" (link có thể null) -->
+<div th:fragment="sectionHeader(title, link)" class="d-flex align-items-baseline justify-content-between mb-3">
+    <h2 class="h5 fw-bold mb-0" th:text="${title}">Mới cập nhật</h2>
+    <a th:if="${link != null}" th:href="${link}" class="small" th:text="#{common.view.all}">Xem tất cả</a>
+</div>
+
+<!-- Nhãn loại truyện và trạng thái sáng tác, dùng ở trang chi tiết và bảng xếp hạng -->
+<th:block th:fragment="badges(type, status)">
+    <span class="badge" th:classappend="${type.name() == 'COMIC'} ? 'text-bg-primary' : 'text-bg-info'"
+          th:text="#{'enum.StoryType.' + ${type}}">Truyện tranh</span>
+    <span class="badge" th:classappend="${status.name() == 'COMPLETED'} ? 'text-bg-success' : 'text-bg-secondary'"
+          th:text="#{'enum.StoryStatus.' + ${status}}">Đang ra</span>
+</th:block>
+
+<!-- Điểm đánh giá: "4,3 (120 lượt)" hoặc "Chưa có đánh giá" -->
+<span th:fragment="rating(average, count)">
+    <i class="bi bi-star-fill text-warning"></i>
+    <span th:if="${average != null}" class="story-rating-value"
+          th:text="${#numbers.formatDecimal(average, 1, 1, 'COMMA')}">4,3</span>
+    <span class="text-secondary story-rating-count"
+          th:text="${count > 0} ? #{story.rating.count(${count})} : #{story.rating.none}">(120 lượt)</span>
+</span>
+</body>
+</html>

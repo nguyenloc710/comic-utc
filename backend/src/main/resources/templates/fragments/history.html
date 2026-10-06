@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Một truyện đang đọc dở kèm nút đọc tiếp. item: ReadingHistoryItemResponse -->
+<div th:fragment="item(item)" class="history-item card border-0 shadow-sm h-100">
+    <div class="card-body d-flex gap-3">
+        <a class="history-cover" th:href="@{/stories/{slug}(slug=${item.story.slug})}">
+            <img th:if="${item.story.coverUrl != null}" th:src="${item.story.coverUrl}" th:alt="${item.story.title}" loading="lazy">
+        </a>
+        <div class="history-info d-flex flex-column">
+            <a class="fw-semibold text-body text-decoration-none text-truncate"
+               th:href="@{/stories/{slug}(slug=${item.story.slug})}" th:text="${item.story.title}">Tên truyện</a>
+            <div class="small text-secondary mb-2">
+                <span th:text="#{history.read.at}">Đọc lúc</span>
+                <th:block th:replace="~{fragments/display :: datetime(${item.readAt})}"></th:block>
+            </div>
+            <a class="btn btn-primary btn-sm mt-auto align-self-start"
+               th:href="@{/stories/{slug}/chapters/{no}(slug=${item.story.slug}, no=${item.chapterNo})}">
+                <i class="bi bi-play-fill"></i> <span th:text="#{story.continue(${item.chapterNo})}">Đọc tiếp chương 12</span>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,10 +1,12 @@
 package vn.edu.utc.comic.genre.mapper;
 
+import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import vn.edu.utc.comic.genre.dto.GenreForm;
 import vn.edu.utc.comic.genre.dto.GenreResponse;
+import vn.edu.utc.comic.genre.dto.GenreTagResponse;
 import vn.edu.utc.comic.genre.entity.Genre;
 
 /** Ánh xạ thể loại. */
@@ -14,6 +16,10 @@ public interface GenreMapper {
     GenreResponse toResponse(Genre genre, long storyCount);
 
     GenreForm toForm(Genre genre);
+
+    GenreTagResponse toTag(Genre genre);
+
+    List<GenreTagResponse> toTags(List<Genre> genres);
 
     /** Tên (đã chuẩn hóa) và slug do service quyết định, không lấy thẳng từ form. */
     @Mapping(target = "id", ignore = true)

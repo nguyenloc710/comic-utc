@@ -32,7 +32,18 @@ public enum ErrorCode {
 
     // ----- Thể loại -----
     GENRE_NOT_FOUND(HttpStatus.NOT_FOUND, MessageKeys.ERROR_GENRE_NOT_FOUND),
-    GENRE_IN_USE(HttpStatus.CONFLICT, MessageKeys.ERROR_GENRE_IN_USE);
+    GENRE_IN_USE(HttpStatus.CONFLICT, MessageKeys.ERROR_GENRE_IN_USE),
+
+    // ----- Truyện & chương -----
+    // Nội dung không tồn tại và nội dung không được phép xem dùng chung mã 404 để không lộ bản nháp
+    STORY_NOT_FOUND(HttpStatus.NOT_FOUND, MessageKeys.ERROR_STORY_NOT_FOUND),
+    CHAPTER_NOT_FOUND(HttpStatus.NOT_FOUND, MessageKeys.ERROR_CHAPTER_NOT_FOUND),
+
+    // ----- Tương tác của độc giả -----
+    RATING_OWN_STORY(HttpStatus.CONFLICT, MessageKeys.ERROR_RATING_OWN_STORY),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, MessageKeys.ERROR_COMMENT_NOT_FOUND),
+    COMMENT_TOO_FAST(HttpStatus.TOO_MANY_REQUESTS, MessageKeys.ERROR_COMMENT_TOO_FAST),
+    COMMENT_PARENT_INVALID(HttpStatus.BAD_REQUEST, MessageKeys.ERROR_COMMENT_PARENT_INVALID);
 
     private final HttpStatus httpStatus;
     private final String messageKey;

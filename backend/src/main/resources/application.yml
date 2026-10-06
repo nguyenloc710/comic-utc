@@ -16,6 +16,8 @@ spring:
         jdbc:
           time_zone: UTC
           batch_size: 30
+        # Quan hệ lazy (thể loại của truyện) được nạp theo lô cho cả trang kết quả thay vì từng truyện một
+        default_batch_fetch_size: 50
         order_inserts: true
         order_updates: true
 

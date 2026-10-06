@@ -8,19 +8,41 @@
 </head>
 <body class="site-body d-flex flex-column min-vh-100">
 <!-- Layout cho phần công khai và độc giả. Mục menu chỉ được thêm vào khi trang đích đã tồn tại. -->
-<nav class="navbar site-navbar sticky-top">
+<nav class="navbar navbar-expand-md site-navbar sticky-top">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" th:href="@{/}">
             <i class="bi bi-book-half"></i> <span th:text="#{app.name}">Comic UTC</span>
         </a>
-        <div class="d-flex align-items-center gap-2">
+        <!-- Tài khoản luôn nằm ngoài phần thu gọn để trên điện thoại vẫn bấm được ngay -->
+        <div class="d-flex align-items-center gap-2 order-md-last">
             <th:block sec:authorize="isAnonymous()">
-                <a class="btn btn-outline-secondary btn-sm" th:href="@{/register}" th:text="#{nav.register}">Đăng ký</a>
+                <a class="btn btn-outline-secondary btn-sm d-none d-sm-inline-block" th:href="@{/register}" th:text="#{nav.register}">Đăng ký</a>
                 <a class="btn btn-primary btn-sm" th:href="@{/login}">
                     <i class="bi bi-box-arrow-in-right"></i> <span th:text="#{nav.login}">Đăng nhập</span>
                 </a>
             </th:block>
             <div th:replace="~{fragments/user-menu :: menu}"></div>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav"
+                    aria-controls="siteNav" aria-expanded="false" th:aria-label="#{nav.toggle.menu}">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="siteNav">
+            <ul class="navbar-nav me-3">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/stories}" th:classappend="${#strings.startsWith(requestPath, '/stories')} ? 'active'"
+                       th:text="#{nav.stories}">Truyện</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/rankings}" th:classappend="${requestPath == '/rankings'} ? 'active'"
+                       th:text="#{nav.rankings}">Xếp hạng</a>
+                </li>
+            </ul>
+            <form class="site-search d-flex me-md-3 my-2 my-md-0" th:action="@{/stories}" method="get" role="search">
+                <input type="search" class="form-control form-control-sm" name="keyword" th:placeholder="#{nav.search.placeholder}"
+                       th:aria-label="#{nav.search.placeholder}">
+                <button type="submit" class="btn btn-sm btn-outline-secondary ms-1" th:aria-label="#{common.search}"><i class="bi bi-search"></i></button>
+            </form>
         </div>
     </div>
 </nav>

@@ -45,6 +45,17 @@ public final class MessageKeys {
     public static final String ERROR_GENRE_NAME_DUPLICATED = "error.genre.name.duplicated";
     public static final String ERROR_GENRE_NAME_INVALID = "error.genre.name.invalid";
 
+    // ----- Truyện & chương -----
+    public static final String ERROR_STORY_NOT_FOUND = "error.story.not.found";
+    public static final String ERROR_CHAPTER_NOT_FOUND = "error.chapter.not.found";
+
+    // ----- Tương tác của độc giả -----
+    public static final String ERROR_RATING_OWN_STORY = "error.rating.own.story";
+    public static final String ERROR_COMMENT_NOT_FOUND = "error.comment.not.found";
+    /** {0}: số giây phải chờ giữa hai bình luận. */
+    public static final String ERROR_COMMENT_TOO_FAST = "error.comment.too.fast";
+    public static final String ERROR_COMMENT_PARENT_INVALID = "error.comment.parent.invalid";
+
     // ----- Flash -----
     /** {0}: tên hiển thị của người vừa đăng ký. */
     public static final String FLASH_REGISTERED = "flash.registered";

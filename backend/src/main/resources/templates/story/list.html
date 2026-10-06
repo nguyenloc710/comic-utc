@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/site}">
+<head>
+    <title th:text="${genre != null} ? ${genre.name} : #{story.list.title}">Tìm truyện</title>
+</head>
+<body>
+<!-- Dùng chung cho /stories (tìm kiếm) và /genres/{slug} (có biến genre) -->
+<div layout:fragment="content">
+    <h1 class="h4 fw-bold mb-3" th:text="${genre != null} ? #{story.list.genre.title(${genre.name})} : #{story.list.title}">
+        Tìm truyện
+    </h1>
+
+    <!-- Gửi bằng GET để bộ lọc nằm trên query string: tải lại, quay lại hay chia sẻ link đều giữ nguyên -->
+    <form class="card border-0 shadow-sm mb-4" th:action="@{/stories}" method="get">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-lg-4">
+                    <label for="keyword" class="form-label small mb-1" th:text="#{story.filter.keyword}">Từ khóa</label>
+                    <input type="search" class="form-control" id="keyword" name="keyword" th:value="${filter.keyword}">
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="type" class="form-label small mb-1" th:text="#{story.filter.type}">Loại truyện</label>
+                    <select class="form-select" id="type" name="type">
+                        <option value="" th:text="#{common.all}">Tất cả</option>
+                        <option th:each="type : ${types}" th:value="${type}" th:selected="${type == filter.type}"
+                                th:text="#{'enum.StoryType.' + ${type}}">Truyện tranh</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="status" class="form-label small mb-1" th:text="#{story.filter.status}">Trạng thái</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="" th:text="#{common.all}">Tất cả</option>
+                        <option th:each="status : ${statuses}" th:value="${status}" th:selected="${status == filter.status}"
+                                th:text="#{'enum.StoryStatus.' + ${status}}">Đang ra</option>
+                    </select>
+                </div>
+                <div class="col-8 col-md-4 col-lg-3">
+                    <label for="sort" class="form-label small mb-1" th:text="#{story.filter.sort}">Sắp xếp</label>
+                    <select class="form-select" id="sort" name="sort">
+                        <option value="" th:text="#{story.filter.sort.default}">Phù hợp nhất</option>
+                        <option th:each="sort : ${sorts}" th:value="${sort}" th:selected="${sort == filter.sort}"
+                                th:text="#{'enum.StorySort.' + ${sort}}">Mới cập nhật</option>
+                    </select>
+                </div>
+                <div class="col-4 col-md-2 col-lg-1 d-grid">
+                    <button type="submit" class="btn btn-primary" th:aria-label="#{common.search}"><i class="bi bi-search"></i></button>
+                </div>
+            </div>
+
+            <!-- Chọn nhiều thể loại = truyện phải có ĐỦ các thể loại đó. Tự mở sẵn khi đang lọc theo thể loại -->
+            <details class="genre-filter mt-3" th:open="${!filter.genres.isEmpty()}">
+                <summary class="small fw-semibold" th:text="#{story.filter.genres}">Thể loại</summary>
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <th:block th:each="genreOption : ${genres}">
+                        <input type="checkbox" class="btn-check" name="genres" autocomplete="off"
+                               th:id="'genre-' + ${genreOption.slug}" th:value="${genreOption.slug}"
+                               th:checked="${#lists.contains(filter.genres, genreOption.slug)}">
+                        <label class="btn btn-outline-secondary btn-sm" th:for="'genre-' + ${genreOption.slug}"
+                               th:text="${genreOption.name}">Tu tiên</label>
+                    </th:block>
+                </div>
+            </details>
+        </div>
+    </form>
+
+    <p class="text-secondary small" th:text="#{story.list.result(${page.totalElements})}">120 truyện</p>
+    <div th:replace="~{fragments/story :: grid(${page.content})}"></div>
+    <div class="text-center text-secondary py-5" th:if="${page.isEmpty()}">
+        <i class="bi bi-search fs-1 d-block mb-2"></i>
+        <span th:text="#{story.list.empty}">Không tìm thấy truyện nào phù hợp.</span>
+    </div>
+    <nav th:replace="~{fragments/pagination :: pager(${page})}"></nav>
+</div>
+</body>
+</html>

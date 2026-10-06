@@ -43,7 +43,7 @@ class LocalStorageServiceTest {
         SettingService settingService = mock(SettingService.class);
         when(settingService.getInt(anyString(), anyInt())).thenReturn(MAX_SIZE_MB);
         storageService = new LocalStorageService(
-                new StorageProperties(storageRoot.toString()), new ImageValidator(settingService));
+                new StorageProperties(storageRoot.toString(), null), new ImageValidator(settingService));
     }
 
     @Test

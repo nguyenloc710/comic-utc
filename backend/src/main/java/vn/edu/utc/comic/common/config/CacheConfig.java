@@ -27,15 +27,23 @@ public class CacheConfig {
     private static final Duration ACCOUNT_STATE_TTL = Duration.ofMinutes(5);
     private static final long ACCOUNT_STATE_MAX_SIZE = 10_000;
 
+    /** Bảng xếp hạng tốn một truy vấn gom nhóm và không cần chính xác từng phút. */
+    private static final Duration RANKING_TTL = Duration.ofMinutes(10);
+    private static final long RANKING_MAX_SIZE = 20;
+
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager(CacheConstants.SETTINGS);
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager(CacheConstants.SETTINGS, CacheConstants.GENRES);
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(DEFAULT_TTL)
                 .maximumSize(DEFAULT_MAX_SIZE));
         cacheManager.registerCustomCache(CacheConstants.ACCOUNT_STATES, Caffeine.newBuilder()
                 .expireAfterWrite(ACCOUNT_STATE_TTL)
                 .maximumSize(ACCOUNT_STATE_MAX_SIZE)
+                .build());
+        cacheManager.registerCustomCache(CacheConstants.RANKINGS, Caffeine.newBuilder()
+                .expireAfterWrite(RANKING_TTL)
+                .maximumSize(RANKING_MAX_SIZE)
                 .build());
         return cacheManager;
     }

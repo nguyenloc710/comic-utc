@@ -12,6 +12,13 @@ public final class ApiConstants {
     /** Nhóm API JSON (chatbot, theo dõi, bình luận, thông báo, tải ảnh chương). */
     public static final String API_ROOT = "/api";
     public static final String API_STUDIO_PATH = API_ROOT + "/studio";
+    public static final String API_STORIES_PATH = API_ROOT + "/stories";
+    public static final String API_COMMENTS_PATH = API_ROOT + "/comments";
+
+    /** Phần công khai: danh mục truyện, thể loại, bảng xếp hạng. */
+    public static final String STORIES_PATH = "/stories";
+    public static final String GENRES_PATH = "/genres";
+    public static final String RANKINGS_PATH = "/rankings";
 
     /** Các khu vực web cần đăng nhập, phân theo vai trò. */
     public static final String ME_ROOT = "/me";
@@ -22,6 +29,8 @@ public final class ApiConstants {
     public static final String REGISTER_PATH = "/register";
     public static final String PROFILE_PATH = ME_ROOT + "/profile";
     public static final String PASSWORD_PATH = ME_ROOT + "/password";
+    public static final String LIBRARY_PATH = ME_ROOT + "/library";
+    public static final String HISTORY_PATH = ME_ROOT + "/history";
     public static final String ADMIN_USERS_PATH = ADMIN_ROOT + "/users";
     public static final String ADMIN_GENRES_PATH = ADMIN_ROOT + "/genres";
 
@@ -37,6 +46,19 @@ public final class ApiConstants {
 
     /** Số dòng mỗi trang ở các bảng quản trị. */
     public static final int ADMIN_PAGE_SIZE = 20;
+
+    /** Số thẻ truyện mỗi trang danh sách: chia hết cho 2, 3, 4 và 6 cột của lưới ở mọi cỡ màn hình. */
+    public static final int STORY_PAGE_SIZE = 24;
+
+    /** Số thẻ truyện ở mỗi khối của trang chủ. */
+    public static final int HOME_SECTION_SIZE = 12;
+
+    public static final int RANKING_SIZE = 20;
+    public static final int COMMENT_PAGE_SIZE = 20;
+
+    /** Số truyện gần nhất hiện ở trang lịch sử đọc và khối "Đọc tiếp". */
+    public static final int HISTORY_SIZE = 48;
+    public static final int CONTINUE_READING_SIZE = 6;
 
     private ApiConstants() {
         throw new UnsupportedOperationException("Utility class");

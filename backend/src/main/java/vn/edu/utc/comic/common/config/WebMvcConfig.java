@@ -2,6 +2,8 @@ package vn.edu.utc.comic.common.config;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
@@ -27,12 +29,23 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Tên tệp là UUID và không bao giờ bị ghi đè, nên trình duyệt được phép cache dài hạn
         registry.addResourceHandler(StorageConstants.MEDIA_URL_PREFIX + "**")
-                .addResourceLocations(resolveMediaLocation())
+                .addResourceLocations(resolveMediaLocations().toArray(String[]::new))
                 .setCacheControl(CacheControl.maxAge(MEDIA_CACHE_DURATION).cachePublic());
     }
 
+    /** Ảnh người dùng tải lên được tìm trước; ảnh của dữ liệu demo (nếu có cấu hình) là nơi tìm thứ hai. */
+    private List<String> resolveMediaLocations() {
+        List<String> locations = new ArrayList<>();
+        locations.add(resolveUploadLocation());
+        String demoLocation = storageProperties.demoMediaLocation();
+        if (demoLocation != null && !demoLocation.isBlank()) {
+            locations.add(demoLocation);
+        }
+        return locations;
+    }
+
     /** Location của Spring phải kết thúc bằng "/"; toUri() chỉ tự thêm khi thư mục đã tồn tại. */
-    private String resolveMediaLocation() {
+    private String resolveUploadLocation() {
         String location = Path.of(storageProperties.root()).toAbsolutePath().normalize().toUri().toString();
         return location.endsWith("/") ? location : location + "/";
     }

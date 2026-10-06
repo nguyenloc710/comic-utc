@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/site}">
+<head>
+    <title th:text="#{history.title}">Lịch sử đọc</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1 class="h4 fw-bold mb-3" th:text="#{history.title}">Lịch sử đọc</h1>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+        <div class="col" th:each="item : ${history}">
+            <div th:replace="~{fragments/history :: item(${item})}"></div>
+        </div>
+    </div>
+    <div class="text-center text-secondary py-5" th:if="${history.isEmpty()}">
+        <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
+        <p th:text="#{history.empty}">Bạn chưa đọc truyện nào.</p>
+        <a class="btn btn-primary" th:href="@{/stories}" th:text="#{library.browse}">Tìm truyện để đọc</a>
+    </div>
+</div>
+</body>
+</html>

@@ -5,8 +5,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.utc.comic.common.constant.CacheConstants;
 import vn.edu.utc.comic.common.constant.GenreConstants;
 import vn.edu.utc.comic.common.constant.MessageKeys;
 import vn.edu.utc.comic.common.exception.ApiException;
@@ -17,6 +20,7 @@ import vn.edu.utc.comic.common.util.SlugUtils;
 import vn.edu.utc.comic.genre.dto.GenreForm;
 import vn.edu.utc.comic.genre.dto.GenreResponse;
 import vn.edu.utc.comic.genre.dto.GenreStoryCount;
+import vn.edu.utc.comic.genre.dto.GenreTagResponse;
 import vn.edu.utc.comic.genre.entity.Genre;
 import vn.edu.utc.comic.genre.mapper.GenreMapper;
 import vn.edu.utc.comic.genre.repository.GenreRepository;
@@ -45,6 +49,28 @@ public class GenreService {
     }
 
     /**
+     * Thể loại đang bật theo thứ tự hiển thị, cho bộ lọc truyện. Đọc ở mọi lần mở trang danh sách nên được cache;
+     * các phương thức tạo / sửa / xóa bên dưới xóa cache này.
+     */
+    @Cacheable(CacheConstants.GENRES)
+    @Transactional(readOnly = true)
+    public List<GenreTagResponse> findActiveGenres() {
+        return genreMapper.toTags(genreRepository.findByActiveTrueOrderBySortOrderAscNameAsc());
+    }
+
+    /**
+     * Một thể loại đang bật theo slug trên URL.
+     *
+     * @throws ApiException GENRE_NOT_FOUND nếu không có hoặc đã bị tắt
+     */
+    @Transactional(readOnly = true)
+    public GenreTagResponse getActiveGenre(String slug) {
+        return genreRepository.findBySlugAndActiveTrue(slug)
+                .map(genreMapper::toTag)
+                .orElseThrow(() -> new ApiException(ErrorCode.GENRE_NOT_FOUND));
+    }
+
+    /**
      * Form sửa điền sẵn giá trị hiện tại.
      *
      * @throws ApiException GENRE_NOT_FOUND
@@ -61,6 +87,7 @@ public class GenreService {
      * @return tên thể loại đã chuẩn hóa
      * @throws FieldValidationException tên trùng, hoặc tên sinh ra slug rỗng / trùng slug của thể loại khác
      */
+    @CacheEvict(value = CacheConstants.GENRES, allEntries = true)
     @Transactional
     public String createGenre(GenreForm form) {
         String name = form.getName().trim();
@@ -87,6 +114,7 @@ public class GenreService {
      * @throws ApiException             GENRE_NOT_FOUND
      * @throws FieldValidationException tên trùng với thể loại khác
      */
+    @CacheEvict(value = CacheConstants.GENRES, allEntries = true)
     @Transactional
     public void updateGenre(Long genreId, GenreForm form) {
         Genre genre = getGenre(genreId);
@@ -103,6 +131,7 @@ public class GenreService {
      *
      * @throws ApiException GENRE_NOT_FOUND; GENRE_IN_USE nếu còn truyện gắn thể loại — khi đó chỉ tắt được
      */
+    @CacheEvict(value = CacheConstants.GENRES, allEntries = true)
     @Transactional
     public void deleteGenre(Long genreId) {
         Genre genre = getGenre(genreId);

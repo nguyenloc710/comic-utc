@@ -11,6 +11,10 @@ public final class SettingKeys {
     public static final String SECURITY_LOGIN_MAX_FAILED_ATTEMPTS = "security.login.max_failed_attempts";
     public static final String SECURITY_LOGIN_LOCK_MINUTES = "security.login.lock_minutes";
 
+    public static final String COMMENT_COOLDOWN_SECONDS = "comment.cooldown.seconds";
+    public static final String VIEW_DEDUPE_MINUTES = "view.dedupe.minutes";
+    public static final String RANKING_MIN_RATING_COUNT = "ranking.min_rating_count";
+
     private SettingKeys() {
         throw new UnsupportedOperationException("Utility class");
     }

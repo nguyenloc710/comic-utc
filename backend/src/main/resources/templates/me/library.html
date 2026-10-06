@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/site}">
+<head>
+    <title th:text="#{library.title}">Tủ truyện</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1 class="h4 fw-bold mb-3" th:text="#{library.title}">Tủ truyện</h1>
+    <div th:replace="~{fragments/story :: grid(${page.content})}"></div>
+    <div class="text-center text-secondary py-5" th:if="${page.isEmpty()}">
+        <i class="bi bi-bookmark-heart fs-1 d-block mb-2"></i>
+        <p th:text="#{library.empty}">Bạn chưa theo dõi truyện nào.</p>
+        <a class="btn btn-primary" th:href="@{/stories}" th:text="#{library.browse}">Tìm truyện để đọc</a>
+    </div>
+    <nav th:replace="~{fragments/pagination :: pager(${page})}"></nav>
+</div>
+</body>
+</html>

@@ -106,11 +106,12 @@ class SecurityAccessIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void readerArea_isOpenToAuthorAndAdminThroughRoleHierarchy() throws Exception {
-        // Trang chưa tồn tại nên 404; điều cần kiểm chứng là KHÔNG bị 403 ở lớp phân quyền URL
+        // Khu vực /me yêu cầu vai trò USER; tác giả và quản trị viên vào được nhờ phân cấp vai trò
         mockMvc.perform(get("/me/library").with(user(principalOf(Role.AUTHOR))))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk())
+                .andExpect(view().name(ViewConstants.ME_LIBRARY));
         mockMvc.perform(get("/me/library").with(user(principalOf(Role.ADMIN))))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test

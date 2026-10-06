@@ -1,6 +1,7 @@
 package vn.edu.utc.comic.genre.repository;
 
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +12,10 @@ import vn.edu.utc.comic.genre.entity.Genre;
 public interface GenreRepository extends JpaRepository<Genre, Long> {
 
     List<Genre> findAllByOrderBySortOrderAscNameAsc();
+
+    List<Genre> findByActiveTrueOrderBySortOrderAscNameAsc();
+
+    Optional<Genre> findBySlugAndActiveTrue(String slug);
 
     /** So sánh không phân biệt hoa thường và dấu nhờ collation utf8mb4_unicode_ci của cột. */
     boolean existsByName(String name);

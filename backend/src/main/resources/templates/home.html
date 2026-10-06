@@ -7,14 +7,38 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <section class="home-hero text-center">
-        <h1 class="display-6 fw-bold" th:text="#{home.hero.title}">Kho truyện tranh và truyện chữ dành cho bạn</h1>
-        <p class="lead text-secondary mb-0" th:text="#{home.hero.subtitle}">Đọc miễn phí, theo dõi truyện yêu thích.</p>
+    <!-- Chỉ người đã đăng nhập và đã đọc ít nhất một chương mới có khối này -->
+    <section class="mb-5" th:unless="${continueReading.isEmpty()}">
+        <div th:replace="~{fragments/story :: sectionHeader(#{home.section.continue}, @{/me/history})}"></div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+            <div class="col" th:each="item : ${continueReading}">
+                <div th:replace="~{fragments/history :: item(${item})}"></div>
+            </div>
+        </div>
     </section>
-    <div class="text-center text-secondary py-5">
-        <i class="bi bi-journal-richtext fs-1 d-block mb-2"></i>
-        <span th:text="#{home.building}">Kho truyện đang được xây dựng.</span>
-    </div>
+
+    <section class="mb-5">
+        <div th:replace="~{fragments/story :: sectionHeader(#{home.section.latest}, @{/stories})}"></div>
+        <div th:replace="~{fragments/story :: grid(${latestStories})}"></div>
+        <p class="text-center text-secondary py-5 mb-0" th:if="${latestStories.isEmpty()}" th:text="#{home.empty}">
+            Kho truyện chưa có truyện nào.
+        </p>
+    </section>
+
+    <section class="mb-5" th:unless="${weeklyTopStories.isEmpty()}">
+        <div th:replace="~{fragments/story :: sectionHeader(#{home.section.weekly.top}, @{/rankings})}"></div>
+        <div th:replace="~{fragments/story :: grid(${weeklyTopStories})}"></div>
+    </section>
+
+    <section class="mb-5" th:unless="${newestStories.isEmpty()}">
+        <div th:replace="~{fragments/story :: sectionHeader(#{home.section.newest}, @{/stories(sort='NEWEST')})}"></div>
+        <div th:replace="~{fragments/story :: grid(${newestStories})}"></div>
+    </section>
+
+    <section th:unless="${completedStories.isEmpty()}">
+        <div th:replace="~{fragments/story :: sectionHeader(#{home.section.completed}, @{/stories(status='COMPLETED')})}"></div>
+        <div th:replace="~{fragments/story :: grid(${completedStories})}"></div>
+    </section>
 </div>
 </body>
 </html>

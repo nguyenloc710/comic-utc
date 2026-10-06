@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/site}">
+<head>
+    <title th:text="#{chapter.number(${chapter.chapterNo})} + ' – ' + ${chapter.storyTitle}">Chương 1 – Tên truyện</title>
+</head>
+<body>
+<div layout:fragment="content" class="reader" id="reader"
+     th:with="storyUrl=@{/stories/{slug}(slug=${chapter.storySlug})}">
+    <nav th:aria-label="#{reader.breadcrumb}">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a th:href="${storyUrl}" th:text="${chapter.storyTitle}">Tên truyện</a></li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="#{chapter.number(${chapter.chapterNo})}">Chương 1</li>
+        </ol>
+    </nav>
+
+    <div class="alert alert-warning d-flex align-items-center gap-2" role="alert" th:unless="${chapter.publiclyReadable}">
+        <i class="bi bi-eye-slash-fill"></i> <span th:text="#{reader.preview.notice}">Bạn đang xem trước chương chưa công khai.</span>
+    </div>
+
+    <h1 class="h4 fw-bold text-center mb-3">
+        <span th:text="#{chapter.number(${chapter.chapterNo})}">Chương 1</span><span
+            th:if="${chapter.title != null}" th:text="': ' + ${chapter.title}">: Tên chương</span>
+    </h1>
+
+    <div th:replace="~{fragments/reader :: chapterNav(${chapter}, ${storyUrl})}"></div>
+
+    <!-- Truyện tranh: ảnh xếp dọc. width/height gốc giúp trình duyệt giữ sẵn chỗ, ảnh tải chậm không làm giật trang -->
+    <div class="reader-comic" th:if="${chapter.storyType.name() == 'COMIC'}">
+        <img th:each="page : ${chapter.pages}" th:src="${page.imageUrl}" th:width="${page.width}" th:height="${page.height}"
+             th:alt="#{reader.page.alt(${page.pageNo})}" loading="lazy">
+        <p class="text-center text-secondary py-5" th:if="${chapter.pages.isEmpty()}" th:text="#{reader.empty}">Chương chưa có nội dung.</p>
+    </div>
+
+    <th:block th:if="${chapter.storyType.name() == 'NOVEL'}">
+        <div class="reader-tools d-flex justify-content-end gap-2 mb-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-reader-font="-1" th:aria-label="#{reader.font.smaller}">A−</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-reader-font="1" th:aria-label="#{reader.font.larger}">A+</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-reader-theme th:aria-label="#{reader.theme.toggle}">
+                <i class="bi bi-moon-stars"></i>
+            </button>
+        </div>
+        <!--
+          Chỗ DUY NHẤT trong dự án được dùng th:utext: contentHtml đã được làm sạch bằng whitelist lúc lưu
+          (xem docs/03 mục 9). Không sao chép cách này cho bất kỳ dữ liệu nào khác.
+        -->
+        <article class="reader-novel" th:utext="${chapter.contentHtml}">Nội dung chương</article>
+    </th:block>
+
+    <div th:replace="~{fragments/reader :: chapterNav(${chapter}, ${storyUrl})}"></div>
+
+    <div class="mt-4" th:if="${chapter.publiclyReadable}">
+        <section th:replace="~{fragments/comments :: section(${chapter.storyId}, ${chapter.chapterId})}"></section>
+    </div>
+
+</div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/js/reader.js}"></script>
+    <script th:src="@{/js/comments.js}"></script>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/site}">
+<head>
+    <title th:text="#{ranking.title}">Bảng xếp hạng</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1 class="h4 fw-bold mb-3" th:text="#{ranking.title}">Bảng xếp hạng</h1>
+
+    <ul class="nav nav-pills flex-nowrap overflow-auto mb-3">
+        <li class="nav-item" th:each="type : ${rankingTypes}">
+            <a class="nav-link text-nowrap" th:classappend="${type == rankingType} ? 'active'"
+               th:href="@{/rankings(type=${type})}" th:text="#{'enum.RankingType.' + ${type}}">Tuần</a>
+        </li>
+    </ul>
+
+    <div class="card border-0 shadow-sm">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item list-group-item-action d-flex align-items-center gap-3" th:each="story, row : ${ranking}"
+               th:href="@{/stories/{slug}(slug=${story.slug})}">
+                <span class="ranking-position" th:classappend="${row.count <= 3} ? 'ranking-position-top'" th:text="${row.count}">1</span>
+                <span class="ranking-cover">
+                    <img th:if="${story.coverUrl != null}" th:src="${story.coverUrl}" th:alt="${story.title}" loading="lazy">
+                </span>
+                <span class="ranking-info">
+                    <span class="d-block fw-semibold text-truncate" th:text="${story.title}">Tên truyện</span>
+                    <span class="d-block small mb-1"><th:block th:replace="~{fragments/story :: badges(${story.type}, ${story.status})}"></th:block></span>
+                    <span class="d-flex flex-wrap gap-3 small text-secondary">
+                        <span><i class="bi bi-eye"></i> <span th:text="${#numbers.formatInteger(story.viewCount, 1, 'POINT')}">12.345</span></span>
+                        <span><i class="bi bi-bookmark-heart"></i> <span th:text="${#numbers.formatInteger(story.followCount, 1, 'POINT')}">321</span></span>
+                        <span th:replace="~{fragments/story :: rating(${story.ratingAverage}, ${story.ratingCount})}"></span>
+                    </span>
+                </span>
+            </a>
+        </div>
+        <p class="text-center text-secondary py-5 mb-0" th:if="${ranking.isEmpty()}" th:text="#{ranking.empty}">
+            Chưa đủ dữ liệu để xếp hạng.
+        </p>
+    </div>
+</div>
+</body>
+</html>

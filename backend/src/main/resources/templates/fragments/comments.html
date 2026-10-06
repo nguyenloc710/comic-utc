@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Khu bình luận của một truyện (chapterId = null) hoặc một chương. Danh sách do comments.js tải từ /api/comments
+  và dựng bằng textContent, nên nội dung người dùng gõ không bao giờ được trình duyệt hiểu là HTML.
+  Mọi câu chữ JS cần đều được truyền qua thuộc tính data-label-* để không có chuỗi hiển thị nào nằm trong JS.
+-->
+<section th:fragment="section(storyId, chapterId)" class="card border-0 shadow-sm" id="comments"
+         th:attr="data-story-id=${storyId}, data-chapter-id=${chapterId},
+                  data-authenticated=${currentUser != null},
+                  data-label-reply=#{comment.reply}, data-label-delete=#{common.delete},
+                  data-label-delete-confirm=#{comment.delete.confirm}, data-label-hidden=#{comment.hidden},
+                  data-label-deleted=#{comment.deleted}, data-label-send=#{comment.send},
+                  data-label-cancel=#{common.cancel}, data-label-reply-placeholder=#{comment.reply.placeholder},
+                  data-label-load-error=#{comment.load.error}">
+    <div class="card-body">
+        <h2 class="h5 fw-bold mb-3" th:text="#{comment.title}">Bình luận</h2>
+
+        <form class="comment-form mb-3" th:if="${currentUser != null}">
+            <label for="commentContent" class="visually-hidden" th:text="#{comment.placeholder}">Viết bình luận</label>
+            <textarea class="form-control mb-2" id="commentContent" rows="3" maxlength="1000" required
+                      th:placeholder="#{comment.placeholder}"></textarea>
+            <button type="submit" class="btn btn-primary btn-sm" th:text="#{comment.send}">Gửi</button>
+        </form>
+        <p class="text-secondary" th:if="${currentUser == null}">
+            <a th:href="@{/login}" th:text="#{nav.login}">Đăng nhập</a> <span th:text="#{comment.login.required}">để bình luận.</span>
+        </p>
+
+        <div class="alert alert-danger d-none" role="alert" data-comment-error></div>
+        <div data-comment-list></div>
+        <p class="text-secondary d-none mb-0" data-comment-empty th:text="#{comment.empty}">Chưa có bình luận nào.</p>
+        <button type="button" class="btn btn-outline-secondary btn-sm d-none mt-2" data-comment-more
+                th:text="#{comment.load.more}">Xem thêm bình luận</button>
+    </div>
+</section>
+</body>
+</html>

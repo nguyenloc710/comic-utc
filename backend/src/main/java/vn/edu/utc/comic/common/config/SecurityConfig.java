@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -58,6 +59,8 @@ public class SecurityConfig {
                         .requestMatchers(ApiConstants.STUDIO_ROOT + ALL_SUB_PATHS,
                                 ApiConstants.API_STUDIO_PATH + ALL_SUB_PATHS).hasRole(SecurityConstants.ROLE_AUTHOR)
                         .requestMatchers(ApiConstants.ME_ROOT + ALL_SUB_PATHS).hasRole(SecurityConstants.ROLE_USER)
+                        // Khách vãng lai được xem bình luận; mọi lời gọi API khác đều cần đăng nhập
+                        .requestMatchers(HttpMethod.GET, ApiConstants.API_COMMENTS_PATH).permitAll()
                         .requestMatchers(ApiConstants.API_ROOT + ALL_SUB_PATHS).authenticated()
                         .anyRequest().permitAll())
                 .formLogin(form -> form

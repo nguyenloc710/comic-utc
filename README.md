@@ -8,7 +8,7 @@ Website đọc và đăng tải truyện tranh, truyện chữ tích hợp chatb
 - **Chatbot:** Spring AI + function calling
 - **Vai trò:** khách vãng lai, độc giả (`USER`), tác giả (`AUTHOR`), quản trị viên (`ADMIN`)
 
-> Trạng thái: xong **giai đoạn 2** — đăng ký, đăng nhập (khóa tạm khi sai mật khẩu nhiều lần), hồ sơ cá nhân, đổi mật khẩu, quản trị người dùng và thể loại. Đọc truyện bắt đầu từ giai đoạn 3. Tiến độ chi tiết: [docs/02-LO-TRINH.md](docs/02-LO-TRINH.md).
+> Trạng thái: xong **giai đoạn 3** — phía độc giả chạy đầy đủ trên dữ liệu demo: trang chủ, tìm kiếm và lọc truyện, bảng xếp hạng, trang chi tiết, trang đọc truyện tranh/truyện chữ (đếm lượt xem, lưu tiến độ), theo dõi, đánh giá, bình luận, tủ truyện, lịch sử đọc. Trước đó: tài khoản, phân quyền, quản trị người dùng và thể loại. Tác giả đăng truyện bắt đầu từ giai đoạn 4. Tiến độ chi tiết: [docs/02-LO-TRINH.md](docs/02-LO-TRINH.md).
 
 ## Chạy dự án
 
@@ -19,14 +19,14 @@ docker compose up -d                     # MySQL (3308), Adminer (8082); chờ ~
 cd backend && ./mvnw spring-boot:run     # Windows CMD/PowerShell: mvnw.cmd spring-boot:run
 ```
 
-Mở http://localhost:8080. Profile mặc định là `dev`: Flyway tạo lược đồ (`db/migration`) rồi nạp tài khoản demo (`db/demo`).
+Mở http://localhost:8080. Profile mặc định là `dev`: Flyway tạo lược đồ (`db/migration`) rồi nạp tài khoản và 64 truyện demo (`db/demo`).
 `.env` là tùy chọn (compose và ứng dụng đã có giá trị mặc định khớp nhau); chỉ cần `cp .env.example .env` khi muốn đổi cổng, mật khẩu DB hoặc đặt khóa API cho chatbot.
 
 | Tài khoản | Mật khẩu | Vai trò | Vào được |
 |---|---|---|---|
 | `admin` | `Admin@123` | Quản trị viên | `/admin` (người dùng, thể loại) |
-| `author1` | `Demo@123` | Tác giả | `/studio` |
-| `reader1` | `Demo@123` | Độc giả | trang công khai, `/me/profile` |
+| `author1` … `author3` | `Demo@123` | Tác giả | `/studio`; xem trước được truyện nháp/bị ẩn của chính mình |
+| `reader1` … `reader15` | `Demo@123` | Độc giả | theo dõi, đánh giá, bình luận, `/me/library`, `/me/history`, `/me/profile` |
 
 Hoặc tự tạo tài khoản độc giả ở `/register`.
 
@@ -35,6 +35,9 @@ Tài khoản `admin` nằm trong dữ liệu khởi tạo của mọi môi trư�
 | Địa chỉ | Nội dung |
 |---|---|
 | http://localhost:8080 | Trang chủ |
+| http://localhost:8080/stories · `/genres/{slug}` · `/rankings` | Tìm kiếm và lọc truyện · truyện theo thể loại · bảng xếp hạng |
+| http://localhost:8080/stories/{slug} · `…/chapters/{số}` | Chi tiết truyện · trang đọc |
+| http://localhost:8080/me/library · `/me/history` | Tủ truyện đang theo dõi · lịch sử đọc |
 | http://localhost:8080/login · `/register` | Đăng nhập · đăng ký |
 | http://localhost:8080/me/profile | Hồ sơ cá nhân, đổi mật khẩu |
 | http://localhost:8080/studio | Khu vực tác giả |
@@ -50,6 +53,8 @@ cd backend && ./mvnw verify              # unit test + test tích hợp (Testcon
 ```
 
 Test gọi LLM thật (`SpringAiToolCallingSmokeTest`) tự bỏ qua khi chưa có khóa; để chạy: đặt biến môi trường `AI_API_KEY` rồi `./mvnw test -Dtest=SpringAiToolCallingSmokeTest`.
+
+Dữ liệu demo sinh bằng `node backend/scripts/generate-demo-data.mjs` (ghi đè `db/demo/V101__demo_content.sql` và ảnh trong `resources/demo-media`). Tệp SQL đã nằm sẵn trong repo; chỉ chạy lại script khi muốn đổi nội dung demo, và khi đó phải nạp lại dữ liệu từ đầu vì Flyway đã ghi nhận tệp cũ.
 
 ### Nạp lại dữ liệu từ đầu
 

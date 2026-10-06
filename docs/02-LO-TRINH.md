@@ -108,26 +108,39 @@
 ## Giai đoạn 3 — Đọc truyện & tương tác (21/10 – 28/10) ⭐ TRỌNG TÂM 1
 
 ### 3.0. Dữ liệu demo (làm đầu tiên)
-- [ ] `backend/scripts/generate-demo-data.mjs` → `db/demo/V101__demo_content.sql` + bộ ảnh giữ chỗ (bìa, trang truyện) tự tạo. Nội dung theo [01 §9](01-MO-HINH-DU-LIEU.md). (`V100` đã dùng cho tài khoản demo.)
+- [x] `backend/scripts/generate-demo-data.mjs` → `db/demo/V101__demo_content.sql` + bộ ảnh giữ chỗ (bìa, trang truyện) tự tạo. Nội dung theo [01 §9](01-MO-HINH-DU-LIEU.md). (`V100` đã dùng cho tài khoản demo.)
+      64 truyện (59 công khai, 2 bị ẩn, 3 bản nháp), 995 chương, thêm `author2..3` và `reader2..15`, theo dõi, đánh giá, lịch sử đọc, bình luận, 60 ngày `story_view_daily`. Script dùng bộ sinh số ngẫu nhiên có hạt giống nên chạy lại ra đúng tệp cũ.
+      Ảnh demo là SVG nằm trong classpath (`resources/demo-media`), phục vụ dưới `/media/**` nhờ `app.storage.demo-media-location` (chỉ đặt ở profile dev) — không phải chép ảnh vào thư mục lưu trữ.
 
 ### 3.1. Danh mục công khai
-- [ ] `StorySpecification` (`publiclyVisible`, keyword, genres, type, status, khoảng số chương) + `StoryCatalogQueryService.searchStories(filter, pageable)` — **thiết kế tham số đủ cho cả chatbot** ([04 §4](04-KE-HOACH-CHATBOT.md)).
-- [ ] Trang chủ (mới cập nhật, nổi bật tuần, truyện mới, hoàn thành, "Đọc tiếp"); `/stories` (ô tìm + bộ lọc + sắp xếp + phân trang trên query string); `/genres/{slug}`; `/rankings` (tab ngày/tuần/tháng/theo dõi/điểm).
-- [ ] `GenreService.findActiveGenres()` có cache (bộ lọc ở `/stories`, menu thể loại, sau này là prompt của chatbot); tạo/sửa/xóa thể loại phải xóa cache này.
-- [ ] Fragment `story-card`, `badges` (loại/trạng thái truyện) dựng theo `StoryCardResponse`; thêm ô tìm kiếm và các mục Truyện / Xếp hạng vào navbar của `layout/site`.
-- [ ] Trang chi tiết truyện: bìa, mô tả, thể loại, tác giả (bút danh), số liệu, danh sách chương, nút Đọc từ đầu / Đọc tiếp / Theo dõi, đánh giá, bình luận.
+- [x] `StorySpecification` (`publiclyVisible`, keyword, genres, type, status, khoảng số chương) + `StoryCatalogQueryService.searchStories(filter, page)` — **thiết kế tham số đủ cho cả chatbot** ([04 §4](04-KE-HOACH-CHATBOT.md)).
+      Từ khóa: FULLTEXT trên tên, tên khác, mô tả (hàm `story_fulltext_score` đăng ký qua `MysqlFulltextFunctionContributor`) HOẶC `LIKE` trên tên; có từ khóa mà không chọn cách sắp xếp thì xếp theo độ khớp. Bộ lọc có thêm `excludeGenres` (chatbot cần "không muốn thể loại X").
+- [x] Trang chủ (mới cập nhật, nổi bật tuần, truyện mới, hoàn thành, "Đọc tiếp"); `/stories` (ô tìm + bộ lọc + sắp xếp + phân trang trên query string); `/genres/{slug}`; `/rankings` (tab ngày/tuần/tháng/theo dõi/điểm).
+- [x] `GenreService.findActiveGenres()` có cache (bộ lọc ở `/stories`, menu thể loại, sau này là prompt của chatbot); tạo/sửa/xóa thể loại phải xóa cache này.
+- [x] Fragment `story-card`, `badges` (loại/trạng thái truyện) dựng theo `StoryCardResponse`; thêm ô tìm kiếm và các mục Truyện / Xếp hạng vào navbar của `layout/site`.
+- [x] Trang chi tiết truyện: bìa, mô tả, thể loại, tác giả (bút danh), số liệu, danh sách chương, nút Đọc từ đầu / Đọc tiếp / Theo dõi, đánh giá, bình luận.
 
 ### 3.2. Trang đọc
-- [ ] `ChapterReaderService.getChapterForReading(slug, chapterNo, viewer)`: kiểm tra công khai (tác giả/admin xem được bản nháp/ẩn của phạm vi mình), trả chương + chương trước/sau.
-- [ ] `chapter/read-comic` (ảnh xếp dọc, lazy-load, giữ tỉ lệ khung), `chapter/read-novel` (HTML đã làm sạch, cỡ chữ, nền sáng/tối); thanh điều hướng chương; phím ← →.
-- [ ] `ChapterViewedEvent` → `ViewCountService` (khử trùng lặp, cộng bộ đếm, upsert `story_view_daily`).
-- [ ] `ReadingHistoryService.recordProgress` (upsert) khi độc giả mở chương.
+- [x] `ChapterReaderService.getChapterForReading(slug, chapterNo, viewer)`: kiểm tra công khai (tác giả/admin xem được bản nháp/ẩn của phạm vi mình), trả chương + chương trước/sau.
+- [x] Trang đọc truyện tranh (ảnh xếp dọc, lazy-load, giữ tỉ lệ khung) và truyện chữ (cỡ chữ, nền sáng/tối); thanh điều hướng chương; phím ← →.
+      Gộp thành một template `chapter/read.html` thay vì `read-comic` + `read-novel`: hai loại chỉ khác phần thân, còn tiêu đề, điều hướng, bình luận giống hệt nhau.
+      `HtmlSanitizer` chưa có ở giai đoạn này (chưa có chỗ nào nhận HTML từ người dùng): HTML chương hiện chỉ đến từ script demo. **Bắt buộc có trước khi mở form soạn chương ở GĐ 4.**
+- [x] `ChapterViewedEvent` → `ViewCountService` (khử trùng lặp, cộng bộ đếm, upsert `story_view_daily`).
+      Không tính lượt xem khi tác giả đọc truyện của chính mình và khi xem trước nội dung chưa công khai.
+- [x] `ReadingHistoryService.recordProgress` (upsert) khi độc giả mở chương.
 
 ### 3.3. Tương tác
-- [ ] `FollowService.toggleFollow`, `RatingService.rate`, `CommentService` (thêm, trả lời một cấp, tự xóa, cooldown) + `/api/**` tương ứng + JS cập nhật không tải lại trang.
-- [ ] `/me/library`, `/me/history`.
-- [ ] `RankingService` (cache 10 phút).
-- [ ] Test: URL chương nháp/ẩn/của truyện ẩn ⇒ 404 với khách; đánh giá lại ⇒ `rating_sum` đổi đúng chênh lệch; theo dõi hai lần liên tiếp không lệch `follow_count`.
+- [x] `FollowService`, `RatingService.rate`, `CommentService` (thêm, trả lời một cấp, tự xóa, cooldown) + `/api/**` tương ứng + JS cập nhật không tải lại trang.
+      Theo dõi là hai thao tác lặp lại được (`PUT` / `DELETE /api/stories/{id}/follow`) thay cho `toggleFollow`: bấm đúp hoặc hai tab cùng gửi "đảo trạng thái" sẽ cho kết quả ngược ý người dùng.
+      Thông báo "có người trả lời bình luận" (`COMMENT_REPLIED`) làm cùng hệ thống thông báo ở GĐ 4.
+- [x] `/me/library`, `/me/history`.
+- [x] `RankingService` (cache 10 phút). Truyện vừa bị ẩn có thể còn trên bảng xếp hạng tới khi cache hết hạn ⇒ GĐ 5 xóa cache này khi kiểm duyệt.
+- [x] Test: URL chương nháp/ẩn/của truyện ẩn ⇒ 404 với khách; đánh giá lại ⇒ `rating_sum` đổi đúng chênh lệch; theo dõi hai lần liên tiếp không lệch `follow_count`.
+      Thêm: tìm kiếm/lọc trên MySQL thật, đếm lượt xem (khử trùng lặp), tiến độ đọc, bình luận, bảng xếp hạng, ma trận quyền xem, 8 người cùng theo dõi một truyện đồng thời.
+
+> **Bài học về khóa (phát hiện nhờ test).** Câu INSERT một dòng con (theo dõi, đánh giá, bình luận, lịch sử đọc) giữ khóa chia sẻ trên dòng `story` để kiểm tra khóa ngoại; nếu sau đó cùng transaction UPDATE bộ đếm của chính dòng `story` ấy thì hai người thao tác đồng thời sẽ deadlock. Cách xử lý: transaction nào sắp "thêm dòng con rồi cộng bộ đếm" phải gọi `StoryRepository.lockForCounterUpdate` trước; `ViewCountService` ghi ba bộ đếm bằng ba transaction riêng. GĐ 4–5 (xuất bản chương, kiểm duyệt bình luận) phải theo đúng quy tắc này.
+
+> **Tìm không dấu và chữ "đ".** `utf8mb4_unicode_ci` bỏ qua dấu thanh và dấu mũ ("tu tien" khớp "Tu tiên") nhưng coi "đ" là chữ cái khác "d" ("do thi" KHÔNG khớp "Đô thị" khi so bằng `LIKE`). Chấp nhận ở mức đồ án; nếu cần thì thêm cột tên đã bỏ dấu (`SlugUtils`) để tìm.
 
 **Đầu ra:** phía độc giả chạy đầy đủ trên dữ liệu demo.
 

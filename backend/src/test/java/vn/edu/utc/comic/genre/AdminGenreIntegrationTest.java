@@ -23,7 +23,6 @@ import vn.edu.utc.comic.genre.entity.Genre;
 import vn.edu.utc.comic.genre.repository.GenreRepository;
 import vn.edu.utc.comic.story.entity.Story;
 import vn.edu.utc.comic.story.enums.StoryType;
-import vn.edu.utc.comic.story.repository.StoryRepository;
 import vn.edu.utc.comic.support.AbstractIntegrationTest;
 import vn.edu.utc.comic.user.enums.Role;
 
@@ -31,9 +30,6 @@ class AdminGenreIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private GenreRepository genreRepository;
-
-    @Autowired
-    private StoryRepository storyRepository;
 
     private AppUserPrincipal admin;
 
@@ -136,6 +132,18 @@ class AdminGenreIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(content().string(containsString(genre.getName())));
         mockMvc.perform(get("/admin/genres/{id}/edit", Long.MAX_VALUE).with(user(admin)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void newGenre_showsUpInStoryFilterRightAway_thoughGenreListIsCached() throws Exception {
+        String name = "Vừa Thêm " + uniqueSuffix();
+        // Mở trang một lần trước để danh sách thể loại chắc chắn đã nằm trong cache
+        mockMvc.perform(get("/stories")).andExpect(status().isOk());
+
+        mockMvc.perform(saveRequest("/admin/genres", name).with(user(admin)))
+                .andExpect(redirectedUrl("/admin/genres"));
+
+        mockMvc.perform(get("/stories")).andExpect(content().string(containsString(name)));
     }
 
     @Test

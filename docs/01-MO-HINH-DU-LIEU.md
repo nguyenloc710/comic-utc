@@ -11,7 +11,7 @@
 |---|---|
 | Đặt tên | `snake_case`, bảng số ít (`story`, `user_account`), bảng nối `a_b` |
 | Khóa chính | `id BIGINT AUTO_INCREMENT PRIMARY KEY` |
-| Charset | `utf8mb4` / `utf8mb4_unicode_ci` cho toàn DB (không phân biệt hoa thường và dấu ⇒ gõ không dấu vẫn tìm được; kiểm chứng lại ở GĐ 3) |
+| Charset | `utf8mb4` / `utf8mb4_unicode_ci` cho toàn DB (không phân biệt hoa thường và dấu thanh/dấu mũ ⇒ gõ không dấu vẫn tìm được; riêng "đ" KHÔNG bằng "d" — đã kiểm chứng ở GĐ 3: `'tu tiên' = 'TU TIEN'` đúng, `'đô thị' = 'do thi'` sai) |
 | Thời gian | `DATETIME(6)` lưu **UTC** (`hibernate.jdbc.time_zone=UTC`), entity `Instant`; hiển thị `Asia/Ho_Chi_Minh` ở view |
 | Enum | `VARCHAR` + `CHECK (... IN (...))`; entity `@Enumerated(STRING)`. Không dùng kiểu `ENUM` của MySQL |
 | Boolean | `TINYINT(1)`, tên cột `is_*` |

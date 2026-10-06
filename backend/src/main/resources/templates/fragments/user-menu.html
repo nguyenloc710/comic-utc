@@ -18,6 +18,12 @@
         <li>
             <a class="dropdown-item" th:href="@{/me/profile}"><i class="bi bi-person me-2"></i><span th:text="#{nav.profile}">Hồ sơ</span></a>
         </li>
+        <li>
+            <a class="dropdown-item" th:href="@{/me/library}"><i class="bi bi-bookmark-heart me-2"></i><span th:text="#{nav.library}">Tủ truyện</span></a>
+        </li>
+        <li>
+            <a class="dropdown-item" th:href="@{/me/history}"><i class="bi bi-clock-history me-2"></i><span th:text="#{nav.history}">Lịch sử đọc</span></a>
+        </li>
         <li sec:authorize="hasRole('AUTHOR')">
             <a class="dropdown-item" th:href="@{/studio}"><i class="bi bi-brush me-2"></i><span th:text="#{nav.studio}">Khu vực tác giả</span></a>
         </li>
