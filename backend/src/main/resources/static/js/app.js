@@ -26,5 +26,20 @@
     return body.data;
   }
 
+  /**
+   * Form có data-confirm phải được người dùng xác nhận trước khi gửi (khóa tài khoản, xóa thể loại...).
+   * Làm ở đây thay vì onclick trong HTML vì CSP của trang cấm script inline.
+   */
+  function initConfirmForms() {
+    document.addEventListener('submit', function (event) {
+      const message = event.target.dataset ? event.target.dataset.confirm : null;
+      if (message && !window.confirm(message)) {
+        event.preventDefault();
+      }
+    });
+  }
+
+  initConfirmForms();
+
   window.App = { fetchJson: fetchJson };
 })();

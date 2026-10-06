@@ -24,7 +24,15 @@ public enum ErrorCode {
     IMAGE_TYPE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, MessageKeys.ERROR_IMAGE_TYPE_NOT_ALLOWED),
     IMAGE_TOO_LARGE(HttpStatus.BAD_REQUEST, MessageKeys.ERROR_IMAGE_TOO_LARGE),
     UPLOAD_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, MessageKeys.ERROR_UPLOAD_TOO_LARGE),
-    STORAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, MessageKeys.ERROR_STORAGE_FAILED);
+    STORAGE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, MessageKeys.ERROR_STORAGE_FAILED),
+
+    // ----- Tài khoản -----
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, MessageKeys.ERROR_USER_NOT_FOUND),
+    USER_SELF_BAN(HttpStatus.CONFLICT, MessageKeys.ERROR_USER_SELF_BAN),
+
+    // ----- Thể loại -----
+    GENRE_NOT_FOUND(HttpStatus.NOT_FOUND, MessageKeys.ERROR_GENRE_NOT_FOUND),
+    GENRE_IN_USE(HttpStatus.CONFLICT, MessageKeys.ERROR_GENRE_IN_USE);
 
     private final HttpStatus httpStatus;
     private final String messageKey;

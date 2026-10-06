@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="${genreId == null} ? #{admin.genres.create} : #{admin.genres.edit}">Thêm thể loại</title>
+</head>
+<body>
+<!-- Dùng chung cho tạo và sửa: có genreId là đang sửa -->
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate"
+    th:text="${genreId == null} ? #{admin.genres.create} : #{admin.genres.edit}">Thêm thể loại</h1>
+<div layout:fragment="content">
+    <div class="card border-0 shadow-sm console-form-card">
+        <div class="card-body">
+            <form th:action="${genreId == null} ? @{/admin/genres} : @{/admin/genres/{id}(id=${genreId})}"
+                  th:object="${form}" method="post" novalidate>
+                <div th:replace="~{fragments/form :: input('name', #{admin.genres.form.name}, 'text', 'off', #{admin.genres.form.slug.note})}"></div>
+                <div class="mb-3">
+                    <label for="description" class="form-label" th:text="#{admin.genres.form.description}">Mô tả</label>
+                    <textarea class="form-control" rows="3" th:field="*{description}" th:errorclass="is-invalid"></textarea>
+                    <div class="invalid-feedback" th:errors="*{description}">Lỗi</div>
+                    <div class="form-text" th:text="#{admin.genres.form.description.hint}">Hướng dẫn</div>
+                </div>
+                <div th:replace="~{fragments/form :: input('sortOrder', #{admin.genres.form.sort.order}, 'number', 'off', null)}"></div>
+                <div class="form-check mb-4">
+                    <input type="checkbox" class="form-check-input" th:field="*{active}">
+                    <!-- th:field sinh id có hậu tố số cho checkbox, nên nhãn phải hỏi lại id vừa sinh -->
+                    <label class="form-check-label" th:for="${#ids.prev('active')}"
+                           th:text="#{admin.genres.form.active}">Đang dùng</label>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Lưu</button>
+                    <a class="btn btn-outline-secondary" th:href="@{/admin/genres}" th:text="#{common.cancel}">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -3,6 +3,7 @@ package vn.edu.utc.comic.common.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;
+import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.authentication.event.LogoutSuccessEvent;
 import org.springframework.stereotype.Component;
@@ -10,19 +11,30 @@ import vn.edu.utc.comic.common.audit.AuditAction;
 import vn.edu.utc.comic.common.audit.AuditService;
 
 /**
- * Nghe sự kiện xác thực của Spring Security để ghi nhật ký kiểm toán đăng nhập / đăng xuất.
+ * Nghe sự kiện xác thực của Spring Security để đếm sai mật khẩu và ghi nhật ký kiểm toán.
  */
 @Component
 @RequiredArgsConstructor
 public class AuthenticationEventListener {
 
+    private final LoginAttemptService loginAttemptService;
     private final AuditService auditService;
 
     @EventListener
     public void handleSuccess(AuthenticationSuccessEvent event) {
         if (event.getAuthentication().getPrincipal() instanceof AppUserPrincipal principal) {
+            loginAttemptService.recordSuccess(principal.getId());
             auditService.record(AuditAction.LOGIN_SUCCESS, principal.getId(), principal.getUsername(), null);
         }
+    }
+
+    /**
+     * Chỉ sai mật khẩu mới tính vào số lần sai. Lần thử trong lúc đang bị khóa không được tính,
+     * nếu không người dùng thật cứ thử lại là tự gia hạn khóa của chính mình.
+     */
+    @EventListener
+    public void handleBadCredentials(AuthenticationFailureBadCredentialsEvent event) {
+        loginAttemptService.recordFailure(String.valueOf(event.getAuthentication().getPrincipal()));
     }
 
     @EventListener

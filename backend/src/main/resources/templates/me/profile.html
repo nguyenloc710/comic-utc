@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/site}">
+<head>
+    <title th:text="#{profile.title}">Hồ sơ của tôi</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="profile-page mx-auto">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body d-flex align-items-center gap-3">
+                <th:block th:replace="~{fragments/display :: avatar(${profile.avatarUrl}, ${currentUser.initials}, 'user-avatar-lg')}"></th:block>
+                <div class="flex-grow-1 profile-identity">
+                    <h1 class="h5 mb-0 text-truncate" th:text="${profile.displayName}">Minh Anh</h1>
+                    <div class="text-secondary small text-truncate">
+                        <span th:text="${profile.username}">reader1</span> · <span th:text="${profile.email}">reader1@comic.local</span>
+                    </div>
+                    <div class="small">
+                        <span class="badge text-bg-light border" th:text="#{'enum.Role.' + ${profile.role}}">Độc giả</span>
+                        <span class="text-secondary" th:text="#{profile.joined}">Tham gia từ</span>
+                        <th:block th:replace="~{fragments/display :: datetime(${profile.createdAt})}"></th:block>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 fw-bold mb-3" th:text="#{profile.edit}">Sửa hồ sơ</h2>
+                <form th:action="@{/me/profile}" th:object="${form}" method="post" enctype="multipart/form-data" novalidate>
+                    <div th:replace="~{fragments/form :: input('displayName', #{profile.display.name}, 'text', 'nickname', null)}"></div>
+                    <div class="mb-3">
+                        <label for="bio" class="form-label" th:text="#{profile.bio}">Giới thiệu</label>
+                        <textarea class="form-control" rows="3" th:field="*{bio}" th:errorclass="is-invalid"></textarea>
+                        <div class="invalid-feedback" th:errors="*{bio}">Lỗi</div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="avatar" class="form-label" th:text="#{profile.avatar}">Ảnh đại diện</label>
+                        <input type="file" class="form-control" th:field="*{avatar}" th:errorclass="is-invalid"
+                               accept="image/jpeg,image/png,image/webp">
+                        <div class="invalid-feedback" th:errors="*{avatar}">Lỗi</div>
+                        <div class="form-text" th:text="#{profile.avatar.hint}">Ảnh JPG, PNG hoặc WebP</div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary" th:text="#{common.save}">Lưu</button>
+                        <a class="btn btn-outline-secondary" th:href="@{/me/password}">
+                            <i class="bi bi-key"></i> <span th:text="#{profile.change.password}">Đổi mật khẩu</span>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

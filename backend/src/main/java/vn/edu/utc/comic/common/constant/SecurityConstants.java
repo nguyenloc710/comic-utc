@@ -14,13 +14,19 @@ public final class SecurityConstants {
     public static final String ROLE_ADMIN = "ADMIN";
 
     /** Biểu thức cho @PreAuthorize ở controller (lớp kiểm tra thứ hai sau SecurityConfig). */
+    public static final String HAS_ROLE_USER = "hasRole('" + ROLE_USER + "')";
     public static final String HAS_ROLE_AUTHOR = "hasRole('" + ROLE_AUTHOR + "')";
     public static final String HAS_ROLE_ADMIN = "hasRole('" + ROLE_ADMIN + "')";
 
     /** Độ mạnh thuật toán BCrypt. */
     public static final int BCRYPT_STRENGTH = 12;
 
-    /** Tên tham số lỗi trên trang đăng nhập. */
+    /** Dùng khi bảng setting chưa có khóa tương ứng. */
+    public static final int DEFAULT_PASSWORD_MIN_LENGTH = 8;
+    public static final int DEFAULT_MAX_FAILED_ATTEMPTS = 5;
+    public static final int DEFAULT_LOCK_MINUTES = 15;
+
+    /** Tên tham số mang mã lỗi trên trang đăng nhập (giá trị là LoginError.code). */
     public static final String LOGIN_ERROR_PARAM = "error";
 
     /**

@@ -10,6 +10,9 @@ public final class StorageConstants {
     /** Tiền tố URL công khai của ảnh lưu trên đĩa máy chủ. */
     public static final String MEDIA_URL_PREFIX = "/media/";
 
+    /** Thư mục ảnh đại diện; ảnh của mỗi tài khoản nằm ở avatars/{userId}. */
+    public static final String AVATAR_DIRECTORY = "avatars";
+
     /**
      * Định dạng ảnh được nhận: tên định dạng do ImageIO nhận diện từ NỘI DUNG tệp → đuôi dùng khi lưu.
      * Đuôi và MIME do trình duyệt gửi lên không được tin.

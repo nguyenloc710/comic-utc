@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Một ô nhập kèm nhãn và lỗi, dùng bên trong form có th:object.
+  field: tên thuộc tính của form · label: nhãn đã dịch · type: text / email / password / number
+  autocomplete: gợi ý cho trình quản lý mật khẩu của trình duyệt · hint: dòng hướng dẫn (có thể null)
+-->
+<div th:fragment="input(field, label, type, autocomplete, hint)" class="mb-3">
+    <label th:for="${field}" class="form-label" th:text="${label}">Nhãn</label>
+    <input th:type="${type}" class="form-control" th:field="*{__${field}__}" th:errorclass="is-invalid"
+           th:autocomplete="${autocomplete}">
+    <div class="invalid-feedback" th:errors="*{__${field}__}">Lỗi của ô nhập</div>
+    <div class="form-text" th:if="${hint != null}" th:text="${hint}">Hướng dẫn</div>
+</div>
+</body>
+</html>

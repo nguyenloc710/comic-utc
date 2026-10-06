@@ -1,9 +1,11 @@
 package vn.edu.utc.comic.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -91,6 +94,18 @@ public class GlobalExceptionHandler {
     public Object handleNoResourceFound(NoResourceFoundException exception, HttpServletRequest request) {
         String message = messageService.getMessage(ErrorCode.RESOURCE_NOT_FOUND.getMessageKey());
         return buildResponse(request, ErrorCode.RESOURCE_NOT_FOUND, message, null);
+    }
+
+    /**
+     * Trình duyệt ngắt kết nối khi máy chủ đang gửi dở (đóng tab, lướt qua ảnh chưa tải xong). Việc này xảy ra
+     * thường xuyên ở trang đọc truyện và không phải lỗi của hệ thống: không còn ai để trả lời, nên chỉ ghi một
+     * dòng debug. Có tham số response và trả void để Spring hiểu là phản hồi đã được xử lý xong — nếu để rơi
+     * xuống nhánh "lỗi không lường trước" thì việc dựng trang lỗi trên một kết nối đã đóng lại sinh thêm lỗi.
+     */
+    @ExceptionHandler({ClientAbortException.class, AsyncRequestNotUsableException.class})
+    public void handleClientDisconnected(Exception exception, HttpServletRequest request,
+                                         HttpServletResponse response) {
+        log.debug("Trình duyệt ngắt kết nối khi đang tải {}", request.getRequestURI());
     }
 
     /** Lưới an toàn cuối cùng: mọi lỗi ngoài dự kiến. */

@@ -5,13 +5,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import vn.edu.utc.comic.common.constant.ApiConstants;
 import vn.edu.utc.comic.common.security.SecurityUtils;
 
 /**
@@ -28,14 +28,14 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     private static final int REQUEST_ID_LENGTH = 8;
     private static final String ANONYMOUS = "-";
 
-    /** Tài nguyên tĩnh và ảnh truyện: một trang đọc tải hàng chục ảnh, ghi log sẽ chỉ gây nhiễu. */
-    private static final List<String> SKIPPED_PREFIXES =
-            List.of("/webjars", "/css", "/js", "/images", "/media", "/actuator", "/favicon.ico");
+    private static final String ACTUATOR_PREFIX = "/actuator";
 
+    /** Tài nguyên tĩnh, ảnh truyện và lời gọi kiểm tra sức khỏe định kỳ: ghi log sẽ chỉ gây nhiễu. */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String uri = request.getRequestURI();
-        return SKIPPED_PREFIXES.stream().anyMatch(uri::startsWith);
+        return uri.startsWith(ACTUATOR_PREFIX)
+                || ApiConstants.STATIC_RESOURCE_PREFIXES.stream().anyMatch(uri::startsWith);
     }
 
     @Override

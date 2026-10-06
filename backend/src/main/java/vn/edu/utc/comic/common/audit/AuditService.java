@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import vn.edu.utc.comic.common.logging.RequestLoggingFilter;
+import vn.edu.utc.comic.common.security.SecurityUtils;
 
 /**
  * Ghi nhật ký kiểm toán cho thao tác nhạy cảm.
@@ -40,17 +41,48 @@ public class AuditService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(AuditAction action, Long actorId, String actorName, Object detail) {
+        save(action, new Actor(actorId, actorName), null, detail);
+    }
+
+    /**
+     * Ghi thao tác của người đang đăng nhập lên một bản ghi.
+     *
+     * @param entity bản ghi bị tác động (loại + id)
+     * @param detail thông tin thêm, được lưu dạng JSON; có thể {@code null}
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordForCurrentUser(AuditAction action, AuditedEntity entity, Object detail) {
+        Actor actor = new Actor(SecurityUtils.getCurrentUserId(), SecurityUtils.getCurrentUsername().orElse(null));
+        save(action, actor, entity, detail);
+    }
+
+    /** Bản ghi bị tác động trong một dòng audit. */
+    public record AuditedEntity(String type, Object id) {
+
+        public static AuditedEntity of(Class<?> entityClass, Object id) {
+            return new AuditedEntity(entityClass.getSimpleName(), id);
+        }
+    }
+
+    private record Actor(Long id, String name) {
+    }
+
+    private void save(AuditAction action, Actor actor, AuditedEntity entity, Object detail) {
         try {
             AuditLog entry = new AuditLog();
             entry.setAction(action);
-            entry.setActorId(actorId);
-            entry.setActorName(actorName);
+            entry.setActorId(actor.id());
+            entry.setActorName(actor.name());
+            if (entity != null) {
+                entry.setEntityType(entity.type());
+                entry.setEntityId(String.valueOf(entity.id()));
+            }
             entry.setDetail(toJson(detail));
             entry.setCreatedAt(clock.instant());
             fillRequestInfo(entry);
             auditLogRepository.save(entry);
         } catch (RuntimeException exception) {
-            log.error("Không ghi được audit {} cho {}", action, actorName, exception);
+            log.error("Không ghi được audit {} cho {}", action, actor.name(), exception);
         }
     }
 

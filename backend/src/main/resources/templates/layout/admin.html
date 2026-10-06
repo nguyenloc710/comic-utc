@@ -24,6 +24,12 @@
                 <a class="nav-link" th:href="@{/admin}" th:classappend="${requestPath == '/admin'} ? 'active'">
                     <i class="bi bi-speedometer2"></i> <span th:text="#{nav.overview}">Tổng quan</span>
                 </a>
+                <a class="nav-link" th:href="@{/admin/users}" th:classappend="${#strings.startsWith(requestPath, '/admin/users')} ? 'active'">
+                    <i class="bi bi-people"></i> <span th:text="#{nav.users}">Người dùng</span>
+                </a>
+                <a class="nav-link" th:href="@{/admin/genres}" th:classappend="${#strings.startsWith(requestPath, '/admin/genres')} ? 'active'">
+                    <i class="bi bi-tags"></i> <span th:text="#{nav.genres}">Thể loại</span>
+                </a>
                 <a class="nav-link mt-auto" th:href="@{/}">
                     <i class="bi bi-arrow-left-circle"></i> <span th:text="#{nav.back.to.site}">Về trang đọc truyện</span>
                 </a>

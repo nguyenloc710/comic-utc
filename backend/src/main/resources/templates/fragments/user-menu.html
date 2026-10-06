@@ -6,7 +6,7 @@
 <div th:fragment="menu" class="dropdown" th:if="${currentUser != null}">
     <button class="btn btn-light d-flex align-items-center gap-2 dropdown-toggle" type="button"
             data-bs-toggle="dropdown" aria-expanded="false" th:aria-label="#{nav.user.menu}">
-        <span class="user-avatar" th:text="${currentUser.initials}">MA</span>
+        <th:block th:replace="~{fragments/display :: avatar(${currentUserAvatarUrl}, ${currentUser.initials}, '')}"></th:block>
         <span class="d-none d-sm-inline" th:text="${currentUser.displayName}">Minh Anh</span>
     </button>
     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
@@ -15,6 +15,9 @@
             <div class="small text-secondary" th:text="#{'enum.Role.' + ${currentUser.role}}">Độc giả</div>
         </li>
         <li><hr class="dropdown-divider"></li>
+        <li>
+            <a class="dropdown-item" th:href="@{/me/profile}"><i class="bi bi-person me-2"></i><span th:text="#{nav.profile}">Hồ sơ</span></a>
+        </li>
         <li sec:authorize="hasRole('AUTHOR')">
             <a class="dropdown-item" th:href="@{/studio}"><i class="bi bi-brush me-2"></i><span th:text="#{nav.studio}">Khu vực tác giả</span></a>
         </li>

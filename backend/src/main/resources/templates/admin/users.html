@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.users.title}">Người dùng</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.users.title}">Người dùng</h1>
+<div layout:fragment="content">
+    <!-- Bộ lọc gửi bằng GET để nằm trên query string: tải lại hoặc chia sẻ link vẫn giữ bộ lọc -->
+    <form class="card border-0 shadow-sm mb-3" th:action="@{/admin/users}" method="get">
+        <div class="card-body row g-2 align-items-end">
+            <div class="col-12 col-md-5">
+                <label for="keyword" class="form-label small mb-1" th:text="#{admin.users.filter.keyword}">Từ khóa</label>
+                <input type="search" class="form-control" id="keyword" name="keyword" th:value="${filter.keyword}">
+            </div>
+            <div class="col-6 col-md-3">
+                <label for="role" class="form-label small mb-1" th:text="#{admin.users.filter.role}">Vai trò</label>
+                <select class="form-select" id="role" name="role">
+                    <option value="" th:text="#{common.all}">Tất cả</option>
+                    <option th:each="role : ${roles}" th:value="${role}" th:selected="${role == filter.role}"
+                            th:text="#{'enum.Role.' + ${role}}">Độc giả</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <label for="status" class="form-label small mb-1" th:text="#{admin.users.filter.status}">Trạng thái</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="" th:text="#{common.all}">Tất cả</option>
+                    <option th:each="status : ${statuses}" th:value="${status}" th:selected="${status == filter.status}"
+                            th:text="#{'enum.UserStatus.' + ${status}}">Đang hoạt động</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-1 d-grid">
+                <button type="submit" class="btn btn-primary" th:aria-label="#{common.search}"><i class="bi bi-search"></i></button>
+            </div>
+        </div>
+    </form>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <p class="text-secondary small" th:text="#{admin.users.total(${page.totalElements})}">20 tài khoản</p>
+            <p class="text-center text-secondary py-4 mb-0" th:if="${page.isEmpty()}" th:text="#{common.empty}">Chưa có dữ liệu</p>
+            <div class="table-responsive" th:unless="${page.isEmpty()}">
+                <table class="table table-hover align-middle text-nowrap mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{admin.users.column.account}">Tài khoản</th>
+                        <th scope="col" th:text="#{admin.users.column.email}">Email</th>
+                        <th scope="col" th:text="#{admin.users.column.role}">Vai trò</th>
+                        <th scope="col" th:text="#{admin.users.column.status}">Trạng thái</th>
+                        <th scope="col" th:text="#{admin.users.column.last.login}">Đăng nhập gần nhất</th>
+                        <th scope="col" th:text="#{admin.users.column.created}">Ngày đăng ký</th>
+                        <th scope="col" class="text-end" th:text="#{common.actions}">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user : ${page.content}">
+                        <td>
+                            <div class="fw-semibold" th:text="${user.username}">reader1</div>
+                            <div class="small text-secondary" th:text="${user.displayName}">Minh Anh</div>
+                        </td>
+                        <td th:text="${user.email}">reader1@comic.local</td>
+                        <td><span class="badge text-bg-light border" th:text="#{'enum.Role.' + ${user.role}}">Độc giả</span></td>
+                        <td>
+                            <span class="badge" th:classappend="${user.status.name() == 'ACTIVE'} ? 'text-bg-success' : 'text-bg-danger'"
+                                  th:text="#{'enum.UserStatus.' + ${user.status}}">Đang hoạt động</span>
+                            <span class="badge text-bg-warning" th:if="${user.temporarilyLocked}"
+                                  th:text="#{admin.users.temporarily.locked}">Khóa tạm</span>
+                        </td>
+                        <td><th:block th:replace="~{fragments/display :: datetime(${user.lastLoginAt})}"></th:block></td>
+                        <td><th:block th:replace="~{fragments/display :: datetime(${user.createdAt})}"></th:block></td>
+                        <td class="text-end">
+                            <!-- Không hiện nút khóa ở dòng của chính mình; service vẫn chặn nếu ai đó tự gửi request -->
+                            <form th:if="${user.status.name() == 'ACTIVE' and !user.temporarilyLocked and user.id != currentUser.id}"
+                                  th:action="@{/admin/users/{id}/ban(id=${user.id})}" method="post"
+                                  th:attr="data-confirm=#{admin.users.ban.confirm(${user.username})}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" th:text="#{admin.users.ban}">Khóa</button>
+                            </form>
+                            <form th:if="${user.status.name() == 'BANNED' or user.temporarilyLocked}"
+                                  th:action="@{/admin/users/{id}/unban(id=${user.id})}" method="post">
+                                <button type="submit" class="btn btn-outline-success btn-sm" th:text="#{admin.users.unban}">Mở khóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:replace="~{fragments/pagination :: pager(${page})}"></nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

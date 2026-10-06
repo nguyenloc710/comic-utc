@@ -31,7 +31,9 @@ Tài liệu: [docs/00 kế hoạch tổng thể](docs/00-KE-HOACH-TONG-THE.md) �
 - **Hẹn giờ đăng**: `ChapterPublishJob` mỗi phút, xuất bản bằng UPDATE có điều kiện `WHERE status = 'SCHEDULED'`, mỗi chương một transaction, **idempotent**.
 - **Bộ đếm** (`view_count`, `follow_count`, `rating_sum/count`, `comment_count`) cập nhật bằng `UPDATE … SET x = x + :delta`, không đọc-rồi-ghi.
 - **Quyền theo dữ liệu**: tác giả chỉ sửa truyện/chương của mình, kiểm tra ở `StoryAccessPolicy` trong service; `sec:authorize` chỉ để ẩn menu.
-- **Cấp quyền AUTHOR**: `AuthorRequestService.approve` đổi vai trò + tạo `author_profile` + evict cache quyền; `AuthorityRefreshFilter` cho phiên đang đăng nhập nhận quyền mới. Mỗi người tối đa một yêu cầu `PENDING` (UNIQUE trên cột sinh).
+- **Cấp quyền AUTHOR**: `AuthorRequestService.approve` đổi vai trò + tạo `author_profile`; `AuthorityRefreshFilter` cho phiên đang đăng nhập nhận quyền mới. Mỗi người tối đa một yêu cầu `PENDING` (UNIQUE trên cột sinh).
+- **Sửa tài khoản phải báo cho phiên**: mọi service đổi vai trò, trạng thái, tên hiển thị hoặc ảnh đại diện phải `publishEvent(new AccountChangedEvent(userId))`; quên thì người dùng thấy dữ liệu cũ (hoặc tài khoản bị khóa vẫn dùng tiếp) tới khi cache hết hạn.
+- **Lỗi form**: lỗi gắn được vào ô nhập thì service ném `FieldValidationException` (gom mọi lỗi một lần) và controller dùng `FormErrors.apply` rồi trả lại view của form; lỗi của thao tác trên danh sách thì `flash.error` + redirect.
 - **HTML chương truyện chữ** làm sạch bằng `HtmlSanitizer` (jsoup whitelist) **lúc lưu**; đó là chỗ duy nhất được `th:utext`. Bình luận, mô tả là text thuần.
 - **Ảnh**: `ImageValidator` xác định định dạng từ nội dung tệp (không tin đuôi/MIME), tên UUID, DB giữ khóa tương đối, URL dựng qua `StorageService.resolveUrl`; upload từng ảnh một request, thứ tự do service ghi lại 1..n.
 - **Thông báo** qua `@TransactionalEventListener(AFTER_COMMIT)` + `@Async`; chương mới phát cho người theo dõi bằng một câu `INSERT … SELECT`.
@@ -54,3 +56,5 @@ AI_API_KEY=... ./mvnw test -Dtest=SpringAiToolCallingSmokeTest   # gọi LLM th�
 
 Tài khoản dev: `admin` / `Admin@123` · `author1`, `reader1` / `Demo@123`. Bộ đếm (`*_count`, `rating_sum`) là cột `updatable = false`: chỉ đổi bằng câu UPDATE cộng dồn, đừng `setXxxCount` rồi `save`.
 Mục menu chỉ thêm vào layout khi trang đích đã tồn tại.
+
+Test tích hợp kế thừa `AbstractIntegrationTest`, **không** chạy trong transaction rollback (nhiều hành vi chỉ xảy ra sau commit): mỗi test tự tạo tài khoản tên ngẫu nhiên bằng `createAccount(role)` / `principalOf(role)`, không đếm tổng số dòng của bảng dùng chung.

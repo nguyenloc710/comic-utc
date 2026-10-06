@@ -8,7 +8,7 @@ Website đọc và đăng tải truyện tranh, truyện chữ tích hợp chatb
 - **Chatbot:** Spring AI + function calling
 - **Vai trò:** khách vãng lai, độc giả (`USER`), tác giả (`AUTHOR`), quản trị viên (`ADMIN`)
 
-> Trạng thái: xong **giai đoạn 1 (dựng project)** — khung ứng dụng, lược đồ CSDL, đăng nhập và ba layout đã chạy; chức năng nghiệp vụ bắt đầu từ giai đoạn 2. Tiến độ chi tiết: [docs/02-LO-TRINH.md](docs/02-LO-TRINH.md).
+> Trạng thái: xong **giai đoạn 2** — đăng ký, đăng nhập (khóa tạm khi sai mật khẩu nhiều lần), hồ sơ cá nhân, đổi mật khẩu, quản trị người dùng và thể loại. Đọc truyện bắt đầu từ giai đoạn 3. Tiến độ chi tiết: [docs/02-LO-TRINH.md](docs/02-LO-TRINH.md).
 
 ## Chạy dự án
 
@@ -24,16 +24,19 @@ Mở http://localhost:8080. Profile mặc định là `dev`: Flyway tạo lượ
 
 | Tài khoản | Mật khẩu | Vai trò | Vào được |
 |---|---|---|---|
-| `admin` | `Admin@123` | Quản trị viên | `/admin` |
+| `admin` | `Admin@123` | Quản trị viên | `/admin` (người dùng, thể loại) |
 | `author1` | `Demo@123` | Tác giả | `/studio` |
-| `reader1` | `Demo@123` | Độc giả | trang công khai |
+| `reader1` | `Demo@123` | Độc giả | trang công khai, `/me/profile` |
+
+Hoặc tự tạo tài khoản độc giả ở `/register`.
 
 Tài khoản `admin` nằm trong dữ liệu khởi tạo của mọi môi trường — **phải đổi mật khẩu trước khi triển khai thật**.
 
 | Địa chỉ | Nội dung |
 |---|---|
 | http://localhost:8080 | Trang chủ |
-| http://localhost:8080/login | Đăng nhập |
+| http://localhost:8080/login · `/register` | Đăng nhập · đăng ký |
+| http://localhost:8080/me/profile | Hồ sơ cá nhân, đổi mật khẩu |
 | http://localhost:8080/studio | Khu vực tác giả |
 | http://localhost:8080/admin | Quản trị |
 | http://localhost:8080/swagger-ui.html | Tài liệu API JSON (`/api/**`, cần quyền ADMIN) |

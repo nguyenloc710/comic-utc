@@ -79,7 +79,9 @@ flash.chapter.published=Đã đăng chương {0}
 
 - Khóa khai báo trong `MessageKeys`; service ném `ApiException(ErrorCode.X, args…)`; `ErrorCode` gắn `HttpStatus` + khóa.
 - `GlobalExceptionHandler` là nơi **duy nhất** dịch: request `/api/**` hoặc `Accept: application/json` → `ApiResponse.error`, còn lại → trang lỗi.
-- Lỗi nghiệp vụ trong form POST: controller bắt `ApiException`, đưa message vào flash, redirect về trang đang thao tác.
+- Lỗi nghiệp vụ trong form POST, hai trường hợp:
+  - **Gắn được vào ô nhập** (trùng tên, mật khẩu yếu, ảnh không hợp lệ): service ném `FieldValidationException` gom **mọi** vi phạm một lần; controller gọi `FormErrors.apply(bindingResult, exception)` rồi trả lại chính view của form — lỗi hiện dưới đúng ô và dữ liệu đã gõ được giữ nguyên.
+  - **Không thuộc ô nào** (thao tác trên một dòng của danh sách: khóa tài khoản, xóa thể loại): controller bắt `ApiException`, gọi `flash.error(...)` rồi redirect về danh sách.
 - **Nội dung công khai không tồn tại hoặc không được phép xem ⇒ luôn 404** (`STORY_NOT_FOUND`, `CHAPTER_NOT_FOUND`), không trả 403 — tránh lộ sự tồn tại của bản nháp.
 - Validation dùng khóa: `@NotBlank(message = "{validation.story.title.required}")`.
 
@@ -163,7 +165,7 @@ Controller (DTO ↔ service) · Service (nghiệp vụ, `@Transactional`) · Rep
 | Xuất bản / ẩn / hiện chương, sửa `story.chapter_count`, `last_chapter_at` | `ChapterPublishService` |
 | Truy vấn truyện/chương cho người đọc và cho chatbot | `StoryCatalogQueryService`, `ChapterReaderService` (luôn áp `publiclyVisible`) |
 | Ẩn / hiện truyện, bình luận | `StoryModerationService`, `CommentService` (ghi audit + thông báo) |
-| Đổi vai trò / trạng thái tài khoản | `AuthorRequestService.approve`, `AdminUserService` (evict cache quyền) |
+| Đổi vai trò / trạng thái / tên hiển thị / ảnh đại diện của tài khoản | `AuthorRequestService.approve`, `AdminUserService`, `ProfileService` — **bắt buộc** phát `AccountChangedEvent` để phiên đang đăng nhập được làm mới |
 | Lưu / xóa / dựng URL ảnh | `StorageService` |
 | Làm sạch HTML chương | `HtmlSanitizer`, gọi lúc **lưu** |
 

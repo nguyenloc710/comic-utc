@@ -1,5 +1,6 @@
 package vn.edu.utc.comic.common.security;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -10,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import vn.edu.utc.comic.common.constant.SecurityConstants;
 import vn.edu.utc.comic.user.entity.UserAccount;
 import vn.edu.utc.comic.user.enums.Role;
-import vn.edu.utc.comic.user.enums.UserStatus;
 
 /**
  * Thông tin tài khoản mà Spring Security giữ trong phiên đăng nhập.
@@ -24,25 +24,22 @@ public class AppUserPrincipal implements UserDetails {
     private final Long id;
     private final String username;
     private final transient String password;
-    private final String displayName;
     private final String email;
-    private final Role role;
-    private final String initials;
-    private final boolean active;
     private final boolean locked;
+    private final AccountState accountState;
+    private final String initials;
     private final transient Collection<? extends GrantedAuthority> authorities;
 
-    private AppUserPrincipal(UserAccount user, Instant now) {
-        this.id = user.getId();
-        this.username = user.getUsername();
-        this.password = user.getPasswordHash();
-        this.displayName = user.getDisplayName();
-        this.email = user.getEmail();
-        this.role = user.getRole();
-        this.initials = buildInitials(user.getDisplayName());
-        this.active = user.getStatus() == UserStatus.ACTIVE;
-        this.locked = user.isLockedAt(now);
-        this.authorities = List.of(new SimpleGrantedAuthority(SecurityConstants.ROLE_PREFIX + role.name()));
+    private AppUserPrincipal(Identity identity, AccountState accountState) {
+        this.id = identity.id();
+        this.username = identity.username();
+        this.password = identity.passwordHash();
+        this.email = identity.email();
+        this.locked = identity.locked();
+        this.accountState = accountState;
+        this.initials = buildInitials(accountState.displayName());
+        this.authorities = List.of(
+                new SimpleGrantedAuthority(SecurityConstants.ROLE_PREFIX + accountState.role().name()));
     }
 
     /**
@@ -50,7 +47,29 @@ public class AppUserPrincipal implements UserDetails {
      * @param now  thời điểm hiện tại, để xác định tài khoản có đang bị khóa tạm hay không
      */
     public static AppUserPrincipal from(UserAccount user, Instant now) {
-        return new AppUserPrincipal(user, now);
+        Identity identity = new Identity(user.getId(), user.getUsername(), user.getPasswordHash(),
+                user.getEmail(), user.isLockedAt(now));
+        AccountState state = new AccountState(user.getRole(), user.getStatus(), user.getDisplayName(),
+                user.getAvatarPath());
+        return new AppUserPrincipal(identity, state);
+    }
+
+    /** Bản sao mang trạng thái mới (vai trò, tên hiển thị...), dùng khi làm mới phiên đang đăng nhập. */
+    public AppUserPrincipal withState(AccountState newState) {
+        return new AppUserPrincipal(new Identity(id, username, password, email, locked), newState);
+    }
+
+    public Role getRole() {
+        return accountState.role();
+    }
+
+    public String getDisplayName() {
+        return accountState.displayName();
+    }
+
+    /** Khóa ảnh đại diện; URL dựng qua StorageService.resolveUrl. */
+    public String getAvatarPath() {
+        return accountState.avatarPath();
     }
 
     /** Chữ cái đầu của từ đầu và từ cuối trong tên hiển thị, để vẽ avatar khi chưa có ảnh. */
@@ -79,6 +98,11 @@ public class AppUserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return active;
+        return accountState.isActive();
+    }
+
+    /** Phần không đổi trong suốt phiên đăng nhập. */
+    private record Identity(Long id, String username, String passwordHash, String email, boolean locked)
+            implements Serializable {
     }
 }

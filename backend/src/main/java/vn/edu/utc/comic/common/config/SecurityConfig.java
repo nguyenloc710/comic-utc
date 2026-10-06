@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
@@ -19,7 +20,10 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import vn.edu.utc.comic.common.constant.ApiConstants;
 import vn.edu.utc.comic.common.constant.SecurityConstants;
+import vn.edu.utc.comic.common.security.AccountStateService;
 import vn.edu.utc.comic.common.security.ApiErrorResponder;
+import vn.edu.utc.comic.common.security.AuthorityRefreshFilter;
+import vn.edu.utc.comic.common.security.LoginFailureHandler;
 
 /**
  * Cấu hình bảo mật: form login + session + CSRF; phân quyền theo khu vực URL.
@@ -39,6 +43,8 @@ public class SecurityConfig {
     };
 
     private final ApiErrorResponder apiErrorResponder;
+    private final LoginFailureHandler loginFailureHandler;
+    private final AccountStateService accountStateService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -56,8 +62,11 @@ public class SecurityConfig {
                         .anyRequest().permitAll())
                 .formLogin(form -> form
                         .loginPage(ApiConstants.LOGIN_PATH)
-                        .failureUrl(ApiConstants.LOGIN_PATH + "?" + SecurityConstants.LOGIN_ERROR_PARAM)
+                        .failureHandler(loginFailureHandler)
                         .permitAll())
+                // Đặt ngay trước bước kiểm tra quyền: lúc này phiên đã được nạp, và quyền vừa làm mới
+                // được dùng cho chính request đang xử lý
+                .addFilterBefore(new AuthorityRefreshFilter(accountStateService), AuthorizationFilter.class)
                 .logout(logout -> logout
                         .logoutSuccessUrl(ApiConstants.HOME_PATH)
                         .invalidateHttpSession(true)

@@ -12,8 +12,9 @@
             <h1 class="h4 fw-bold mb-1" th:text="#{login.title}">Đăng nhập</h1>
             <p class="text-secondary small" th:text="#{login.subtitle}">Đăng nhập để theo dõi truyện.</p>
 
-            <div class="alert alert-danger d-flex align-items-center gap-2" role="alert" th:if="${param.error}">
-                <i class="bi bi-exclamation-circle-fill"></i> <span th:text="#{login.error}">Sai thông tin</span>
+            <!-- loginErrorKey do AuthController đổi từ mã lỗi trên URL, không lấy thẳng tham số URL làm khóa -->
+            <div class="alert alert-danger d-flex align-items-center gap-2" role="alert" th:if="${loginErrorKey != null}">
+                <i class="bi bi-exclamation-circle-fill"></i> <span th:text="#{${loginErrorKey}}">Sai thông tin</span>
             </div>
 
             <form th:action="@{/login}" method="post">
@@ -27,6 +28,11 @@
                 </div>
                 <button type="submit" class="btn btn-primary w-100" th:text="#{login.submit}">Đăng nhập</button>
             </form>
+
+            <p class="text-center small mt-3 mb-0">
+                <span th:text="#{login.no.account}">Chưa có tài khoản?</span>
+                <a th:href="@{/register}" th:text="#{nav.register}">Đăng ký</a>
+            </p>
         </div>
     </div>
 </div>

@@ -16,11 +16,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.utc.comic.common.constant.ViewConstants;
 import vn.edu.utc.comic.support.AbstractIntegrationTest;
-import vn.edu.utc.comic.support.TestPrincipals;
 import vn.edu.utc.comic.user.enums.Role;
 
 /**
@@ -30,8 +27,6 @@ class SecurityAccessIntegrationTest extends AbstractIntegrationTest {
 
     private static final String LOGIN_URL_PATTERN = "**/login";
 
-    @Autowired
-    private MockMvc mockMvc;
 
     @Test
     void home_isOpenToGuests() throws Exception {
@@ -79,23 +74,23 @@ class SecurityAccessIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void studio_rejectsReaderAndAdmin() throws Exception {
-        mockMvc.perform(get("/studio").with(user(TestPrincipals.withRole(Role.USER))))
+        mockMvc.perform(get("/studio").with(user(principalOf(Role.USER))))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(get("/studio").with(user(TestPrincipals.withRole(Role.ADMIN))))
+        mockMvc.perform(get("/studio").with(user(principalOf(Role.ADMIN))))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void admin_rejectsReaderAndAuthor() throws Exception {
-        mockMvc.perform(get("/admin").with(user(TestPrincipals.withRole(Role.USER))))
+        mockMvc.perform(get("/admin").with(user(principalOf(Role.USER))))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(get("/admin").with(user(TestPrincipals.withRole(Role.AUTHOR))))
+        mockMvc.perform(get("/admin").with(user(principalOf(Role.AUTHOR))))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void studio_rendersLayoutForAuthor() throws Exception {
-        mockMvc.perform(get("/studio").with(user(TestPrincipals.withRole(Role.AUTHOR))))
+        mockMvc.perform(get("/studio").with(user(principalOf(Role.AUTHOR))))
                 .andExpect(status().isOk())
                 .andExpect(view().name(ViewConstants.STUDIO_DASHBOARD))
                 .andExpect(content().string(Matchers.containsString("consoleSidebar")));
@@ -103,7 +98,7 @@ class SecurityAccessIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void admin_rendersLayoutForAdmin() throws Exception {
-        mockMvc.perform(get("/admin").with(user(TestPrincipals.withRole(Role.ADMIN))))
+        mockMvc.perform(get("/admin").with(user(principalOf(Role.ADMIN))))
                 .andExpect(status().isOk())
                 .andExpect(view().name(ViewConstants.ADMIN_DASHBOARD))
                 .andExpect(content().string(Matchers.containsString("consoleSidebar")));
@@ -112,9 +107,9 @@ class SecurityAccessIntegrationTest extends AbstractIntegrationTest {
     @Test
     void readerArea_isOpenToAuthorAndAdminThroughRoleHierarchy() throws Exception {
         // Trang chưa tồn tại nên 404; điều cần kiểm chứng là KHÔNG bị 403 ở lớp phân quyền URL
-        mockMvc.perform(get("/me/library").with(user(TestPrincipals.withRole(Role.AUTHOR))))
+        mockMvc.perform(get("/me/library").with(user(principalOf(Role.AUTHOR))))
                 .andExpect(status().isNotFound());
-        mockMvc.perform(get("/me/library").with(user(TestPrincipals.withRole(Role.ADMIN))))
+        mockMvc.perform(get("/me/library").with(user(principalOf(Role.ADMIN))))
                 .andExpect(status().isNotFound());
     }
 
@@ -129,14 +124,14 @@ class SecurityAccessIntegrationTest extends AbstractIntegrationTest {
     void login_failsWithWrongPassword() throws Exception {
         mockMvc.perform(formLogin("/login").user("admin").password("sai-mat-khau"))
                 .andExpect(unauthenticated())
-                .andExpect(redirectedUrl("/login?error"));
+                .andExpect(redirectedUrl("/login?error=bad_credentials"));
     }
 
     @Test
     void post_withoutCsrfToken_isForbidden() throws Exception {
-        mockMvc.perform(post("/logout").with(user(TestPrincipals.withRole(Role.USER))))
+        mockMvc.perform(post("/logout").with(user(principalOf(Role.USER))))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(post("/logout").with(user(TestPrincipals.withRole(Role.USER))).with(csrf()))
+        mockMvc.perform(post("/logout").with(user(principalOf(Role.USER))).with(csrf()))
                 .andExpect(redirectedUrl("/"));
     }
 }

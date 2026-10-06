@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.genres.title}">Thể loại</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.genres.title}">Thể loại</h1>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-end mb-3">
+        <a class="btn btn-primary" th:href="@{/admin/genres/new}">
+            <i class="bi bi-plus-lg"></i> <span th:text="#{admin.genres.create}">Thêm thể loại</span>
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <p class="text-center text-secondary py-4 mb-0" th:if="${genres.isEmpty()}" th:text="#{common.empty}">Chưa có dữ liệu</p>
+            <div class="table-responsive" th:unless="${genres.isEmpty()}">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{admin.genres.column.order}">Thứ tự</th>
+                        <th scope="col" th:text="#{admin.genres.column.name}">Tên</th>
+                        <th scope="col" th:text="#{admin.genres.column.description}">Mô tả</th>
+                        <th scope="col" class="text-end" th:text="#{admin.genres.column.stories}">Số truyện</th>
+                        <th scope="col" th:text="#{admin.genres.column.status}">Trạng thái</th>
+                        <th scope="col" class="text-end" th:text="#{common.actions}">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="genre : ${genres}">
+                        <td th:text="${genre.sortOrder}">1</td>
+                        <td>
+                            <div class="fw-semibold" th:text="${genre.name}">Tu tiên</div>
+                            <code class="small" th:text="${genre.slug}">tu-tien</code>
+                        </td>
+                        <td class="small text-secondary" th:text="${genre.description}">Mô tả thể loại</td>
+                        <td class="text-end" th:text="${genre.storyCount}">0</td>
+                        <td>
+                            <span class="badge" th:classappend="${genre.active} ? 'text-bg-success' : 'text-bg-secondary'"
+                                  th:text="${genre.active} ? #{admin.genres.active} : #{admin.genres.inactive}">Đang dùng</span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/genres/{id}/edit(id=${genre.id})}"
+                               th:text="#{common.edit}">Sửa</a>
+                            <form class="d-inline" th:action="@{/admin/genres/{id}/delete(id=${genre.id})}" method="post"
+                                  th:attr="data-confirm=#{admin.genres.delete.confirm(${genre.name})}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" th:disabled="${genre.storyCount > 0}"
+                                        th:title="${genre.storyCount > 0} ? #{admin.genres.delete.disabled}"
+                                        th:text="#{common.delete}">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

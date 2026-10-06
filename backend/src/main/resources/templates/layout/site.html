@@ -14,9 +14,12 @@
             <i class="bi bi-book-half"></i> <span th:text="#{app.name}">Comic UTC</span>
         </a>
         <div class="d-flex align-items-center gap-2">
-            <a class="btn btn-primary btn-sm" th:href="@{/login}" sec:authorize="isAnonymous()">
-                <i class="bi bi-box-arrow-in-right"></i> <span th:text="#{nav.login}">Đăng nhập</span>
-            </a>
+            <th:block sec:authorize="isAnonymous()">
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/register}" th:text="#{nav.register}">Đăng ký</a>
+                <a class="btn btn-primary btn-sm" th:href="@{/login}">
+                    <i class="bi bi-box-arrow-in-right"></i> <span th:text="#{nav.login}">Đăng nhập</span>
+                </a>
+            </th:block>
             <div th:replace="~{fragments/user-menu :: menu}"></div>
         </div>
     </div>

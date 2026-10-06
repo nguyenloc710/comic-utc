@@ -72,9 +72,10 @@ a {
   color: var(--comic-primary);
 }
 
-/* Avatar chữ cái khi người dùng chưa có ảnh đại diện */
+/* Ảnh đại diện; cùng lớp dùng cho ảnh thật lẫn ô chữ cái khi người dùng chưa đặt ảnh */
 .user-avatar {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 2rem;
@@ -84,6 +85,26 @@ a {
   color: #fff;
   font-size: 0.8rem;
   font-weight: 700;
+  object-fit: cover;
+}
+
+.user-avatar-lg {
+  width: 4.5rem;
+  height: 4.5rem;
+  font-size: 1.5rem;
+}
+
+.profile-page {
+  max-width: 720px;
+}
+
+/* min-width: 0 để tên và email dài bị cắt bằng dấu ba chấm thay vì đẩy vỡ thẻ trên màn hình hẹp */
+.profile-identity {
+  min-width: 0;
+}
+
+.console-form-card {
+  max-width: 640px;
 }
 
 /* ----- Khung khu vực tác giả / quản trị ----- */

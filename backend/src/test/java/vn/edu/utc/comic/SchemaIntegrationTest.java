@@ -31,7 +31,6 @@ import vn.edu.utc.comic.story.repository.StoryRepository;
 import vn.edu.utc.comic.support.AbstractIntegrationTest;
 import vn.edu.utc.comic.user.entity.UserAccount;
 import vn.edu.utc.comic.user.enums.Role;
-import vn.edu.utc.comic.user.repository.UserAccountRepository;
 
 /**
  * Kiểm chứng lược đồ và ánh xạ JPA trên MySQL thật: context khởi động được nghĩa là Flyway chạy sạch và
@@ -43,8 +42,6 @@ class SchemaIntegrationTest extends AbstractIntegrationTest {
     private static final int SEEDED_IMAGE_MAX_SIZE_MB = 5;
     private static final int MINIMUM_SEEDED_GENRES = 30;
 
-    @Autowired
-    private UserAccountRepository userAccountRepository;
     @Autowired
     private GenreRepository genreRepository;
     @Autowired

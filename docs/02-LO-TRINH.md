@@ -81,20 +81,25 @@
 ## Giai đoạn 2 — Tài khoản, phân quyền, thể loại (13/10 – 20/10)
 
 ### 2.1. Bảo mật
-- [ ] `SecurityConfig`: `permitAll` cho phần công khai (`/`, `/stories/**`, `/genres/**`, `/rankings`, `/media/**`, `/login`, `/register`, static, webjars);
+- [x] `SecurityConfig`: `permitAll` cho phần công khai (`/`, `/stories/**`, `/genres/**`, `/rankings`, `/media/**`, `/login`, `/register`, static, webjars);
       `/me/**` + `/api/**` cần đăng nhập (trừ các GET công khai); `/studio/**` AUTHOR; `/admin/**`, actuator, swagger ADMIN; `RoleHierarchy` `AUTHOR > USER`, `ADMIN > USER`; header bảo mật.
-- [ ] `AppUserDetailsService`, `AppUserPrincipal` (id, username, displayName, role), `SecurityUtils`.
-- [ ] `AuthorityRefreshFilter` + cache vai trò/trạng thái (evict khi đổi) — xem [00 §4.1](00-KE-HOACH-TONG-THE.md).
-- [ ] `LoginAttemptService`: đếm sai, khóa tạm theo `setting`.
+- [x] `AppUserDetailsService`, `AppUserPrincipal` (id, username, displayName, role), `SecurityUtils`.
+- [x] `AuthorityRefreshFilter` + cache vai trò/trạng thái (evict khi đổi) — xem [00 §4.1](00-KE-HOACH-TONG-THE.md).
+      Phiên giữ một `AccountState` (vai trò, trạng thái, tên hiển thị, ảnh đại diện); service nào sửa các trường đó phát `AccountChangedEvent`, cache được xóa **sau commit**.
+- [x] `LoginAttemptService`: đếm sai, khóa tạm theo `setting` — cộng và khóa bằng UPDATE có điều kiện; lần thử trong lúc đang khóa không tính.
+- [x] `LoginFailureHandler` + `LoginError`: trang đăng nhập nhận mã lỗi trên URL và đổi sang thông báo.
 
 ### 2.2. Đăng ký, đăng nhập, hồ sơ
-- [ ] `RegistrationService.register`: kiểm tra trùng username/email, chính sách mật khẩu, BCrypt; đăng ký xong đăng nhập luôn.
-- [ ] Trang `auth/register`, `auth/login` (thông báo theo mã: sai mật khẩu / bị khóa tạm / bị cấm), `me/profile` (tên hiển thị, giới thiệu, avatar), đổi mật khẩu.
+- [x] `RegistrationService.register`: kiểm tra trùng username/email, chính sách mật khẩu, BCrypt; đăng ký xong đăng nhập luôn
+      (có đổi id phiên — `request.login()` không tự chống session fixation như form login).
+- [x] Lỗi nghiệp vụ gắn theo ô nhập: service ném `FieldValidationException`, controller dùng `FormErrors.apply` để hiện lỗi dưới đúng ô và giữ nguyên dữ liệu đã gõ.
+- [x] Trang `auth/register`, `auth/login` (thông báo theo mã: sai mật khẩu / bị khóa tạm / bị cấm), `me/profile` (tên hiển thị, giới thiệu, avatar), đổi mật khẩu.
 
 ### 2.3. Thể loại & người dùng (ADMIN)
-- [ ] `AdminGenreController`: CRUD thể loại (tên, slug tự sinh, mô tả, thứ tự, ẩn/hiện); không xóa thể loại đang có truyện (chỉ ẩn); evict cache.
-- [ ] `AdminUserController` bản đầu: danh sách + lọc + khóa/mở khóa (đủ để test `AuthorityRefreshFilter`).
-- [ ] Test tích hợp: khách vào `/me/library` ⇒ 302 `/login`; USER vào `/studio`, `/admin` ⇒ 403; sai N lần ⇒ khóa; khóa tài khoản đang đăng nhập ⇒ request kế tiếp bị đá.
+- [x] `AdminGenreController`: CRUD thể loại (tên, slug tự sinh và cố định, mô tả, thứ tự, ẩn/hiện); không xóa thể loại đang có truyện (chỉ ẩn).
+      Cache danh sách thể loại đang bật dời sang GĐ 3.1: hiện chưa có nơi nào đọc danh sách đó nên chưa có gì để cache.
+- [x] `AdminUserController` bản đầu: danh sách + lọc + khóa/mở khóa (đủ để test `AuthorityRefreshFilter`); không tự khóa chính mình; mở khóa gỡ luôn khóa tạm.
+- [x] Test tích hợp: khách vào `/me/library` ⇒ 302 `/login`; USER vào `/studio`, `/admin` ⇒ 403; sai N lần ⇒ khóa; khóa tài khoản đang đăng nhập ⇒ request kế tiếp bị đá.
 
 **Đầu ra:** đăng ký/đăng nhập/phân quyền hoàn chỉnh; admin quản lý được thể loại.
 
@@ -108,6 +113,7 @@
 ### 3.1. Danh mục công khai
 - [ ] `StorySpecification` (`publiclyVisible`, keyword, genres, type, status, khoảng số chương) + `StoryCatalogQueryService.searchStories(filter, pageable)` — **thiết kế tham số đủ cho cả chatbot** ([04 §4](04-KE-HOACH-CHATBOT.md)).
 - [ ] Trang chủ (mới cập nhật, nổi bật tuần, truyện mới, hoàn thành, "Đọc tiếp"); `/stories` (ô tìm + bộ lọc + sắp xếp + phân trang trên query string); `/genres/{slug}`; `/rankings` (tab ngày/tuần/tháng/theo dõi/điểm).
+- [ ] `GenreService.findActiveGenres()` có cache (bộ lọc ở `/stories`, menu thể loại, sau này là prompt của chatbot); tạo/sửa/xóa thể loại phải xóa cache này.
 - [ ] Fragment `story-card`, `badges` (loại/trạng thái truyện) dựng theo `StoryCardResponse`; thêm ô tìm kiếm và các mục Truyện / Xếp hạng vào navbar của `layout/site`.
 - [ ] Trang chi tiết truyện: bìa, mô tả, thể loại, tác giả (bút danh), số liệu, danh sách chương, nút Đọc từ đầu / Đọc tiếp / Theo dõi, đánh giá, bình luận.
 

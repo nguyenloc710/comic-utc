@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/site}">
+<head>
+    <title th:text="#{register.title}">Đăng ký</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="auth-card card border-0 shadow-sm mx-auto">
+        <div class="card-body p-4">
+            <h1 class="h4 fw-bold mb-1" th:text="#{register.title}">Đăng ký</h1>
+            <p class="text-secondary small" th:text="#{register.subtitle}">Tạo tài khoản miễn phí.</p>
+
+            <form th:action="@{/register}" th:object="${form}" method="post" novalidate>
+                <div th:replace="~{fragments/form :: input('username', #{register.username}, 'text', 'username', #{register.username.hint})}"></div>
+                <div th:replace="~{fragments/form :: input('email', #{register.email}, 'email', 'email', null)}"></div>
+                <div th:replace="~{fragments/form :: input('displayName', #{register.display.name}, 'text', 'nickname', null)}"></div>
+                <div th:replace="~{fragments/form :: input('password', #{register.password}, 'password', 'new-password', null)}"></div>
+                <div th:replace="~{fragments/form :: input('confirmPassword', #{register.confirm.password}, 'password', 'new-password', null)}"></div>
+                <button type="submit" class="btn btn-primary w-100" th:text="#{register.submit}">Tạo tài khoản</button>
+            </form>
+
+            <p class="text-center small mt-3 mb-0">
+                <span th:text="#{register.have.account}">Đã có tài khoản?</span>
+                <a th:href="@{/login}" th:text="#{nav.login}">Đăng nhập</a>
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
