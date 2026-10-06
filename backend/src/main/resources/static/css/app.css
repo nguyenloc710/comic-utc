@@ -1,0 +1,181 @@
+/*
+ * Chủ đề riêng đặt chồng lên Bootstrap 5. Chỉ chứa những gì Bootstrap không có sẵn:
+ * màu thương hiệu, khung sidebar của khu vực tác giả / quản trị, vài khối đặc thù.
+ */
+:root {
+  --comic-primary: #e4572e;
+  --comic-primary-dark: #c9441f;
+  --comic-ink: #1f2937;
+  --comic-surface: #f6f7f9;
+  --comic-sidebar-width: 250px;
+  --comic-studio: #0f766e;
+  --comic-admin: #1e293b;
+}
+
+/* ----- Màu thương hiệu cho các thành phần Bootstrap dùng nhiều nhất ----- */
+.btn-primary {
+  --bs-btn-bg: var(--comic-primary);
+  --bs-btn-border-color: var(--comic-primary);
+  --bs-btn-hover-bg: var(--comic-primary-dark);
+  --bs-btn-hover-border-color: var(--comic-primary-dark);
+  --bs-btn-active-bg: var(--comic-primary-dark);
+  --bs-btn-active-border-color: var(--comic-primary-dark);
+  --bs-btn-disabled-bg: var(--comic-primary);
+  --bs-btn-disabled-border-color: var(--comic-primary);
+}
+
+a {
+  --bs-link-color-rgb: 228, 87, 46;
+  --bs-link-hover-color-rgb: 201, 68, 31;
+}
+
+.page-link {
+  --bs-pagination-color: var(--comic-primary);
+  --bs-pagination-hover-color: var(--comic-primary-dark);
+}
+
+/* ----- Layout công khai ----- */
+.site-body {
+  background: var(--comic-surface);
+  color: var(--comic-ink);
+}
+
+.site-navbar {
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.site-navbar .navbar-brand {
+  color: var(--comic-primary);
+}
+
+.site-footer {
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.home-hero {
+  padding: 3rem 1rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #fff1eb 0%, #fff 60%);
+}
+
+.auth-card {
+  max-width: 420px;
+  margin-top: 2rem;
+}
+
+.error-status {
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--comic-primary);
+}
+
+/* Avatar chữ cái khi người dùng chưa có ảnh đại diện */
+.user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--comic-primary);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* ----- Khung khu vực tác giả / quản trị ----- */
+.console-body {
+  background: var(--comic-surface);
+  color: var(--comic-ink);
+}
+
+.console-sidebar-studio {
+  --comic-console: var(--comic-studio);
+}
+
+.console-sidebar-admin {
+  --comic-console: var(--comic-admin);
+}
+
+/* Dưới 992px đây là tấm offcanvas trượt ra, tự mang màu nền qua biến của Bootstrap */
+.console-sidebar-panel {
+  --bs-offcanvas-width: var(--comic-sidebar-width);
+  --bs-offcanvas-bg: var(--comic-console);
+  --bs-offcanvas-color: #fff;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+}
+
+.console-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.console-brand .bi {
+  font-size: 1.5rem;
+}
+
+.console-nav {
+  flex-grow: 1;
+  padding: 0.5rem;
+  gap: 0.125rem;
+}
+
+.console-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.console-nav .nav-link:hover,
+.console-nav .nav-link.active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+/* min-width: 0 để nội dung rộng (bảng) co lại trong flex thay vì đẩy sidebar ra khỏi màn hình */
+.console-main {
+  min-width: 0;
+}
+
+.console-topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.console-content {
+  padding: 1.25rem;
+}
+
+/*
+ * Từ 992px sidebar thôi là offcanvas: cột cố định bên trái, cao hết màn hình.
+ * Bootstrap ép nền của .offcanvas-lg thành trong suốt ở cỡ này, nên màu nền đặt ở phần tử bọc ngoài.
+ */
+@media (min-width: 992px) {
+  .console-sidebar {
+    flex: 0 0 var(--comic-sidebar-width);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    background: var(--comic-console);
+  }
+
+  .console-sidebar-panel {
+    height: 100%;
+  }
+}

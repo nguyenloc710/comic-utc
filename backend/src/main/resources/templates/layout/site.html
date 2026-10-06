@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE – $LAYOUT_TITLE" th:text="#{app.name}">Comic UTC</title>
+    <th:block th:replace="~{fragments/head :: assets}"></th:block>
+</head>
+<body class="site-body d-flex flex-column min-vh-100">
+<!-- Layout cho phần công khai và độc giả. Mục menu chỉ được thêm vào khi trang đích đã tồn tại. -->
+<nav class="navbar site-navbar sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" th:href="@{/}">
+            <i class="bi bi-book-half"></i> <span th:text="#{app.name}">Comic UTC</span>
+        </a>
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-primary btn-sm" th:href="@{/login}" sec:authorize="isAnonymous()">
+                <i class="bi bi-box-arrow-in-right"></i> <span th:text="#{nav.login}">Đăng nhập</span>
+            </a>
+            <div th:replace="~{fragments/user-menu :: menu}"></div>
+        </div>
+    </div>
+</nav>
+
+<main class="container flex-grow-1 py-4">
+    <div th:replace="~{fragments/flash :: flash}"></div>
+    <div layout:fragment="content"></div>
+</main>
+
+<footer class="site-footer py-3 mt-4">
+    <div class="container small text-secondary text-center">
+        <span th:text="#{app.name}">Comic UTC</span> · <span th:text="#{app.tagline}">Đọc và đăng tải truyện</span>
+    </div>
+</footer>
+
+<th:block th:replace="~{fragments/head :: scripts}"></th:block>
+<th:block layout:fragment="scripts"></th:block>
+</body>
+</html>

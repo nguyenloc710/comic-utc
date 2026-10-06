@@ -1,0 +1,93 @@
+# Cấu hình dùng chung cho mọi môi trường.
+# Giá trị khác nhau giữa các môi trường nằm ở application-dev.yml / application-prod.yml / application-test.yml.
+spring:
+  application:
+    name: comic-utc
+
+  profiles:
+    default: dev
+
+  jpa:
+    open-in-view: false          # Tắt: template chỉ nhận DTO, không cần session Hibernate ở tầng view
+    hibernate:
+      ddl-auto: validate         # Schema do Flyway quản lý, Hibernate chỉ kiểm tra khớp
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+          batch_size: 30
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
+    cache-duration: 3600s
+
+  web:
+    locale: vi
+    locale-resolver: fixed       # Ứng dụng một ngôn ngữ; cơ chế i18n vẫn giữ để mở rộng sau
+
+  thymeleaf:
+    cache: true
+
+  servlet:
+    multipart:
+      # Ảnh chương được tải lên từng tấm một request; giới hạn nghiệp vụ (thấp hơn) đọc từ bảng setting
+      max-file-size: 10MB
+      max-request-size: 12MB
+
+  ai:
+    anthropic:
+      # Chưa đặt khóa thì ứng dụng vẫn khởi động; lời gọi LLM sẽ lỗi và chatbot rơi về tìm theo từ khóa
+      api-key: ${AI_API_KEY:not-configured}
+      chat:
+        options:
+          model: ${AI_MODEL:claude-haiku-4-5-20251001}
+          max-tokens: 1024
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,application/javascript,application/json
+  servlet:
+    session:
+      timeout: 60m
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${SESSION_COOKIE_SECURE:false}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+      roles: ADMIN
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  paths-to-match: /api/**
+
+# ----- Cấu hình riêng của ứng dụng -----
+app:
+  storage:
+    root: ${STORAGE_ROOT:./uploads}
+  logging:
+    file: ${LOG_FILE:logs/app.log}

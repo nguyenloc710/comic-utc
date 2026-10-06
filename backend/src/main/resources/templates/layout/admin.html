@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE – $LAYOUT_TITLE" th:text="#{app.subtitle.admin}">Quản trị</title>
+    <th:block th:replace="~{fragments/head :: assets}"></th:block>
+</head>
+<body class="console-body">
+<!--
+  Layout khu vực quản trị. Cùng khung với studio (xem ghi chú về hai lớp phần tử ở layout/studio.html)
+  nhưng sidebar tối màu để không nhầm khu vực đang thao tác.
+-->
+<div class="d-flex min-vh-100">
+    <aside class="console-sidebar console-sidebar-admin">
+        <div class="console-sidebar-panel offcanvas-lg offcanvas-start" tabindex="-1" id="consoleSidebar">
+            <a class="console-brand" th:href="@{/admin}">
+                <i class="bi bi-shield-lock"></i>
+                <span>
+                    <span class="d-block fw-bold" th:text="#{app.name}">Comic UTC</span>
+                    <span class="d-block small opacity-75" th:text="#{app.subtitle.admin}">Quản trị</span>
+                </span>
+            </a>
+            <nav class="nav flex-column console-nav">
+                <a class="nav-link" th:href="@{/admin}" th:classappend="${requestPath == '/admin'} ? 'active'">
+                    <i class="bi bi-speedometer2"></i> <span th:text="#{nav.overview}">Tổng quan</span>
+                </a>
+                <a class="nav-link mt-auto" th:href="@{/}">
+                    <i class="bi bi-arrow-left-circle"></i> <span th:text="#{nav.back.to.site}">Về trang đọc truyện</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <div class="flex-grow-1 d-flex flex-column console-main">
+        <header class="console-topbar">
+            <button class="btn btn-outline-secondary btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#consoleSidebar" aria-controls="consoleSidebar" th:aria-label="#{nav.toggle.menu}">
+                <i class="bi bi-list"></i>
+            </button>
+            <h1 class="h5 mb-0 text-truncate" layout:fragment="heading">Tiêu đề trang</h1>
+            <div class="ms-auto" th:insert="~{fragments/user-menu :: menu}"></div>
+        </header>
+        <main class="console-content">
+            <div th:replace="~{fragments/flash :: flash}"></div>
+            <div layout:fragment="content"></div>
+        </main>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/head :: scripts}"></th:block>
+<th:block layout:fragment="scripts"></th:block>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/studio}">
+<head>
+    <title th:text="#{studio.dashboard.title}">Tổng quan</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{studio.dashboard.title}">Tổng quan</h1>
+<div layout:fragment="content">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h2 class="h5" th:text="#{studio.dashboard.welcome(${currentUser.displayName})}">Xin chào</h2>
+            <p class="text-secondary mb-0" th:text="#{studio.dashboard.building}">Quản lý truyện sẽ xuất hiện tại đây.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

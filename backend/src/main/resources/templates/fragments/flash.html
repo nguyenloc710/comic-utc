@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Thông báo sau thao tác POST → redirect (PRG); nội dung đã được dịch ở FlashMessages -->
+<div th:fragment="flash">
+    <div class="alert alert-success d-flex align-items-center gap-2" role="alert" th:if="${flashSuccess}">
+        <i class="bi bi-check-circle-fill"></i> <span th:text="${flashSuccess}">Thành công</span>
+    </div>
+    <div class="alert alert-danger d-flex align-items-center gap-2" role="alert" th:if="${flashError}">
+        <i class="bi bi-exclamation-circle-fill"></i> <span th:text="${flashError}">Lỗi</span>
+    </div>
+</div>
+</body>
+</html>

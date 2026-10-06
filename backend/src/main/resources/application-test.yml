@@ -1,0 +1,14 @@
+# Môi trường kiểm thử tự động: MySQL do Testcontainers cấp phát, không nạp dữ liệu demo.
+spring:
+  flyway:
+    locations: classpath:db/migration
+
+app:
+  storage:
+    root: ${java.io.tmpdir}/comic-utc-test-uploads
+  logging:
+    file: target/logs/test.log
+
+logging:
+  level:
+    vn.edu.utc.comic: INFO

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<!-- Menu tài khoản dùng chung cho cả ba layout. sec:authorize ở đây chỉ để ẩn mục menu; quyền thật do SecurityConfig chặn. -->
+<div th:fragment="menu" class="dropdown" th:if="${currentUser != null}">
+    <button class="btn btn-light d-flex align-items-center gap-2 dropdown-toggle" type="button"
+            data-bs-toggle="dropdown" aria-expanded="false" th:aria-label="#{nav.user.menu}">
+        <span class="user-avatar" th:text="${currentUser.initials}">MA</span>
+        <span class="d-none d-sm-inline" th:text="${currentUser.displayName}">Minh Anh</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+        <li class="px-3 py-2">
+            <div class="fw-semibold" th:text="${currentUser.displayName}">Minh Anh</div>
+            <div class="small text-secondary" th:text="#{'enum.Role.' + ${currentUser.role}}">Độc giả</div>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li sec:authorize="hasRole('AUTHOR')">
+            <a class="dropdown-item" th:href="@{/studio}"><i class="bi bi-brush me-2"></i><span th:text="#{nav.studio}">Khu vực tác giả</span></a>
+        </li>
+        <li sec:authorize="hasRole('ADMIN')">
+            <a class="dropdown-item" th:href="@{/admin}"><i class="bi bi-shield-lock me-2"></i><span th:text="#{nav.admin}">Quản trị</span></a>
+        </li>
+        <li>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i><span th:text="#{common.logout}">Đăng xuất</span></button>
+            </form>
+        </li>
+    </ul>
+</div>
+</body>
+</html>

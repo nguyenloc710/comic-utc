@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title layout:title-pattern="$CONTENT_TITLE – $LAYOUT_TITLE" th:text="#{app.subtitle.studio}">Khu vực tác giả</title>
+    <th:block th:replace="~{fragments/head :: assets}"></th:block>
+</head>
+<body class="console-body">
+<!--
+  Layout khu vực tác giả. Sidebar là offcanvas dưới 992px (offcanvas-lg của Bootstrap), cố định từ 992px trở lên.
+  Cần hai lớp phần tử: từ 992px Bootstrap ép nền của offcanvas-lg thành trong suốt, nên màu nền phải nằm ở aside bọc ngoài.
+-->
+<div class="d-flex min-vh-100">
+    <aside class="console-sidebar console-sidebar-studio">
+        <div class="console-sidebar-panel offcanvas-lg offcanvas-start" tabindex="-1" id="consoleSidebar">
+            <a class="console-brand" th:href="@{/studio}">
+                <i class="bi bi-brush"></i>
+                <span>
+                    <span class="d-block fw-bold" th:text="#{app.name}">Comic UTC</span>
+                    <span class="d-block small opacity-75" th:text="#{app.subtitle.studio}">Khu vực tác giả</span>
+                </span>
+            </a>
+            <nav class="nav flex-column console-nav">
+                <a class="nav-link" th:href="@{/studio}" th:classappend="${requestPath == '/studio'} ? 'active'">
+                    <i class="bi bi-speedometer2"></i> <span th:text="#{nav.overview}">Tổng quan</span>
+                </a>
+                <a class="nav-link mt-auto" th:href="@{/}">
+                    <i class="bi bi-arrow-left-circle"></i> <span th:text="#{nav.back.to.site}">Về trang đọc truyện</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <div class="flex-grow-1 d-flex flex-column console-main">
+        <header class="console-topbar">
+            <button class="btn btn-outline-secondary btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#consoleSidebar" aria-controls="consoleSidebar" th:aria-label="#{nav.toggle.menu}">
+                <i class="bi bi-list"></i>
+            </button>
+            <h1 class="h5 mb-0 text-truncate" layout:fragment="heading">Tiêu đề trang</h1>
+            <div class="ms-auto" th:insert="~{fragments/user-menu :: menu}"></div>
+        </header>
+        <main class="console-content">
+            <div th:replace="~{fragments/flash :: flash}"></div>
+            <div layout:fragment="content"></div>
+        </main>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/head :: scripts}"></th:block>
+<th:block layout:fragment="scripts"></th:block>
+</body>
+</html>

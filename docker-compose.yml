@@ -1,0 +1,43 @@
+# Image lấy qua mirror ECR Public vì Docker Hub có thể bị chặn tải blob trên mạng nội bộ.
+# Cổng mặc định 3308 / 8082 để không đụng MySQL và Adminer của dự án khác đang chạy trên cùng máy.
+services:
+
+  mysql:
+    image: public.ecr.aws/docker/library/mysql:8.4
+    container_name: comic-mysql
+    restart: unless-stopped
+    # innodb-ft-min-token-size=1: mặc định là 3 nên FULLTEXT bỏ qua từ tiếng Việt ngắn ("ma", "võ").
+    # default-time-zone=+00:00: CURRENT_TIMESTAMP của DB phải cùng múi UTC với giá trị ứng dụng ghi,
+    # vì có câu INSERT ... SELECT để DB tự điền created_at.
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-ft-min-token-size=1
+      --default-time-zone=+00:00
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-comic_utc}
+      MYSQL_USER: ${MYSQL_USER:-comic}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-comic_local_pwd}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_local_pwd}
+    ports:
+      - "${MYSQL_PORT:-3308}:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_local_pwd}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: public.ecr.aws/docker/library/adminer:latest
+    container_name: comic-adminer
+    restart: unless-stopped
+    ports:
+      - "${ADMINER_PORT:-8082}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysqldata:
