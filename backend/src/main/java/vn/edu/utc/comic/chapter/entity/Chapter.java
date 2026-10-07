@@ -51,8 +51,12 @@ public class Chapter extends AuditableEntity {
     @Column(name = "hidden_reason", length = 1000)
     private String hiddenReason;
 
-    /** Số ảnh của chương truyện tranh. */
-    @Column(name = "page_count", nullable = false)
+    /**
+     * Số ảnh của chương truyện tranh. Chỉ đổi qua câu UPDATE ở repository mỗi lần thêm / xóa ảnh: ảnh được tải
+     * lên bằng nhiều request trong lúc form soạn chương vẫn mở, nên nếu để Hibernate ghi cột này khi lưu form
+     * thì một lần bấm "Lưu" sẽ ghi đè số ảnh bằng giá trị cũ.
+     */
+    @Column(name = "page_count", nullable = false, updatable = false)
     private int pageCount;
 
     /** Số từ của chương truyện chữ. */

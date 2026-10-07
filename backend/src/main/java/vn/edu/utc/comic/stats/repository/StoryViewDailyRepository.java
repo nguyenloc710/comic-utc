@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.utc.comic.stats.dto.DailyViewPoint;
 import vn.edu.utc.comic.stats.entity.StoryViewDaily;
 import vn.edu.utc.comic.stats.entity.StoryViewDailyId;
 
@@ -36,4 +37,19 @@ public interface StoryViewDailyRepository extends JpaRepository<StoryViewDaily, 
             ORDER BY SUM(v.viewCount) DESC, v.id.storyId DESC
             """)
     List<Long> findTopViewedStoryIds(@Param("fromDate") LocalDate fromDate, Pageable pageable);
+
+    /**
+     * Tổng lượt xem theo ngày trên các truyện chưa xóa của một tác giả; ngày không có lượt xem không có dòng.
+     *
+     * @param storyId chỉ tính một truyện; {@code null} để cộng mọi truyện của tác giả
+     */
+    @Query("""
+            SELECT new vn.edu.utc.comic.stats.dto.DailyViewPoint(v.id.viewDate, SUM(v.viewCount))
+            FROM StoryViewDaily v JOIN Story s ON s.id = v.id.storyId
+            WHERE s.author.id = :authorId AND s.deletedAt IS NULL AND v.id.viewDate >= :fromDate
+              AND (:storyId IS NULL OR s.id = :storyId)
+            GROUP BY v.id.viewDate
+            """)
+    List<DailyViewPoint> findDailyViewsByAuthor(@Param("authorId") Long authorId, @Param("storyId") Long storyId,
+                                                @Param("fromDate") LocalDate fromDate);
 }

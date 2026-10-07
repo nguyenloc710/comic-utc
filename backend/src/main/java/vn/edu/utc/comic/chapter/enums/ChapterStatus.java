@@ -30,4 +30,12 @@ public enum ChapterStatus {
     public boolean isPubliclyReadable() {
         return this == PUBLISHED;
     }
+
+    /**
+     * Chương đã từng tới tay người đọc (đang đăng hoặc đã đăng rồi bị ẩn). Từ đây số chương bị khóa và chương
+     * không xóa được, vì link, bình luận và lịch sử đọc của độc giả đang trỏ tới nó.
+     */
+    public boolean hasBeenPublished() {
+        return this == PUBLISHED || this == HIDDEN;
+    }
 }

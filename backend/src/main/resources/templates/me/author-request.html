@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/site}">
+<head>
+    <title th:text="#{author.request.title}">Đăng ký làm tác giả</title>
+</head>
+<body>
+<!--
+  Một trang cho mọi tình huống: đã là tác giả, đang chờ duyệt, bị từ chối (kèm lý do và ngày được gửi lại),
+  hoặc được gửi yêu cầu mới (hiện form). "status" do AuthorRequestService.getStatus cung cấp.
+-->
+<div layout:fragment="content">
+    <div class="profile-page mx-auto">
+        <h1 class="h4 mb-3" th:text="#{author.request.title}">Đăng ký làm tác giả</h1>
+
+        <div class="alert alert-success" role="alert" th:if="${status.role.name() == 'AUTHOR'}">
+            <span th:text="#{author.request.already.author}">Bạn đã là tác giả.</span>
+            <a class="alert-link" th:href="@{/studio}" th:text="#{nav.studio}">Khu vực tác giả</a>
+        </div>
+        <div class="alert alert-secondary" role="alert" th:if="${status.role.name() == 'ADMIN'}"
+             th:text="#{author.request.admin.notice}">Tài khoản quản trị không đăng ký làm tác giả.</div>
+
+        <div class="card border-0 shadow-sm mb-3" th:if="${status.role.name() == 'USER' and status.latestRequest != null}"
+             th:with="latest=${status.latestRequest}">
+            <div class="card-body">
+                <h2 class="h6 fw-bold mb-3" th:text="#{author.request.latest}">Yêu cầu gần nhất của bạn</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4" th:text="#{author.request.status}">Trạng thái</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge"
+                              th:classappend="${latest.status.name() == 'APPROVED' ? 'text-bg-success' : (latest.status.name() == 'REJECTED' ? 'text-bg-danger' : 'text-bg-warning')}"
+                              th:text="#{'enum.AuthorRequestStatus.' + ${latest.status}}">Chờ duyệt</span>
+                    </dd>
+                    <dt class="col-sm-4" th:text="#{author.request.pen.name}">Bút danh</dt>
+                    <dd class="col-sm-8" th:text="${latest.penName}">Bút danh</dd>
+                    <dt class="col-sm-4" th:text="#{author.request.sent.at}">Gửi lúc</dt>
+                    <dd class="col-sm-8"><th:block th:replace="~{fragments/display :: datetime(${latest.createdAt})}"></th:block></dd>
+                    <th:block th:if="${latest.status.name() == 'REJECTED'}">
+                        <dt class="col-sm-4" th:text="#{author.request.reject.reason}">Lý do từ chối</dt>
+                        <dd class="col-sm-8 story-description" th:text="${latest.rejectReason}">Lý do</dd>
+                    </th:block>
+                </dl>
+                <p class="text-secondary small mt-3 mb-0" th:if="${latest.status.name() == 'PENDING'}"
+                   th:text="#{author.request.pending.note}">Quản trị viên sẽ xét duyệt yêu cầu của bạn.</p>
+                <p class="text-secondary small mt-3 mb-0" th:if="${status.retryAllowedAt != null and !status.canSubmit}">
+                    <span th:text="#{author.request.retry.at}">Bạn có thể gửi lại từ</span>
+                    <th:block th:replace="~{fragments/display :: datetime(${status.retryAllowedAt})}"></th:block>
+                </p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm" th:if="${status.canSubmit}">
+            <div class="card-body">
+                <p class="text-secondary" th:text="#{author.request.intro}">Giới thiệu quy trình</p>
+                <form th:action="@{/me/author-request}" th:object="${form}" method="post" novalidate>
+                    <div th:replace="~{fragments/form :: input('penName', #{author.request.pen.name}, 'text', 'off', #{author.request.pen.name.hint})}"></div>
+                    <div class="mb-3">
+                        <label for="intendedType" class="form-label" th:text="#{author.request.intended.type}">Loại truyện dự định</label>
+                        <select class="form-select" th:field="*{intendedType}" th:errorclass="is-invalid">
+                            <option value="" th:text="#{common.choose}">Chọn</option>
+                            <option th:each="type : ${intendedTypes}" th:value="${type}"
+                                    th:text="#{'enum.IntendedStoryType.' + ${type}}">Truyện tranh</option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{intendedType}">Lỗi</div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="introduction" class="form-label" th:text="#{author.request.introduction}">Giới thiệu bản thân</label>
+                        <textarea class="form-control" rows="6" th:field="*{introduction}" th:errorclass="is-invalid"></textarea>
+                        <div class="invalid-feedback" th:errors="*{introduction}">Lỗi</div>
+                        <div class="form-text" th:text="#{author.request.introduction.hint}">Hướng dẫn</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" th:text="#{author.request.submit}">Gửi yêu cầu</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

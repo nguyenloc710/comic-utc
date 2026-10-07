@@ -2,6 +2,15 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
+<!--
+  Chuông thông báo, đặt cạnh menu tài khoản ở cả ba layout. Con số chưa đọc do notifications.js hỏi máy chủ
+  lúc tải trang rồi hỏi lại theo chu kỳ, nên trang không phải truy vấn thêm khi dựng HTML.
+-->
+<a th:fragment="bell" th:if="${currentUser != null}" class="btn btn-light position-relative" th:href="@{/me/notifications}"
+   th:aria-label="#{nav.notifications}" data-notification-bell th:attr="data-count-url=@{/api/notifications/unread-count}">
+    <i class="bi bi-bell"></i>
+    <span class="notification-badge badge rounded-pill text-bg-danger d-none" data-notification-count>0</span>
+</a>
 <!-- Menu tài khoản dùng chung cho cả ba layout. sec:authorize ở đây chỉ để ẩn mục menu; quyền thật do SecurityConfig chặn. -->
 <div th:fragment="menu" class="dropdown" th:if="${currentUser != null}">
     <button class="btn btn-light d-flex align-items-center gap-2 dropdown-toggle" type="button"
@@ -23,6 +32,13 @@
         </li>
         <li>
             <a class="dropdown-item" th:href="@{/me/history}"><i class="bi bi-clock-history me-2"></i><span th:text="#{nav.history}">Lịch sử đọc</span></a>
+        </li>
+        <li>
+            <a class="dropdown-item" th:href="@{/me/notifications}"><i class="bi bi-bell me-2"></i><span th:text="#{nav.notifications}">Thông báo</span></a>
+        </li>
+        <!-- Phân cấp vai trò cho tác giả và quản trị viên cả quyền USER, nên phải so đúng vai trò của tài khoản -->
+        <li th:if="${currentUser.role.name() == 'USER'}">
+            <a class="dropdown-item" th:href="@{/me/author-request}"><i class="bi bi-pencil-square me-2"></i><span th:text="#{nav.author.request}">Đăng ký làm tác giả</span></a>
         </li>
         <li sec:authorize="hasRole('AUTHOR')">
             <a class="dropdown-item" th:href="@{/studio}"><i class="bi bi-brush me-2"></i><span th:text="#{nav.studio}">Khu vực tác giả</span></a>

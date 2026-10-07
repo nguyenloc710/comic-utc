@@ -34,8 +34,8 @@ public class FollowService {
      */
     @Transactional
     public FollowResponse follow(Long storyId, Long userId) {
-        storyCatalogQueryService.getPublicStory(storyId);
         storyRepository.lockForCounterUpdate(storyId);
+        storyCatalogQueryService.getPublicStory(storyId);
         if (storyFollowRepository.insertIfAbsent(userId, storyId, clock.instant()) > 0) {
             storyRepository.addFollowCount(storyId, 1);
         }

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/studio}">
+<head>
+    <title th:text="#{studio.chapters.title}">Danh sách chương</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{studio.chapters.title}">Danh sách chương</h1>
+<div layout:fragment="content">
+    <div th:replace="~{fragments/studio :: storyHeader(${story})}"></div>
+
+    <div class="d-flex justify-content-end mb-3">
+        <a class="btn btn-primary" th:href="@{/studio/stories/{id}/chapters/new(id=${story.id})}">
+            <i class="bi bi-plus-lg"></i> <span th:text="#{studio.chapters.create}">Thêm chương</span>
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <p class="text-center text-secondary py-4 mb-0" th:if="${chapters.isEmpty()}" th:text="#{studio.chapters.empty}">Chưa có chương</p>
+            <div class="table-responsive" th:unless="${chapters.isEmpty()}">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{studio.chapters.column.chapter}">Chương</th>
+                        <th scope="col" th:text="#{studio.chapters.column.status}">Trạng thái</th>
+                        <th scope="col" class="text-end" th:text="#{studio.chapters.column.content}">Nội dung</th>
+                        <th scope="col" class="text-end" th:text="#{studio.chapters.column.views}">Lượt xem</th>
+                        <th scope="col" class="text-end" th:text="#{common.actions}">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="chapter : ${chapters}">
+                        <td>
+                            <a class="fw-semibold text-decoration-none" th:href="@{/studio/chapters/{id}/edit(id=${chapter.id})}"
+                               th:text="#{chapter.number(${chapter.chapterNo})}">Chương 1</a>
+                            <div class="small text-secondary" th:if="${chapter.title != null}" th:text="${chapter.title}">Tên chương</div>
+                        </td>
+                        <td>
+                            <span th:replace="~{fragments/studio :: chapterStatus(${chapter.status})}"></span>
+                            <div class="small text-secondary" th:if="${chapter.status.name() == 'SCHEDULED'}">
+                                <span th:text="#{studio.chapter.scheduled.at}">Sẽ đăng lúc</span>
+                                <th:block th:replace="~{fragments/display :: datetime(${chapter.scheduledAt})}"></th:block>
+                            </div>
+                            <div class="small text-secondary" th:if="${chapter.publishedAt != null}">
+                                <th:block th:replace="~{fragments/display :: datetime(${chapter.publishedAt})}"></th:block>
+                            </div>
+                            <div class="small text-danger" th:if="${chapter.status.name() == 'HIDDEN'}"
+                                 th:text="#{studio.chapter.hidden.notice(${chapter.hiddenReason})}">Lý do bị ẩn</div>
+                        </td>
+                        <td class="text-end small"
+                            th:text="${story.type.name() == 'COMIC'} ? #{studio.chapter.pages(${chapter.pageCount})} : #{studio.chapter.words(${chapter.wordCount})}">12 ảnh</td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(chapter.viewCount, 1, 'POINT')}">1.234</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/studio/chapters/{id}/edit(id=${chapter.id})}"
+                               th:text="#{common.edit}">Sửa</a>
+                            <form class="d-inline" th:if="${chapter.status.name() == 'DRAFT'}" method="post"
+                                  th:action="@{/studio/chapters/{id}/delete(id=${chapter.id})}"
+                                  th:attr="data-confirm=#{studio.chapter.delete.confirm(${chapter.chapterNo})}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" th:text="#{common.delete}">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

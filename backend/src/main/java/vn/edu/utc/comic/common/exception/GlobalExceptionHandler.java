@@ -9,6 +9,7 @@ import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -79,6 +80,18 @@ public class GlobalExceptionHandler {
     public Object handleUploadTooLarge(MaxUploadSizeExceededException exception, HttpServletRequest request) {
         String message = messageService.getMessage(ErrorCode.UPLOAD_TOO_LARGE.getMessageKey());
         return buildResponse(request, ErrorCode.UPLOAD_TOO_LARGE, message, null);
+    }
+
+    /**
+     * Bản ghi vừa bị sửa ở nơi khác (tab thứ hai, hoặc job đăng chương) sau khi request này đọc nó.
+     * Trả 409 kèm lời nhắc tải lại, thay vì âm thầm ghi đè thay đổi của bên kia.
+     */
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public Object handleConcurrentUpdate(ObjectOptimisticLockingFailureException exception,
+                                         HttpServletRequest request) {
+        log.warn("Xung đột cập nhật đồng thời tại {}", request.getRequestURI());
+        String message = messageService.getMessage(ErrorCode.CONCURRENT_UPDATE.getMessageKey());
+        return buildResponse(request, ErrorCode.CONCURRENT_UPDATE, message, null);
     }
 
     /** Đã đăng nhập nhưng không đủ quyền (bị @PreAuthorize chặn). */

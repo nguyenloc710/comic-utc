@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.utc.comic.chapter.entity.Chapter;
@@ -23,7 +24,9 @@ import vn.edu.utc.comic.common.setting.SettingKeys;
 import vn.edu.utc.comic.common.setting.SettingService;
 import vn.edu.utc.comic.interaction.dto.CommentCreateRequest;
 import vn.edu.utc.comic.interaction.dto.CommentResponse;
+import vn.edu.utc.comic.common.util.StoryLinks;
 import vn.edu.utc.comic.interaction.entity.Comment;
+import vn.edu.utc.comic.interaction.event.CommentRepliedEvent;
 import vn.edu.utc.comic.interaction.enums.CommentStatus;
 import vn.edu.utc.comic.interaction.mapper.CommentMapper;
 import vn.edu.utc.comic.interaction.repository.CommentRepository;
@@ -48,6 +51,7 @@ public class CommentService {
     private final StoryAccessPolicy accessPolicy;
     private final CommentMapper commentMapper;
     private final SettingService settingService;
+    private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
     /**
@@ -78,13 +82,14 @@ public class CommentService {
      */
     @Transactional
     public CommentResponse addComment(CommentCreateRequest request, Long userId) {
+        // Khóa dòng truyện trước mọi câu đọc (xem StoryRepository.lockForCounterUpdate)
+        storyRepository.lockForCounterUpdate(request.storyId());
         // Kiểm tra hết rồi mới ghi: nơi bình luận, bình luận được trả lời, thời gian chờ
         Story story = storyCatalogQueryService.getPublicStory(request.storyId());
         Chapter chapter = request.chapterId() == null ? null : getReadableChapter(request.chapterId(), story);
         Comment parent = request.parentId() == null ? null : getThreadRoot(request.parentId(), story, chapter);
         validateCooldown(userId);
 
-        storyRepository.lockForCounterUpdate(story.getId());
         Comment comment = new Comment();
         comment.setStory(story);
         comment.setChapter(chapter);
@@ -93,6 +98,7 @@ public class CommentService {
         comment.setContent(request.content().trim());
         commentRepository.saveAndFlush(comment);
         storyRepository.addCommentCount(story.getId(), 1);
+        publishReplyEvent(comment, parent, story, chapter);
         return commentMapper.toResponse(comment, userId, List.of());
     }
 
@@ -130,6 +136,17 @@ public class CommentService {
                 .toList();
     }
 
+    /** Báo cho người viết bình luận gốc khi có NGƯỜI KHÁC trả lời; tự trả lời bình luận của mình thì không báo. */
+    private void publishReplyEvent(Comment reply, Comment parent, Story story, Chapter chapter) {
+        if (parent == null || parent.getUser().getId().equals(reply.getUser().getId())) {
+            return;
+        }
+        String link = (chapter == null
+                ? StoryLinks.story(story.getSlug())
+                : StoryLinks.chapter(story.getSlug(), chapter.getChapterNo())) + StoryLinks.COMMENTS_ANCHOR;
+        eventPublisher.publishEvent(new CommentRepliedEvent(parent.getUser().getId(),
+                reply.getUser().getDisplayName(), story.getTitle(), link));
+    }
     private Chapter getReadableChapter(Long chapterId, Story story) {
         return chapterRepository.findById(chapterId)
                 .filter(chapter -> chapter.getStory().getId().equals(story.getId()))

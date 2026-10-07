@@ -5,6 +5,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import vn.edu.utc.comic.genre.dto.GenreForm;
+import vn.edu.utc.comic.genre.dto.GenreOptionResponse;
 import vn.edu.utc.comic.genre.dto.GenreResponse;
 import vn.edu.utc.comic.genre.dto.GenreTagResponse;
 import vn.edu.utc.comic.genre.entity.Genre;
@@ -20,6 +21,10 @@ public interface GenreMapper {
     GenreTagResponse toTag(Genre genre);
 
     List<GenreTagResponse> toTags(List<Genre> genres);
+
+    GenreOptionResponse toOption(Genre genre);
+
+    List<GenreOptionResponse> toOptions(List<Genre> genres);
 
     /** Tên (đã chuẩn hóa) và slug do service quyết định, không lấy thẳng từ form. */
     @Mapping(target = "id", ignore = true)

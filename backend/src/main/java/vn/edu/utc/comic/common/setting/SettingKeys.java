@@ -14,6 +14,8 @@ public final class SettingKeys {
     public static final String COMMENT_COOLDOWN_SECONDS = "comment.cooldown.seconds";
     public static final String VIEW_DEDUPE_MINUTES = "view.dedupe.minutes";
     public static final String RANKING_MIN_RATING_COUNT = "ranking.min_rating_count";
+    public static final String AUTHOR_REQUEST_COOLDOWN_DAYS = "author.request.cooldown.days";
+    public static final String UPLOAD_CHAPTER_MAX_PAGES = "upload.chapter.max_pages";
 
     private SettingKeys() {
         throw new UnsupportedOperationException("Utility class");

@@ -21,6 +21,7 @@
                     <i class="bi bi-box-arrow-in-right"></i> <span th:text="#{nav.login}">Đăng nhập</span>
                 </a>
             </th:block>
+            <a th:replace="~{fragments/user-menu :: bell}"></a>
             <div th:replace="~{fragments/user-menu :: menu}"></div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav"
                     aria-controls="siteNav" aria-expanded="false" th:aria-label="#{nav.toggle.menu}">

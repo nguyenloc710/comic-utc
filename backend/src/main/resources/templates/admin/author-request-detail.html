@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.author.requests.detail}">Chi tiết yêu cầu</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.author.requests.detail}">Chi tiết yêu cầu</h1>
+<div layout:fragment="content">
+    <div class="card border-0 shadow-sm console-form-card mb-3">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4" th:text="#{admin.author.requests.column.user}">Người gửi</dt>
+                <dd class="col-sm-8">
+                    <span class="fw-semibold" th:text="${authorRequest.username}">reader1</span>
+                    · <span th:text="${authorRequest.displayName}">Minh Anh</span>
+                    · <span class="text-secondary" th:text="${authorRequest.email}">reader1@comic.local</span>
+                </dd>
+                <dt class="col-sm-4" th:text="#{author.request.status}">Trạng thái</dt>
+                <dd class="col-sm-8">
+                    <span class="badge"
+                          th:classappend="${authorRequest.status.name() == 'APPROVED' ? 'text-bg-success' : (authorRequest.status.name() == 'REJECTED' ? 'text-bg-danger' : 'text-bg-warning')}"
+                          th:text="#{'enum.AuthorRequestStatus.' + ${authorRequest.status}}">Chờ duyệt</span>
+                </dd>
+                <dt class="col-sm-4" th:text="#{author.request.pen.name}">Bút danh</dt>
+                <dd class="col-sm-8" th:text="${authorRequest.penName}">Bút danh</dd>
+                <dt class="col-sm-4" th:text="#{author.request.intended.type}">Loại truyện dự định</dt>
+                <dd class="col-sm-8" th:text="#{'enum.IntendedStoryType.' + ${authorRequest.intendedType}}">Truyện tranh</dd>
+                <dt class="col-sm-4" th:text="#{author.request.sent.at}">Gửi lúc</dt>
+                <dd class="col-sm-8"><th:block th:replace="~{fragments/display :: datetime(${authorRequest.createdAt})}"></th:block></dd>
+                <dt class="col-sm-4" th:text="#{author.request.introduction}">Giới thiệu bản thân</dt>
+                <dd class="col-sm-8 story-description" th:text="${authorRequest.introduction}">Lời giới thiệu</dd>
+                <th:block th:if="${authorRequest.status.name() != 'PENDING'}">
+                    <dt class="col-sm-4" th:text="#{admin.author.requests.column.reviewed}">Xử lý lúc</dt>
+                    <dd class="col-sm-8"><th:block th:replace="~{fragments/display :: datetime(${authorRequest.reviewedAt})}"></th:block></dd>
+                </th:block>
+                <th:block th:if="${authorRequest.status.name() == 'REJECTED'}">
+                    <dt class="col-sm-4" th:text="#{author.request.reject.reason}">Lý do từ chối</dt>
+                    <dd class="col-sm-8 story-description" th:text="${authorRequest.rejectReason}">Lý do</dd>
+                </th:block>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Chỉ yêu cầu đang chờ mới còn nút xử lý; service vẫn kiểm tra lại nếu ai đó tự gửi request -->
+    <div class="card border-0 shadow-sm console-form-card mb-3" th:if="${authorRequest.status.name() == 'PENDING'}">
+        <div class="card-body">
+            <form class="mb-4" method="post" th:action="@{/admin/author-requests/{id}/approve(id=${authorRequest.id})}"
+                  th:attr="data-confirm=#{admin.author.requests.approve.confirm(${authorRequest.username}, ${authorRequest.penName})}">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> <span th:text="#{admin.author.requests.approve}">Duyệt</span>
+                </button>
+                <div class="form-text" th:text="#{admin.author.requests.approve.hint}">Tài khoản sẽ thành tác giả ngay</div>
+            </form>
+
+            <form method="post" th:action="@{/admin/author-requests/{id}/reject(id=${authorRequest.id})}"
+                  th:object="${form}" novalidate>
+                <div class="mb-3">
+                    <label for="rejectReason" class="form-label" th:text="#{author.request.reject.reason}">Lý do từ chối</label>
+                    <textarea class="form-control" rows="3" th:field="*{rejectReason}" th:errorclass="is-invalid"></textarea>
+                    <div class="invalid-feedback" th:errors="*{rejectReason}">Lỗi</div>
+                    <div class="form-text" th:text="#{admin.author.requests.reject.hint}">Người gửi sẽ đọc được lý do này</div>
+                </div>
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-x-lg"></i> <span th:text="#{admin.author.requests.reject}">Từ chối</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <a class="btn btn-outline-secondary" th:href="@{/admin/author-requests}" th:text="#{admin.author.requests.back}">Về danh sách</a>
+</div>
+</body>
+</html>

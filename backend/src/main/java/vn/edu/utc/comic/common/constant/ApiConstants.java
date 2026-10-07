@@ -14,6 +14,9 @@ public final class ApiConstants {
     public static final String API_STUDIO_PATH = API_ROOT + "/studio";
     public static final String API_STORIES_PATH = API_ROOT + "/stories";
     public static final String API_COMMENTS_PATH = API_ROOT + "/comments";
+    public static final String API_NOTIFICATIONS_PATH = API_ROOT + "/notifications";
+    public static final String API_STUDIO_CHAPTERS_PATH = API_STUDIO_PATH + "/chapters";
+    public static final String API_STUDIO_STATS_PATH = API_STUDIO_PATH + "/stats";
 
     /** Phần công khai: danh mục truyện, thể loại, bảng xếp hạng. */
     public static final String STORIES_PATH = "/stories";
@@ -31,8 +34,14 @@ public final class ApiConstants {
     public static final String PASSWORD_PATH = ME_ROOT + "/password";
     public static final String LIBRARY_PATH = ME_ROOT + "/library";
     public static final String HISTORY_PATH = ME_ROOT + "/history";
+    public static final String NOTIFICATIONS_PATH = ME_ROOT + "/notifications";
+    public static final String AUTHOR_REQUEST_PATH = ME_ROOT + "/author-request";
+    public static final String STUDIO_STORIES_PATH = STUDIO_ROOT + "/stories";
+    public static final String STUDIO_CHAPTERS_PATH = STUDIO_ROOT + "/chapters";
+    public static final String STUDIO_STATS_PATH = STUDIO_ROOT + "/stats";
     public static final String ADMIN_USERS_PATH = ADMIN_ROOT + "/users";
     public static final String ADMIN_GENRES_PATH = ADMIN_ROOT + "/genres";
+    public static final String ADMIN_AUTHOR_REQUESTS_PATH = ADMIN_ROOT + "/author-requests";
 
     public static final String FORBIDDEN_PAGE_PATH = "/error/403";
     public static final String HEALTH_PATH = "/actuator/health";
@@ -59,6 +68,14 @@ public final class ApiConstants {
     /** Số truyện gần nhất hiện ở trang lịch sử đọc và khối "Đọc tiếp". */
     public static final int HISTORY_SIZE = 48;
     public static final int CONTINUE_READING_SIZE = 6;
+
+    public static final int NOTIFICATION_PAGE_SIZE = 20;
+
+    /** Số chương trong bảng "chương được xem nhiều nhất" của tác giả. */
+    public static final int STUDIO_TOP_CHAPTER_SIZE = 10;
+
+    /** Số ngày (tính cả hôm nay) trên biểu đồ lượt xem của tác giả. */
+    public static final int STATS_CHART_DAYS = 30;
 
     private ApiConstants() {
         throw new UnsupportedOperationException("Utility class");

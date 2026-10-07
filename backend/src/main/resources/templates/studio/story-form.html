@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/studio}">
+<head>
+    <title th:text="${story == null} ? #{studio.stories.create} : #{studio.story.edit}">Thêm truyện</title>
+</head>
+<body>
+<!-- Dùng chung cho tạo và sửa: có story là đang sửa -->
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate"
+    th:text="${story == null} ? #{studio.stories.create} : #{studio.story.edit}">Thêm truyện</h1>
+<div layout:fragment="content">
+    <div class="card border-0 shadow-sm console-form-card">
+        <div class="card-body">
+            <form th:action="${story == null} ? @{/studio/stories} : @{/studio/stories/{id}(id=${story.id})}"
+                  th:object="${form}" method="post" enctype="multipart/form-data" novalidate>
+                <div th:replace="~{fragments/form :: input('title', #{studio.story.form.title}, 'text', 'off', #{studio.story.form.title.hint})}"></div>
+                <div th:replace="~{fragments/form :: input('altTitle', #{studio.story.form.alt.title}, 'text', 'off', #{studio.story.form.alt.title.hint})}"></div>
+
+                <div class="mb-3">
+                    <span class="form-label d-block" th:text="#{studio.story.form.type}">Loại truyện</span>
+                    <div class="form-check form-check-inline" th:each="type : ${types}">
+                        <input type="radio" class="form-check-input" th:field="*{type}" th:value="${type}" th:disabled="${typeLocked}">
+                        <!-- th:field sinh id có hậu tố số cho từng nút chọn, nên nhãn phải hỏi lại id vừa sinh -->
+                        <label class="form-check-label" th:for="${#ids.prev('type')}"
+                               th:text="#{'enum.StoryType.' + ${type}}">Truyện tranh</label>
+                    </div>
+                    <!-- Nút chọn bị disabled không được gửi kèm form, nên khi đã khóa phải gửi lại giá trị qua ô ẩn -->
+                    <input type="hidden" name="type" th:if="${typeLocked}" th:value="*{type}">
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('type')}" th:errors="*{type}">Lỗi</div>
+                    <div class="form-text" th:text="${typeLocked} ? #{studio.story.form.type.locked} : #{studio.story.form.type.hint}">Hướng dẫn</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="status" class="form-label" th:text="#{studio.story.form.status}">Tiến độ</label>
+                    <select class="form-select" th:field="*{status}" th:errorclass="is-invalid">
+                        <option th:each="storyStatus : ${statuses}" th:value="${storyStatus}"
+                                th:text="#{'enum.StoryStatus.' + ${storyStatus}}">Đang ra</option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{status}">Lỗi</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label" th:text="#{studio.story.form.description}">Giới thiệu</label>
+                    <textarea class="form-control" rows="6" th:field="*{description}" th:errorclass="is-invalid"></textarea>
+                    <div class="invalid-feedback" th:errors="*{description}">Lỗi</div>
+                    <div class="form-text" th:text="#{studio.story.form.description.hint}">Hướng dẫn</div>
+                </div>
+
+                <div class="mb-3">
+                    <span class="form-label d-block" th:text="#{studio.story.form.genres}">Thể loại</span>
+                    <div class="form-check form-check-inline" th:each="genre : ${genres}">
+                        <input type="checkbox" class="form-check-input" th:field="*{genreIds}" th:value="${genre.id}">
+                        <label class="form-check-label" th:for="${#ids.prev('genreIds')}" th:text="${genre.name}">Tu tiên</label>
+                    </div>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('genreIds')}" th:errors="*{genreIds}">Lỗi</div>
+                    <div class="form-text" th:text="#{studio.story.form.genres.hint}">Hướng dẫn</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="cover" class="form-label" th:text="#{studio.story.form.cover}">Ảnh bìa</label>
+                    <div class="mb-2" th:if="${story != null and story.coverUrl != null}">
+                        <img class="studio-cover-preview rounded border" th:src="${story.coverUrl}" th:alt="#{studio.story.form.cover.current}">
+                    </div>
+                    <input type="file" class="form-control" th:field="*{cover}" th:errorclass="is-invalid"
+                           accept="image/jpeg,image/png,image/webp">
+                    <div class="invalid-feedback" th:errors="*{cover}">Lỗi</div>
+                    <div class="form-text" th:text="#{studio.story.form.cover.hint}">Hướng dẫn</div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Lưu</button>
+                    <a class="btn btn-outline-secondary" th:href="@{/studio/stories}" th:text="#{common.cancel}">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

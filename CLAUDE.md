@@ -31,6 +31,9 @@ Tài liệu: [docs/00 kế hoạch tổng thể](docs/00-KE-HOACH-TONG-THE.md) �
 - **Hẹn giờ đăng**: `ChapterPublishJob` mỗi phút, xuất bản bằng UPDATE có điều kiện `WHERE status = 'SCHEDULED'`, mỗi chương một transaction, **idempotent**.
 - **Bộ đếm** (`view_count`, `follow_count`, `rating_sum/count`, `comment_count`) cập nhật bằng `UPDATE … SET x = x + :delta`, không đọc-rồi-ghi.
 - **Thứ tự khóa khi ghi bộ đếm**: transaction nào thêm dòng con của truyện (theo dõi, đánh giá, bình luận…) rồi cộng bộ đếm phải gọi `StoryRepository.lockForCounterUpdate(storyId)` TRƯỚC câu INSERT — INSERT giữ khóa chia sẻ trên dòng `story` (kiểm tra khóa ngoại), hai request đồng thời cùng nâng lên khóa ghi là deadlock. `ViewCountService` ghi ba bộ đếm bằng ba transaction riêng vì cùng lý do; đừng gộp lại.
+- **Khóa dòng phải là câu lệnh ĐẦU TIÊN của transaction** (`lockForCounterUpdate`, `lockForPageUpdate`, `findForReview`): MySQL REPEATABLE READ chụp ảnh dữ liệu ở câu SELECT thường đầu tiên, đọc trước rồi mới khóa thì sau khi chờ được khóa vẫn đọc dữ liệu cũ (trùng số trang, lệch tổng sao). Khi thêm thao tác ghi có đếm / đánh số, viết kèm một test chạy đồng thời.
+- **Chương**: `page_count` cũng là cột `updatable = false` (chỉ đổi qua `ChapterRepository.updatePageCount`); `word_count` ghi cùng lúc với nội dung. Đăng / hẹn giờ cần `page_count > 0` hoặc `word_count > 0`. Chương đã từng đăng (`ChapterStatus.hasBeenPublished()`) không đổi số, không xóa.
+- **Khu vực tác giả**: mọi thao tác nhận `authorId` từ principal và đi qua `StudioStoryService.getOwnedStory` / `StudioChapterService.getOwnedChapter` (404 cho truyện của người khác hoặc đã xóa). Quản trị viên không vào `/studio`.
 - **Người xem là `Viewer`** (`Viewer.of(principal)` / `Viewer.anonymous()`): service phía người đọc nhận `Viewer`, không nhận principal hay `Authentication`.
 - **Tìm kiếm**: từ khóa đi qua `StorySpecification.matching` (FULLTEXT hoặc `LIKE`); collation bỏ qua dấu nhưng "đ" ≠ "d". Test tích hợp dùng chung một MySQL và commit thật ⇒ gắn mã ngẫu nhiên vào dữ liệu, không khẳng định tổng số dòng hay "đứng đầu toàn bảng".
 - **Quyền theo dữ liệu**: tác giả chỉ sửa truyện/chương của mình, kiểm tra ở `StoryAccessPolicy` trong service; `sec:authorize` chỉ để ẩn menu.
@@ -57,7 +60,7 @@ cd backend && ./mvnw spring-boot:run                   # profile mặc định l
 AI_API_KEY=... ./mvnw test -Dtest=SpringAiToolCallingSmokeTest   # gọi LLM thật; không có khóa thì tự bỏ qua
 ```
 
-Tài khoản dev: `admin` / `Admin@123` · `author1`, `reader1` / `Demo@123`. Bộ đếm (`*_count`, `rating_sum`) là cột `updatable = false`: chỉ đổi bằng câu UPDATE cộng dồn, đừng `setXxxCount` rồi `save`.
+Tài khoản dev: `admin` / `Admin@123` · `author1..3`, `reader1..15` / `Demo@123`. Bộ đếm (`*_count`, `rating_sum`) là cột `updatable = false`: chỉ đổi bằng câu UPDATE cộng dồn, đừng `setXxxCount` rồi `save`.
 Mục menu chỉ thêm vào layout khi trang đích đã tồn tại.
 
 Test tích hợp kế thừa `AbstractIntegrationTest`, **không** chạy trong transaction rollback (nhiều hành vi chỉ xảy ra sau commit): mỗi test tự tạo tài khoản tên ngẫu nhiên bằng `createAccount(role)` / `principalOf(role)`, không đếm tổng số dòng của bảng dùng chung.

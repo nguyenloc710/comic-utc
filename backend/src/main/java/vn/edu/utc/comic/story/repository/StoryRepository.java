@@ -1,14 +1,18 @@
 package vn.edu.utc.comic.story.repository;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.utc.comic.stats.dto.AuthorStatsOverview;
 import vn.edu.utc.comic.story.dto.StoryRatingSummary;
 import vn.edu.utc.comic.story.entity.Story;
 
@@ -52,6 +56,10 @@ public interface StoryRepository extends JpaRepository<Story, Long>, JpaSpecific
      * cùng thao tác trên một truyện sẽ cùng giữ khóa chia sẻ rồi cùng chờ khóa ghi của câu UPDATE bộ đếm —
      * MySQL phải hủy một bên (deadlock). Lấy khóa ghi ngay từ đầu thì hai bên chỉ xếp hàng.
      *
+     * <p>Phải là câu lệnh ĐẦU TIÊN của transaction. MySQL (REPEATABLE READ) chụp ảnh dữ liệu ở câu SELECT thường
+     * đầu tiên; nếu đọc trước rồi mới khóa, các câu đọc sau khi chờ được khóa vẫn nhìn ảnh chụp cũ và không thấy
+     * thay đổi mà bên giữ khóa trước vừa commit.
+     *
      * @return id của truyện, rỗng nếu truyện không tồn tại
      */
     @Query(value = "SELECT id FROM story WHERE id = :storyId FOR UPDATE", nativeQuery = true)
@@ -82,4 +90,32 @@ public interface StoryRepository extends JpaRepository<Story, Long>, JpaSpecific
     @Modifying
     @Query("UPDATE Story s SET s.commentCount = s.commentCount + :delta WHERE s.id = :storyId")
     int addCommentCount(@Param("storyId") Long storyId, @Param("delta") int delta);
+
+    /** Slug của truyện đã xóa mềm vẫn được tính là đã dùng. */
+    boolean existsBySlug(String slug);
+
+    /** Truyện chưa xóa của một tác giả, cho danh sách trong khu vực tác giả. */
+    Page<Story> findByAuthorIdAndDeletedAtIsNull(Long authorId, Pageable pageable);
+
+    List<Story> findByAuthorIdAndDeletedAtIsNull(Long authorId, Sort sort);
+
+    /**
+     * Ghi nhận một chương vừa được đăng: cộng số chương và đẩy truyện lên đầu danh sách "mới cập nhật".
+     * Chỉ ChapterPublishService được gọi.
+     */
+    @Modifying
+    @Query("""
+            UPDATE Story s SET s.chapterCount = s.chapterCount + 1, s.lastChapterAt = :publishedAt
+            WHERE s.id = :storyId
+            """)
+    int recordChapterPublished(@Param("storyId") Long storyId, @Param("publishedAt") Instant publishedAt);
+
+    /** Tổng số liệu trên mọi truyện chưa xóa của một tác giả; các tổng là NULL khi tác giả chưa có truyện. */
+    @Query("""
+            SELECT new vn.edu.utc.comic.stats.dto.AuthorStatsOverview(
+                COUNT(s), SUM(s.chapterCount), SUM(s.viewCount), SUM(s.followCount), SUM(s.commentCount),
+                SUM(s.ratingSum), SUM(s.ratingCount))
+            FROM Story s WHERE s.author.id = :authorId AND s.deletedAt IS NULL
+            """)
+    AuthorStatsOverview summarizeByAuthor(@Param("authorId") Long authorId);
 }

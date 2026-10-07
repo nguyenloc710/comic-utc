@@ -37,6 +37,13 @@ public class StoryAccessPolicy {
         return canRead(chapter, story, Viewer.anonymous());
     }
 
+    /**
+     * Ai được SỬA truyện trong khu vực tác giả: chỉ chính tác giả, và chỉ khi truyện chưa bị xóa. Quản trị viên
+     * không sửa truyện của tác giả; họ kiểm duyệt (ẩn / hiện) qua màn quản trị.
+     */
+    public boolean canManage(Story story, Long userId) {
+        return story.getDeletedAt() == null && story.getAuthor().getId().equals(userId);
+    }
     private static boolean isOwnerOrAdmin(Story story, Viewer viewer) {
         return viewer.isAdmin() || viewer.isUser(story.getAuthor().getId());
     }

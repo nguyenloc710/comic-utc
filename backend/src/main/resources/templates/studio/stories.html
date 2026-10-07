@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/studio}">
+<head>
+    <title th:text="#{studio.stories.title}">Truyện của tôi</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{studio.stories.title}">Truyện của tôi</h1>
+<div layout:fragment="content">
+    <div class="d-flex justify-content-end mb-3">
+        <a class="btn btn-primary" th:href="@{/studio/stories/new}">
+            <i class="bi bi-plus-lg"></i> <span th:text="#{studio.stories.create}">Thêm truyện</span>
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <p class="text-center text-secondary py-4 mb-0" th:if="${page.isEmpty()}" th:text="#{studio.stories.empty}">Chưa có truyện</p>
+            <div class="table-responsive" th:unless="${page.isEmpty()}">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{studio.stories.column.story}">Truyện</th>
+                        <th scope="col" th:text="#{studio.stories.column.visibility}">Hiển thị</th>
+                        <th scope="col" class="text-end" th:text="#{studio.stories.column.chapters}">Chương</th>
+                        <th scope="col" class="text-end" th:text="#{studio.stories.column.views}">Lượt xem</th>
+                        <th scope="col" class="text-end" th:text="#{studio.stories.column.follows}">Theo dõi</th>
+                        <th scope="col" class="text-end" th:text="#{common.actions}">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="story : ${page.content}">
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div th:replace="~{fragments/studio :: coverThumb(${story.coverUrl})}"></div>
+                                <div class="studio-story-name">
+                                    <a class="fw-semibold text-decoration-none"
+                                       th:href="@{/studio/stories/{id}/chapters(id=${story.id})}" th:text="${story.title}">Tên truyện</a>
+                                    <div class="small">
+                                        <th:block th:replace="~{fragments/story :: badges(${story.type}, ${story.status})}"></th:block>
+                                    </div>
+                                    <!-- Lý do bị ẩn hiện ngay ở danh sách để tác giả không phải mở từng truyện mới biết -->
+                                    <div class="small text-danger" th:if="${story.visibility.name() == 'HIDDEN'}"
+                                         th:text="#{studio.story.hidden.notice(${story.hiddenReason})}">Lý do bị ẩn</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span th:replace="~{fragments/studio :: visibility(${story.visibility})}"></span></td>
+                        <td class="text-end" th:text="${story.chapterCount}">12</td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(story.viewCount, 1, 'POINT')}">1.234</td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(story.followCount, 1, 'POINT')}">56</td>
+                        <td class="text-end text-nowrap">
+                            <form class="d-inline" th:if="${story.visibility.name() == 'DRAFT'}" method="post"
+                                  th:action="@{/studio/stories/{id}/publish(id=${story.id})}"
+                                  th:attr="data-confirm=#{studio.story.publish.confirm(${story.title})}">
+                                <button type="submit" class="btn btn-success btn-sm" th:text="#{studio.story.publish}">Công khai</button>
+                            </form>
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/studio/stories/{id}/chapters(id=${story.id})}"
+                               th:text="#{studio.story.chapters}">Chương</a>
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/studio/stories/{id}/edit(id=${story.id})}"
+                               th:text="#{common.edit}">Sửa</a>
+                            <form class="d-inline" method="post" th:action="@{/studio/stories/{id}/delete(id=${story.id})}"
+                                  th:attr="data-confirm=#{studio.story.delete.confirm(${story.title})}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" th:text="#{common.delete}">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:replace="~{fragments/pagination :: pager(${page})}"></nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

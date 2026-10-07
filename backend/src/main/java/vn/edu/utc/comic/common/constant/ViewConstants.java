@@ -34,15 +34,25 @@ public final class ViewConstants {
     public static final String ME_PASSWORD = "me/password";
     public static final String ME_LIBRARY = "me/library";
     public static final String ME_HISTORY = "me/history";
+    public static final String ME_NOTIFICATIONS = "me/notifications";
+    public static final String ME_AUTHOR_REQUEST = "me/author-request";
 
     // ----- Tác giả -----
     public static final String STUDIO_DASHBOARD = "studio/dashboard";
+    public static final String STUDIO_STORIES = "studio/stories";
+    public static final String STUDIO_STORY_FORM = "studio/story-form";
+    public static final String STUDIO_CHAPTERS = "studio/chapters";
+    public static final String STUDIO_CHAPTER_COMIC_EDITOR = "studio/chapter-comic-editor";
+    public static final String STUDIO_CHAPTER_NOVEL_EDITOR = "studio/chapter-novel-editor";
+    public static final String STUDIO_STATS = "studio/stats";
 
     // ----- Quản trị -----
     public static final String ADMIN_DASHBOARD = "admin/dashboard";
     public static final String ADMIN_USERS = "admin/users";
     public static final String ADMIN_GENRES = "admin/genres";
     public static final String ADMIN_GENRE_FORM = "admin/genre-form";
+    public static final String ADMIN_AUTHOR_REQUESTS = "admin/author-requests";
+    public static final String ADMIN_AUTHOR_REQUEST_DETAIL = "admin/author-request-detail";
 
     public static final String ERROR_PAGE = "error/error";
 
@@ -53,6 +63,15 @@ public final class ViewConstants {
     public static final String REDIRECT_PROFILE = REDIRECT + ApiConstants.PROFILE_PATH;
     public static final String REDIRECT_ADMIN_USERS = REDIRECT + ApiConstants.ADMIN_USERS_PATH;
     public static final String REDIRECT_ADMIN_GENRES = REDIRECT + ApiConstants.ADMIN_GENRES_PATH;
+    public static final String REDIRECT_ADMIN_AUTHOR_REQUESTS = REDIRECT + ApiConstants.ADMIN_AUTHOR_REQUESTS_PATH;
+    public static final String REDIRECT_AUTHOR_REQUEST = REDIRECT + ApiConstants.AUTHOR_REQUEST_PATH;
+    public static final String REDIRECT_NOTIFICATIONS = REDIRECT + ApiConstants.NOTIFICATIONS_PATH;
+    public static final String REDIRECT_STUDIO_STORIES = REDIRECT + ApiConstants.STUDIO_STORIES_PATH;
+
+    /** Redirect tới một đường dẫn chỉ biết lúc chạy (có id trên URL), ví dụ trang chương của một truyện. */
+    public static String redirectTo(String path) {
+        return REDIRECT + path;
+    }
 
     private ViewConstants() {
         throw new UnsupportedOperationException("Utility class");

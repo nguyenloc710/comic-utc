@@ -5,12 +5,14 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import vn.edu.utc.comic.chapter.dto.ChapterPageResponse;
 import vn.edu.utc.comic.chapter.dto.ChapterReadResponse;
+import vn.edu.utc.comic.chapter.dto.StudioChapterPageResponse;
+import vn.edu.utc.comic.chapter.dto.StudioChapterResponse;
 import vn.edu.utc.comic.chapter.entity.Chapter;
 import vn.edu.utc.comic.chapter.entity.ChapterPage;
 import vn.edu.utc.comic.common.storage.MediaUrlMapper;
 import vn.edu.utc.comic.story.entity.Story;
 
-/** Ánh xạ chương sang DTO cho trang đọc. */
+/** Ánh xạ chương sang DTO cho trang đọc và cho khu vực tác giả. */
 @Mapper(uses = MediaUrlMapper.class)
 public interface ChapterMapper {
 
@@ -18,6 +20,16 @@ public interface ChapterMapper {
     ChapterPageResponse toPage(ChapterPage page);
 
     List<ChapterPageResponse> toPages(List<ChapterPage> pages);
+
+    @Mapping(target = "imageUrl", source = "imagePath", qualifiedByName = MediaUrlMapper.MEDIA_URL)
+    StudioChapterPageResponse toStudioPage(ChapterPage page);
+
+    List<StudioChapterPageResponse> toStudioPages(List<ChapterPage> pages);
+
+    @Mapping(target = "storyId", source = "story.id")
+    StudioChapterResponse toStudioResponse(Chapter chapter);
+
+    List<StudioChapterResponse> toStudioResponses(List<Chapter> chapters);
 
     /**
      * Ghép truyện, chương, phần thân và chương lân cận thành dữ liệu trang đọc. Truyện và chương có nhiều

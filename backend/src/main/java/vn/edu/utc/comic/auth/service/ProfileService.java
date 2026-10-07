@@ -7,8 +7,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.utc.comic.auth.dto.ChangePasswordForm;
 import vn.edu.utc.comic.auth.dto.ProfileForm;
@@ -24,6 +22,7 @@ import vn.edu.utc.comic.common.exception.ErrorCode;
 import vn.edu.utc.comic.common.exception.FieldValidationException;
 import vn.edu.utc.comic.common.exception.FieldValidationException.FieldViolation;
 import vn.edu.utc.comic.common.security.AccountChangedEvent;
+import vn.edu.utc.comic.common.storage.StorageCleanup;
 import vn.edu.utc.comic.common.storage.StorageService;
 import vn.edu.utc.comic.common.storage.StoredFile;
 import vn.edu.utc.comic.user.entity.UserAccount;
@@ -44,6 +43,7 @@ public class ProfileService {
     private final UserAccountRepository userAccountRepository;
     private final ProfileMapper profileMapper;
     private final StorageService storageService;
+    private final StorageCleanup storageCleanup;
     private final PasswordPolicy passwordPolicy;
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
@@ -117,22 +117,7 @@ public class ProfileService {
         String previousKey = user.getAvatarPath();
         StoredFile stored = storageService.storeImage(avatar, StorageConstants.AVATAR_DIRECTORY + "/" + user.getId());
         user.setAvatarPath(stored.key());
-        if (previousKey != null) {
-            deleteAfterCommit(previousKey);
-        }
-    }
-
-    /**
-     * Ảnh cũ chỉ được xóa sau khi transaction commit: xóa ngay mà transaction rollback thì hồ sơ vẫn trỏ tới
-     * một tệp không còn. Chiều ngược lại (commit hỏng sau khi đã lưu ảnh mới) chỉ để lại một tệp mồ côi.
-     */
-    private void deleteAfterCommit(String storageKey) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                storageService.delete(storageKey);
-            }
-        });
+        storageCleanup.deleteAfterCommit(previousKey);
     }
 
     private static boolean hasFile(MultipartFile file) {

@@ -93,3 +93,8 @@ app:
     root: ${STORAGE_ROOT:./uploads}
   logging:
     file: ${LOG_FILE:logs/app.log}
+  job:
+    chapter-publish:
+      # Khoảng nghỉ giữa hai lượt quét chương hẹn giờ và độ trễ của lượt đầu sau khi khởi động (ISO-8601)
+      fixed-delay: PT1M
+      initial-delay: PT30S

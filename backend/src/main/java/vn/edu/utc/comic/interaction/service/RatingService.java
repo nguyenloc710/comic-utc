@@ -40,11 +40,13 @@ public class RatingService {
      */
     @Transactional
     public RatingResponse rate(Long storyId, Long userId, int stars) {
+        // Khóa trước mọi câu đọc: lượt chấm trước đó của chính người này phải được đọc SAU khi đã giữ khóa,
+        // nếu không hai lần chấm gửi cùng lúc sẽ cùng tính chênh lệch từ một số sao cũ và làm lệch tổng sao
+        storyRepository.lockForCounterUpdate(storyId);
         Story story = storyCatalogQueryService.getPublicStory(storyId);
         if (story.getAuthor().getId().equals(userId)) {
             throw new ApiException(ErrorCode.RATING_OWN_STORY);
         }
-        storyRepository.lockForCounterUpdate(storyId);
         UserStoryId ratingId = new UserStoryId(userId, storyId);
         Optional<StoryRating> existing = storyRatingRepository.findById(ratingId);
         int previousStars = existing.map(StoryRating::getStars).orElse(0);

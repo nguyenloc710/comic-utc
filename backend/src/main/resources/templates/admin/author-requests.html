@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.author.requests.title}">Yêu cầu làm tác giả</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.author.requests.title}">Yêu cầu làm tác giả</h1>
+<div layout:fragment="content">
+    <!-- Lọc theo trạng thái bằng link GET để tải lại hoặc chia sẻ link vẫn giữ đúng danh sách -->
+    <ul class="nav nav-pills mb-3">
+        <li class="nav-item" th:each="item : ${statuses}">
+            <a class="nav-link" th:classappend="${item == status} ? 'active'"
+               th:href="@{/admin/author-requests(status=${item})}"
+               th:text="#{'enum.AuthorRequestStatus.' + ${item}}">Chờ duyệt</a>
+        </li>
+    </ul>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <p class="text-secondary small" th:text="#{admin.author.requests.total(${page.totalElements})}">3 yêu cầu</p>
+            <p class="text-center text-secondary py-4 mb-0" th:if="${page.isEmpty()}" th:text="#{common.empty}">Chưa có dữ liệu</p>
+            <div class="table-responsive" th:unless="${page.isEmpty()}">
+                <table class="table table-hover align-middle text-nowrap mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{admin.author.requests.column.user}">Người gửi</th>
+                        <th scope="col" th:text="#{admin.author.requests.column.pen.name}">Bút danh</th>
+                        <th scope="col" th:text="#{admin.author.requests.column.type}">Loại truyện</th>
+                        <th scope="col" th:text="#{admin.author.requests.column.created}">Gửi lúc</th>
+                        <th scope="col" th:text="#{admin.author.requests.column.reviewed}">Xử lý lúc</th>
+                        <th scope="col" class="text-end" th:text="#{common.actions}">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${page.content}">
+                        <td>
+                            <div class="fw-semibold" th:text="${item.username}">reader1</div>
+                            <div class="small text-secondary" th:text="${item.displayName}">Minh Anh</div>
+                        </td>
+                        <td th:text="${item.penName}">Bút danh</td>
+                        <td th:text="#{'enum.IntendedStoryType.' + ${item.intendedType}}">Truyện tranh</td>
+                        <td><th:block th:replace="~{fragments/display :: datetime(${item.createdAt})}"></th:block></td>
+                        <td><th:block th:replace="~{fragments/display :: datetime(${item.reviewedAt})}"></th:block></td>
+                        <td class="text-end">
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/author-requests/{id}(id=${item.id})}"
+                               th:text="#{admin.author.requests.view}">Xem</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:replace="~{fragments/pagination :: pager(${page})}"></nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

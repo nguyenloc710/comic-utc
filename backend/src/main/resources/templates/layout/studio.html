@@ -24,6 +24,13 @@
                 <a class="nav-link" th:href="@{/studio}" th:classappend="${requestPath == '/studio'} ? 'active'">
                     <i class="bi bi-speedometer2"></i> <span th:text="#{nav.overview}">Tổng quan</span>
                 </a>
+                <a class="nav-link" th:href="@{/studio/stories}"
+                   th:classappend="${#strings.startsWith(requestPath, '/studio/stories') or #strings.startsWith(requestPath, '/studio/chapters')} ? 'active'">
+                    <i class="bi bi-journals"></i> <span th:text="#{nav.studio.stories}">Truyện của tôi</span>
+                </a>
+                <a class="nav-link" th:href="@{/studio/stats}" th:classappend="${requestPath == '/studio/stats'} ? 'active'">
+                    <i class="bi bi-graph-up"></i> <span th:text="#{nav.studio.stats}">Thống kê</span>
+                </a>
                 <a class="nav-link mt-auto" th:href="@{/}">
                     <i class="bi bi-arrow-left-circle"></i> <span th:text="#{nav.back.to.site}">Về trang đọc truyện</span>
                 </a>
@@ -38,7 +45,10 @@
                 <i class="bi bi-list"></i>
             </button>
             <h1 class="h5 mb-0 text-truncate" layout:fragment="heading">Tiêu đề trang</h1>
-            <div class="ms-auto" th:insert="~{fragments/user-menu :: menu}"></div>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <a th:replace="~{fragments/user-menu :: bell}"></a>
+                <div th:replace="~{fragments/user-menu :: menu}"></div>
+            </div>
         </header>
         <main class="console-content">
             <div th:replace="~{fragments/flash :: flash}"></div>

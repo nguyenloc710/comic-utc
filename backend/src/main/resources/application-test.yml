@@ -8,6 +8,11 @@ app:
     root: ${java.io.tmpdir}/comic-utc-test-uploads
   logging:
     file: target/logs/test.log
+  job:
+    chapter-publish:
+      # Test tự gọi job khi cần; không để bộ lập lịch chạy xen vào giữa các test
+      fixed-delay: PT24H
+      initial-delay: PT24H
 
 logging:
   level:

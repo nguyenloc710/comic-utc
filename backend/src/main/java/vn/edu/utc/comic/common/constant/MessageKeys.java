@@ -70,6 +70,57 @@ public final class MessageKeys {
     public static final String FLASH_GENRE_UPDATED = "flash.genre.updated";
     public static final String FLASH_GENRE_DELETED = "flash.genre.deleted";
 
+    public static final String FLASH_AUTHOR_REQUEST_SUBMITTED = "flash.author.request.submitted";
+    /** {0}: bút danh vừa được cấp. */
+    public static final String FLASH_AUTHOR_REQUEST_APPROVED = "flash.author.request.approved";
+    public static final String FLASH_AUTHOR_REQUEST_REJECTED = "flash.author.request.rejected";
+    public static final String FLASH_NOTIFICATIONS_READ = "flash.notifications.read";
+    public static final String FLASH_STORY_CREATED = "flash.story.created";
+    public static final String FLASH_STORY_UPDATED = "flash.story.updated";
+    /** {0}: tên truyện. */
+    public static final String FLASH_STORY_PUBLISHED = "flash.story.published";
+    /** {0}: tên truyện. */
+    public static final String FLASH_STORY_DELETED = "flash.story.deleted";
+    public static final String FLASH_CHAPTER_SAVED = "flash.chapter.saved";
+    public static final String FLASH_CHAPTER_PUBLISHED = "flash.chapter.published";
+    public static final String FLASH_CHAPTER_SCHEDULED = "flash.chapter.scheduled";
+    public static final String FLASH_CHAPTER_UNSCHEDULED = "flash.chapter.unscheduled";
+    /** {0}: số chương. */
+    public static final String FLASH_CHAPTER_DELETED = "flash.chapter.deleted";
+
+    // ----- Đăng ký tác giả & thông báo -----
+    public static final String ERROR_AUTHOR_REQUEST_NOT_FOUND = "error.author.request.not.found";
+    public static final String ERROR_AUTHOR_REQUEST_NOT_ALLOWED = "error.author.request.not.allowed";
+    public static final String ERROR_AUTHOR_REQUEST_ALREADY_PENDING = "error.author.request.already.pending";
+    /** {0}: số ngày phải chờ sau khi bị từ chối. */
+    public static final String ERROR_AUTHOR_REQUEST_COOLDOWN = "error.author.request.cooldown";
+    public static final String ERROR_AUTHOR_REQUEST_ALREADY_REVIEWED = "error.author.request.already.reviewed";
+    /** {0}: bút danh. */
+    public static final String ERROR_AUTHOR_PEN_NAME_TAKEN = "error.author.pen.name.taken";
+    public static final String ERROR_PEN_NAME_DUPLICATED = "error.pen.name.duplicated";
+    public static final String ERROR_NOTIFICATION_NOT_FOUND = "error.notification.not.found";
+    /** Tiền tố của câu thông báo: khóa đầy đủ là {@code notification.<NotificationType>}. */
+    public static final String NOTIFICATION_PREFIX = "notification.";
+
+    // ----- Quản lý truyện & chương của tác giả -----
+    public static final String ERROR_CONCURRENT_UPDATE = "error.concurrent.update";
+    public static final String ERROR_STORY_NOT_READY_TO_PUBLISH = "error.story.not.ready.to.publish";
+    public static final String ERROR_STORY_VISIBILITY_NOT_CHANGEABLE = "error.story.visibility.not.changeable";
+    public static final String ERROR_STORY_TITLE_INVALID = "error.story.title.invalid";
+    public static final String ERROR_STORY_TYPE_LOCKED = "error.story.type.locked";
+    public static final String ERROR_STORY_GENRE_INVALID = "error.story.genre.invalid";
+    public static final String ERROR_CHAPTER_INVALID_TRANSITION = "error.chapter.invalid.transition";
+    public static final String ERROR_CHAPTER_EMPTY = "error.chapter.empty";
+    public static final String ERROR_CHAPTER_SCHEDULE_INVALID = "error.chapter.schedule.invalid";
+    public static final String ERROR_CHAPTER_NOT_DELETABLE = "error.chapter.not.deletable";
+    /** {0}: số ảnh tối đa mỗi chương. */
+    public static final String ERROR_CHAPTER_PAGE_LIMIT = "error.chapter.page.limit";
+    public static final String ERROR_CHAPTER_PAGE_NOT_FOUND = "error.chapter.page.not.found";
+    public static final String ERROR_CHAPTER_PAGE_ORDER_INVALID = "error.chapter.page.order.invalid";
+    public static final String ERROR_CHAPTER_TYPE_MISMATCH = "error.chapter.type.mismatch";
+    public static final String ERROR_CHAPTER_NO_DUPLICATED = "error.chapter.no.duplicated";
+    public static final String ERROR_CHAPTER_NO_LOCKED = "error.chapter.no.locked";
+    public static final String ERROR_CHAPTER_CONTENT_REQUIRED = "error.chapter.content.required";
     private MessageKeys() {
         throw new UnsupportedOperationException("Utility class");
     }

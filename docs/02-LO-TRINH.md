@@ -149,25 +149,36 @@
 ## Giai đoạn 4 — Tác giả (29/10 – 13/11) ⭐ TRỌNG TÂM 2
 
 ### 4.1. Đăng ký & duyệt tác giả (29/10 – 01/11)
-- [ ] `AuthorRequestService.submit / approve / reject` theo [00 §4.1](00-KE-HOACH-TONG-THE.md); trang `/me/author-request` (form hoặc trạng thái + lý do từ chối).
-- [ ] `/admin/author-requests`: danh sách chờ, xem chi tiết, duyệt / từ chối kèm lý do.
-- [ ] `NotificationListener` + chuông thông báo + `/me/notifications` (làm ở đây vì duyệt tác giả là nơi đầu tiên cần).
-- [ ] Kiểm chứng: độc giả đang đăng nhập được duyệt ⇒ tải lại trang là thấy menu Studio, không phải đăng nhập lại.
+- [x] `AuthorRequestService.submit / approve / reject` theo [00 §4.1](00-KE-HOACH-TONG-THE.md); trang `/me/author-request` (form hoặc trạng thái + lý do từ chối).
+      Bút danh phải chưa có tác giả dùng và chưa bị một yêu cầu đang chờ của người khác giữ chỗ. Duyệt/từ chối khóa dòng yêu cầu (PESSIMISTIC_WRITE) nên hai quản trị viên bấm cùng lúc không tạo hồ sơ hai lần. Quản trị viên không gửi được yêu cầu (duyệt sẽ hạ vai trò ADMIN xuống AUTHOR).
+- [x] `/admin/author-requests`: danh sách chờ, xem chi tiết, duyệt / từ chối kèm lý do.
+- [x] `NotificationListener` + chuông thông báo + `/me/notifications` (làm ở đây vì duyệt tác giả là nơi đầu tiên cần).
+      Thông báo lưu loại + tham số JSON, câu chữ dựng từ `notification.<TYPE>` lúc đọc. Chuông hỏi `/api/notifications/unread-count` mỗi 60 giây. Mở thông báo là POST (đổi dữ liệu) rồi chuyển tới đường dẫn nội bộ của nó. Làm luôn `COMMENT_REPLIED` (nợ từ GĐ 3).
+- [x] Kiểm chứng: độc giả đang đăng nhập được duyệt ⇒ tải lại trang là thấy menu Studio, không phải đăng nhập lại.
 
 ### 4.2. Quản lý truyện (02/11 – 05/11)
-- [ ] `StudioStoryService` create / update / delete (mềm) / publish; `StoryAccessPolicy`; `SlugUtils`; upload bìa.
-- [ ] `/studio/stories` (danh sách + trạng thái + cờ bị ẩn kèm lý do), form tạo/sửa (loại, bìa, mô tả, thể loại nhiều lựa chọn, trạng thái).
+- [x] `StudioStoryService` create / update / delete (mềm) / publish; `StoryAccessPolicy.canManage`; `SlugUtils`; upload bìa.
+      Slug trùng thì thêm hậu tố `-2`, `-3`…; slug của truyện đã xóa mềm vẫn bị giữ. Loại truyện khóa khi đã có chương. Công khai cần bìa + mô tả + ≥ 1 thể loại; truyện bị quản trị viên ẩn thì tác giả không tự gỡ được.
+- [x] `/studio/stories` (danh sách + trạng thái + cờ bị ẩn kèm lý do), form tạo/sửa (loại, bìa, mô tả, thể loại nhiều lựa chọn, trạng thái).
 
 ### 4.3. Chương (06/11 – 11/11)
-- [ ] `ChapterStatus.canTransitionTo` + unit test; `ChapterPublishService` (một cửa); `ChapterPublishJob` + `job_run`.
-- [ ] Truyện tranh: `ChapterPageService` upload từng ảnh, sắp xếp tự nhiên, kéo thả đổi thứ tự, xóa ảnh; `studio/chapter-comic-editor` (hàng đợi upload có tiến độ, SortableJS).
-- [ ] Truyện chữ: `studio/chapter-novel-editor` (Quill) + `HtmlSanitizer` lúc lưu + `word_count`.
-- [ ] Nút Lưu nháp / Hẹn giờ (chọn ngày giờ VN) / Đăng ngay / Hủy hẹn; danh sách chương có nhãn trạng thái.
-- [ ] `ChapterPublishedEvent` → thông báo người theo dõi (`INSERT ... SELECT`).
-- [ ] Test: job chạy 3 lần liên tiếp ⇒ chương đăng đúng 1 lần, 1 thông báo/người; tác giả A sửa chương của B ⇒ 404; payload XSS trong nội dung ⇒ bị loại.
+- [x] `ChapterStatus.canTransitionTo` + unit test; `ChapterPublishService` (một cửa); `ChapterPublishJob` + `job_run`.
+      Job chỉ ghi `job_run` ở lượt có chương tới hạn (không ghi 1.440 dòng rỗng mỗi ngày). Câu UPDATE có điều kiện dùng `UPDATE VERSIONED` để tăng cột version: form của tác giả lưu bằng dữ liệu cũ sẽ bị từ chối (409 `CONCURRENT_UPDATE`) thay vì ghi đè trạng thái vừa đổi. Chu kỳ job cấu hình ở `app.job.chapter-publish` (test đặt 24 giờ để bộ lập lịch không chen vào).
+- [x] Truyện tranh: `ChapterPageService` upload từng ảnh, sắp xếp tự nhiên (JS sắp tên tệp trước khi gửi lần lượt), kéo thả đổi thứ tự, xóa ảnh; `studio/chapter-comic-editor` (hàng đợi upload có tiến độ, SortableJS).
+      `chapter.page_count` thành cột `updatable = false` (ảnh được tải lên bằng nhiều request trong lúc form soạn chương vẫn mở). Chương mới của truyện tranh phải lưu (có id) rồi mới tải ảnh.
+- [x] Truyện chữ: `studio/chapter-novel-editor` (Quill) + `HtmlSanitizer` lúc lưu + `word_count`.
+      Nội dung đi vào trình soạn thảo qua textarea ẩn dạng text đã escape, không thêm chỗ `th:utext` nào.
+- [x] Nút Lưu nháp / Hẹn giờ (chọn ngày giờ VN) / Đăng ngay / Hủy hẹn; danh sách chương có nhãn trạng thái.
+      Ba nút đều LƯU trước rồi mới đổi trạng thái, mỗi bước một transaction: đăng bị từ chối (chương rỗng) thì phần vừa soạn vẫn còn. Thêm "xóa bản nháp" (chương chưa từng đăng; chương đã đăng không xóa vì bình luận và lịch sử đọc trỏ tới).
+- [x] `ChapterPublishedEvent` → thông báo người theo dõi (`INSERT ... SELECT`). Truyện chưa công khai / đang bị ẩn thì không báo; gỡ ẩn không phát sự kiện.
+- [x] Test: job chạy 3 lần liên tiếp ⇒ chương đăng đúng 1 lần, 1 thông báo/người; tác giả A sửa chương của B ⇒ 404; payload XSS trong nội dung ⇒ bị loại.
+      Thêm: 6 lượt tải ảnh đồng thời vào một chương ⇒ số trang 1..6 không trùng; cùng người chấm sao đồng thời ⇒ đúng một lượt, tổng sao khớp.
 
 ### 4.4. Thống kê tác giả (12/11 – 13/11)
-- [ ] `AuthorStatsService`: tổng lượt xem / theo dõi / bình luận / điểm theo truyện; biểu đồ lượt xem 30 ngày (`story_view_daily`) bằng Chart.js; top chương.
+- [x] `AuthorStatsService`: tổng lượt xem / theo dõi / bình luận / điểm theo truyện; biểu đồ lượt xem 30 ngày (`story_view_daily`) bằng Chart.js; top chương.
+      Biểu đồ tải dữ liệu qua `/api/studio/stats/daily-views?storyId=` để đổi truyện không tải lại trang; ngày không có lượt xem vẫn có điểm 0.
+
+> **Bài học về khóa, phần hai (phát hiện khi thử tải ảnh trong trình duyệt).** Khóa dòng (`SELECT … FOR UPDATE`) phải là câu lệnh ĐẦU TIÊN của transaction. MySQL ở REPEATABLE READ chụp ảnh dữ liệu ở câu SELECT thường đầu tiên; nếu đọc trước rồi mới khóa, các câu đọc sau khi chờ được khóa vẫn nhìn ảnh chụp cũ — hai lượt tải ảnh đồng thời nhận cùng số trang, hai lần chấm sao đồng thời của cùng một người làm lệch tổng sao (lỗi này có từ GĐ 3, nay đã sửa). Đã sửa `FollowService`, `RatingService`, `CommentService`, `ChapterPageService` và có test đồng thời cho từng chỗ.
 
 **Đầu ra:** vòng đời đầy đủ từ đăng ký tác giả đến chương mới tới tay người theo dõi.
 

@@ -12,6 +12,16 @@ public final class StoryConstants {
     /** Khớp độ dài cột comment.content. */
     public static final int COMMENT_MAX_LENGTH = 1000;
 
+    /** Khớp độ dài cột story.title / story.alt_title và story.slug. */
+    public static final int TITLE_MAX_LENGTH = 200;
+    public static final int SLUG_MAX_LENGTH = 220;
+
+    /** Cột description là TEXT; giới hạn này để phần giới thiệu vừa một màn hình đọc. */
+    public static final int DESCRIPTION_MAX_LENGTH = 5000;
+
+    /** Số thể loại tối đa của một truyện: gắn quá nhiều thì bộ lọc theo thể loại mất ý nghĩa. */
+    public static final int GENRES_MAX = 8;
+
     /** Dùng khi bảng setting chưa có khóa tương ứng. */
     public static final int DEFAULT_COMMENT_COOLDOWN_SECONDS = 15;
     public static final int DEFAULT_VIEW_DEDUPE_MINUTES = 30;

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/studio}">
+<head>
+    <title th:text="${chapter == null} ? #{studio.chapter.new} : #{studio.chapter.edit(${chapter.chapterNo})}">Soạn chương</title>
+</head>
+<body>
+<!--
+  Trình soạn chương truyện tranh. Chương mới (chapter == null) chỉ nhập số và tên; sau khi lưu mới có id
+  để tải ảnh lên, vì ảnh được gửi từng tấm qua API gắn với id chương.
+-->
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate"
+    th:text="${chapter == null} ? #{studio.chapter.new} : #{studio.chapter.edit(${chapter.chapterNo})}">Soạn chương</h1>
+<div layout:fragment="content">
+    <div th:replace="~{fragments/studio :: storyHeader(${story})}"></div>
+    <div th:replace="~{fragments/studio :: chapterState(${chapter})}"></div>
+
+    <div class="card border-0 shadow-sm mb-3" th:if="${chapter != null}" data-comic-editor
+         th:attr="data-pages-url=@{/api/studio/chapters/{id}/pages(id=${chapter.id})},
+                  data-msg-delete-confirm=#{studio.pages.delete.confirm},
+                  data-msg-page=#{studio.pages.page.label},
+                  data-msg-remove=#{studio.pages.remove}">
+        <div class="card-body">
+            <h2 class="h6 fw-bold" th:text="#{studio.pages.title}">Ảnh của chương</h2>
+            <p class="form-text" th:text="#{studio.pages.hint}">Hướng dẫn tải ảnh</p>
+            <input type="file" class="form-control" multiple accept="image/jpeg,image/png,image/webp"
+                   data-page-input th:aria-label="#{studio.pages.choose}">
+            <div class="progress my-3 d-none" role="progressbar" th:aria-label="#{studio.pages.progress}"
+                 aria-valuemin="0" aria-valuemax="100" data-upload-progress>
+                <div class="progress-bar" data-upload-bar></div>
+            </div>
+            <ul class="list-unstyled small text-danger mt-2 mb-0" data-upload-errors></ul>
+            <p class="text-secondary small mt-3 mb-0 d-none" data-page-empty th:text="#{studio.pages.empty}">Chưa có ảnh</p>
+            <div class="comic-page-grid mt-3" data-page-grid></div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <form th:action="${chapter == null} ? @{/studio/stories/{id}/chapters(id=${story.id})} : @{/studio/chapters/{id}(id=${chapter.id})}"
+                  th:object="${form}" method="post" novalidate>
+                <div th:replace="~{fragments/studio :: chapterMeta(${chapter})}"></div>
+                <p class="form-text" th:if="${chapter == null}" th:text="#{studio.pages.save.first}">Lưu chương trước rồi tải ảnh</p>
+                <div th:replace="~{fragments/studio :: chapterActions(${chapter}, ${chapter != null})}"></div>
+            </form>
+        </div>
+    </div>
+    <div th:replace="~{fragments/studio :: chapterSecondaryActions(${chapter})}"></div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/webjars/sortablejs/Sortable.min.js}"></script>
+    <script th:src="@{/js/studio-comic-editor.js}"></script>
+</th:block>
+</body>
+</html>

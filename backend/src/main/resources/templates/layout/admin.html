@@ -24,6 +24,9 @@
                 <a class="nav-link" th:href="@{/admin}" th:classappend="${requestPath == '/admin'} ? 'active'">
                     <i class="bi bi-speedometer2"></i> <span th:text="#{nav.overview}">Tổng quan</span>
                 </a>
+                <a class="nav-link" th:href="@{/admin/author-requests}" th:classappend="${#strings.startsWith(requestPath, '/admin/author-requests')} ? 'active'">
+                    <i class="bi bi-person-check"></i> <span th:text="#{nav.author.requests}">Yêu cầu tác giả</span>
+                </a>
                 <a class="nav-link" th:href="@{/admin/users}" th:classappend="${#strings.startsWith(requestPath, '/admin/users')} ? 'active'">
                     <i class="bi bi-people"></i> <span th:text="#{nav.users}">Người dùng</span>
                 </a>
@@ -44,7 +47,10 @@
                 <i class="bi bi-list"></i>
             </button>
             <h1 class="h5 mb-0 text-truncate" layout:fragment="heading">Tiêu đề trang</h1>
-            <div class="ms-auto" th:insert="~{fragments/user-menu :: menu}"></div>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <a th:replace="~{fragments/user-menu :: bell}"></a>
+                <div th:replace="~{fragments/user-menu :: menu}"></div>
+            </div>
         </header>
         <main class="console-content">
             <div th:replace="~{fragments/flash :: flash}"></div>

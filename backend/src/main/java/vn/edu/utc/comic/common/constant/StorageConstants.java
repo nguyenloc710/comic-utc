@@ -13,6 +13,11 @@ public final class StorageConstants {
     /** Thư mục ảnh đại diện; ảnh của mỗi tài khoản nằm ở avatars/{userId}. */
     public static final String AVATAR_DIRECTORY = "avatars";
 
+    /** Ảnh của truyện: bìa ở stories/{storyId}/cover, trang truyện ở stories/{storyId}/chapters/{chapterId}. */
+    public static final String STORY_DIRECTORY = "stories";
+    public static final String COVER_DIRECTORY = "cover";
+    public static final String CHAPTER_DIRECTORY = "chapters";
+
     /**
      * Định dạng ảnh được nhận: tên định dạng do ImageIO nhận diện từ NỘI DUNG tệp → đuôi dùng khi lưu.
      * Đuôi và MIME do trình duyệt gửi lên không được tin.

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/studio}">
+<head>
+    <title th:text="#{studio.stats.title}">Thống kê</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{studio.stats.title}">Thống kê</h1>
+<div layout:fragment="content">
+    <div th:replace="~{fragments/studio :: overviewCards(${overview})}"></div>
+
+    <!-- Biểu đồ do studio-stats.js vẽ từ API; đổi truyện ở ô chọn chỉ tải lại dữ liệu, không tải lại trang -->
+    <div class="card border-0 shadow-sm mb-3" data-stats-chart
+         th:attr="data-url=@{/api/studio/stats/daily-views}, data-label=#{studio.stats.views}, data-error=#{studio.stats.chart.error}">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h2 class="h6 fw-bold mb-0" th:text="#{studio.stats.chart.title}">Lượt xem 30 ngày gần nhất</h2>
+                <select class="form-select form-select-sm stats-story-select" data-stats-story th:aria-label="#{studio.stats.chart.story}">
+                    <option value="" th:text="#{studio.stats.chart.all}">Tất cả truyện</option>
+                    <option th:each="story : ${stories}" th:value="${story.id}" th:text="${story.title}">Tên truyện</option>
+                </select>
+            </div>
+            <div class="stats-chart"><canvas data-stats-canvas></canvas></div>
+            <p class="small text-danger mt-2 mb-0 d-none" data-stats-error></p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-xl-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h6 fw-bold mb-3" th:text="#{studio.stats.by.story}">Theo từng truyện</h2>
+                    <p class="text-center text-secondary py-4 mb-0" th:if="${stories.isEmpty()}" th:text="#{studio.stories.empty}">Chưa có truyện</p>
+                    <div class="table-responsive" th:unless="${stories.isEmpty()}">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                            <tr>
+                                <th scope="col" th:text="#{studio.stories.column.story}">Truyện</th>
+                                <th scope="col" class="text-end" th:text="#{studio.stats.views}">Lượt xem</th>
+                                <th scope="col" class="text-end" th:text="#{studio.stats.follows}">Theo dõi</th>
+                                <th scope="col" class="text-end" th:text="#{studio.stats.comments}">Bình luận</th>
+                                <th scope="col" class="text-end" th:text="#{studio.stats.rating}">Điểm</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="story : ${stories}">
+                                <td>
+                                    <a class="text-decoration-none" th:href="@{/studio/stories/{id}/chapters(id=${story.id})}"
+                                       th:text="${story.title}">Tên truyện</a>
+                                    <span th:replace="~{fragments/studio :: visibility(${story.visibility})}"></span>
+                                </td>
+                                <td class="text-end" th:text="${#numbers.formatInteger(story.viewCount, 1, 'POINT')}">1.234</td>
+                                <td class="text-end" th:text="${#numbers.formatInteger(story.followCount, 1, 'POINT')}">56</td>
+                                <td class="text-end" th:text="${#numbers.formatInteger(story.commentCount, 1, 'POINT')}">7</td>
+                                <td class="text-end text-nowrap">
+                                    <span th:replace="~{fragments/story :: rating(${story.ratingAverage}, ${story.ratingCount})}"></span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h6 fw-bold mb-3" th:text="#{studio.stats.top.chapters}">Chương được xem nhiều nhất</h2>
+                    <p class="text-center text-secondary py-4 mb-0" th:if="${topChapters.isEmpty()}" th:text="#{common.empty}">Chưa có dữ liệu</p>
+                    <ol class="list-group list-group-flush list-group-numbered" th:unless="${topChapters.isEmpty()}">
+                        <li class="list-group-item d-flex justify-content-between align-items-start gap-2 px-0"
+                            th:each="chapter : ${topChapters}">
+                            <div class="me-auto studio-story-name">
+                                <a class="text-decoration-none"
+                                   th:href="@{/stories/{slug}/chapters/{no}(slug=${chapter.storySlug}, no=${chapter.chapterNo})}"
+                                   th:text="#{chapter.number(${chapter.chapterNo})}">Chương 1</a>
+                                <div class="small text-secondary text-truncate" th:text="${chapter.storyTitle}">Tên truyện</div>
+                            </div>
+                            <span class="badge text-bg-light border" th:text="${#numbers.formatInteger(chapter.viewCount, 1, 'POINT')}">1.234</span>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/webjars/chart.js/dist/chart.umd.js}"></script>
+    <script th:src="@{/js/studio-stats.js}"></script>
+</th:block>
+</body>
+</html>

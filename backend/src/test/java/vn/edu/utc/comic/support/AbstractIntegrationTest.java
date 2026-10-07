@@ -2,9 +2,16 @@ package vn.edu.utc.comic.support;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.function.Consumer;
+import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -53,6 +60,10 @@ public abstract class AbstractIntegrationTest {
 
     /** Mật khẩu của mọi tài khoản do {@link #createAccount} tạo. */
     protected static final String ACCOUNT_PASSWORD = "Test@1234";
+
+    /** Nội dung mà {@link #createChapter} gắn cho chương: số ảnh (truyện tranh) và số từ (truyện chữ). */
+    protected static final int FIXTURE_PAGE_COUNT = 2;
+    protected static final int FIXTURE_WORD_COUNT = 6;
 
     private static final int FAST_BCRYPT_STRENGTH = 4;
     private static final int SUFFIX_LENGTH = 8;
@@ -177,10 +188,17 @@ public abstract class AbstractIntegrationTest {
         chapter.setTitle("Tên chương " + chapterNo);
         chapter.setStatus(status);
         chapter.setPublishedAt(status == ChapterStatus.PUBLISHED ? Instant.now() : null);
+        // Số ảnh / số từ là căn cứ để biết chương đã có nội dung hay chưa khi đăng
+        if (story.getType() == StoryType.COMIC) {
+            chapter.setPageCount(FIXTURE_PAGE_COUNT);
+        } else {
+            chapter.setWordCount(FIXTURE_WORD_COUNT);
+        }
         chapterRepository.saveAndFlush(chapter);
         if (story.getType() == StoryType.COMIC) {
-            saveChapterPage(chapter, 1);
-            saveChapterPage(chapter, 2);
+            for (int pageNo = 1; pageNo <= FIXTURE_PAGE_COUNT; pageNo++) {
+                saveChapterPage(chapter, pageNo);
+            }
         } else {
             ChapterContent content = new ChapterContent();
             content.setChapterId(chapter.getId());
@@ -199,6 +217,25 @@ public abstract class AbstractIntegrationTest {
         page.setHeight(1200);
         page.setSizeBytes(1024);
         chapterPageRepository.saveAndFlush(page);
+    }
+
+    /**
+     * Thời điểm dưới dạng ngày giờ UTC, để truyền làm tham số cho JdbcTemplate. Ứng dụng lưu mọi mốc thời gian theo
+     * UTC; truyền thẳng Instant / Timestamp qua JDBC thì driver đổi theo múi giờ của máy chạy test và lệch 7 tiếng.
+     */
+    protected static LocalDateTime utc(Instant instant) {
+        return LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
+    }
+
+    /** Một ảnh PNG thật (đọc được bằng ImageIO) để thử các chỗ tải ảnh lên. */
+    protected static byte[] pngBytes(int width, int height) {
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            ImageIO.write(new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB), "png", output);
+            return output.toByteArray();
+        } catch (IOException exception) {
+            throw new UncheckedIOException(exception);
+        }
     }
 
     /** Đọc thẳng một bộ đếm của truyện từ cơ sở dữ liệu (thực thể trong bộ nhớ không thấy câu UPDATE cộng dồn). */

@@ -24,7 +24,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import vn.edu.utc.comic.common.security.AppUserPrincipal;
 import vn.edu.utc.comic.interaction.dto.FollowResponse;
+import vn.edu.utc.comic.interaction.dto.RatingResponse;
 import vn.edu.utc.comic.interaction.service.FollowService;
+import vn.edu.utc.comic.interaction.service.RatingService;
 import vn.edu.utc.comic.story.entity.Story;
 import vn.edu.utc.comic.story.enums.StoryType;
 import vn.edu.utc.comic.story.enums.StoryVisibility;
@@ -41,6 +43,9 @@ class InteractionApiIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private FollowService followService;
+
+    @Autowired
+    private RatingService ratingService;
 
     @Test
     void interactions_requireLogin_andAnswerGuestsWithJson() throws Exception {
@@ -91,6 +96,32 @@ class InteractionApiIntegrationTest extends AbstractIntegrationTest {
         }
 
         assertThat(storyCounter(story, "follow_count")).isEqualTo(CONCURRENT_READERS);
+    }
+
+    @Test
+    void concurrentRatings_bySameUser_leaveExactlyOneRating_andAMatchingSum() throws Exception {
+        Story story = createPublishedStory(StoryType.NOVEL);
+        Long readerId = createAccount(Role.USER).getId();
+        CountDownLatch startTogether = new CountDownLatch(1);
+
+        try (ExecutorService executor = Executors.newFixedThreadPool(CONCURRENT_READERS)) {
+            List<Future<RatingResponse>> results = IntStream.range(0, CONCURRENT_READERS)
+                    .mapToObj(index -> executor.submit(() -> {
+                        startTogether.await();
+                        return ratingService.rate(story.getId(), readerId, index % 5 + 1);
+                    }))
+                    .toList();
+            startTogether.countDown();
+            for (Future<RatingResponse> result : results) {
+                result.get(10, TimeUnit.SECONDS);
+            }
+        }
+
+        // Lượt nào thắng cuối cùng cũng được, miễn tổng sao của truyện đúng bằng số sao đang lưu của người này
+        Integer storedStars = jdbcTemplate.queryForObject(
+                "SELECT stars FROM story_rating WHERE story_id = ? AND user_id = ?", Integer.class, story.getId(), readerId);
+        assertThat(storyCounter(story, "rating_count")).isEqualTo(1);
+        assertThat(storyCounter(story, "rating_sum")).isEqualTo(storedStars.longValue());
     }
 
     @Test

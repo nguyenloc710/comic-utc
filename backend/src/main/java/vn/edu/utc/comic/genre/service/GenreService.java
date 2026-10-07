@@ -2,6 +2,7 @@ package vn.edu.utc.comic.genre.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -143,6 +144,18 @@ public class GenreService {
         log.info("Đã xóa thể loại {} ({})", genreId, genre.getSlug());
     }
 
+    /**
+     * Thể loại chọn được trên form đăng truyện: các thể loại đang bật, cộng với những thể loại truyện đang gắn dù
+     * đã bị tắt — nếu không, lưu lại form sẽ âm thầm gỡ chúng khỏi truyện.
+     *
+     * @param keepIds id các thể loại truyện đang gắn (rỗng khi tạo truyện mới)
+     */
+    @Transactional(readOnly = true)
+    public List<Genre> findSelectableGenres(Set<Long> keepIds) {
+        return genreRepository.findAllByOrderBySortOrderAscNameAsc().stream()
+                .filter(genre -> genre.isActive() || keepIds.contains(genre.getId()))
+                .toList();
+    }
     private static FieldValidationException nameViolation(String messageKey) {
         return new FieldValidationException(List.of(new FieldViolation(FIELD_NAME, messageKey)));
     }

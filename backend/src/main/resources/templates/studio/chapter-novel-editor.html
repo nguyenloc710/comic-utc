@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/studio}">
+<head>
+    <title th:text="${chapter == null} ? #{studio.chapter.new} : #{studio.chapter.edit(${chapter.chapterNo})}">Soạn chương</title>
+    <link rel="stylesheet" th:href="@{/webjars/quill/dist/quill.snow.css}">
+</head>
+<body>
+<!-- Trình soạn chương truyện chữ; dùng chung cho chương mới (chapter == null) và chương đã có -->
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate"
+    th:text="${chapter == null} ? #{studio.chapter.new} : #{studio.chapter.edit(${chapter.chapterNo})}">Soạn chương</h1>
+<div layout:fragment="content">
+    <div th:replace="~{fragments/studio :: storyHeader(${story})}"></div>
+    <div th:replace="~{fragments/studio :: chapterState(${chapter})}"></div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <form th:action="${chapter == null} ? @{/studio/stories/{id}/chapters(id=${story.id})} : @{/studio/chapters/{id}(id=${chapter.id})}"
+                  th:object="${form}" method="post" novalidate data-novel-form>
+                <div th:replace="~{fragments/studio :: chapterMeta(${chapter})}"></div>
+
+                <div class="mb-3">
+                    <span class="form-label d-block" th:text="#{studio.chapter.content}">Nội dung</span>
+                    <!--
+                      Nội dung đi qua ô textarea ẩn dưới dạng TEXT đã được escape; studio-novel-editor.js nạp nó vào
+                      trình soạn thảo và chép ngược lại trước khi gửi form. Không dùng th:utext ở đây.
+                    -->
+                    <textarea class="d-none" th:field="*{contentHtml}" data-novel-content></textarea>
+                    <div class="novel-editor" data-novel-quill th:attr="data-placeholder=#{studio.chapter.content.placeholder}"></div>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('contentHtml')}" th:errors="*{contentHtml}">Lỗi</div>
+                </div>
+
+                <div th:replace="~{fragments/studio :: chapterActions(${chapter}, true)}"></div>
+            </form>
+        </div>
+    </div>
+    <div th:replace="~{fragments/studio :: chapterSecondaryActions(${chapter})}"></div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/webjars/quill/dist/quill.js}"></script>
+    <script th:src="@{/js/studio-novel-editor.js}"></script>
+</th:block>
+</body>
+</html>

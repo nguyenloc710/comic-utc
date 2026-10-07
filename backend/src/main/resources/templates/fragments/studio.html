@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Nhãn trạng thái hiển thị của truyện: nháp / công khai / bị ẩn -->
+<span th:fragment="visibility(visibility)" class="badge"
+      th:classappend="${visibility.name() == 'PUBLISHED' ? 'text-bg-success' : (visibility.name() == 'HIDDEN' ? 'text-bg-danger' : 'text-bg-secondary')}"
+      th:text="#{'enum.StoryVisibility.' + ${visibility}}">Bản nháp</span>
+
+<!-- Nhãn trạng thái chương: nháp / hẹn giờ / đã đăng / bị ẩn -->
+<span th:fragment="chapterStatus(status)" class="badge"
+      th:classappend="${status.name() == 'PUBLISHED' ? 'text-bg-success' : (status.name() == 'SCHEDULED' ? 'text-bg-warning' : (status.name() == 'HIDDEN' ? 'text-bg-danger' : 'text-bg-secondary'))}"
+      th:text="#{'enum.ChapterStatus.' + ${status}}">Bản nháp</span>
+
+<!-- Ảnh bìa thu nhỏ; chưa có bìa thì hiện biểu tượng giữ chỗ -->
+<div th:fragment="coverThumb(coverUrl)" class="studio-cover-thumb">
+    <img th:if="${coverUrl != null}" th:src="${coverUrl}" alt="">
+    <i th:if="${coverUrl == null}" class="bi bi-image"></i>
+</div>
+
+<!--
+  Thanh thông tin truyện ở đầu các trang chương, kèm lối đi tới danh sách chương, form sửa và trang truyện.
+  Truyện bị quản trị viên ẩn thì hiện luôn lý do ở đây để tác giả không bỏ sót.
+-->
+<div th:fragment="storyHeader(story)">
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body d-flex flex-wrap align-items-center gap-3">
+            <div th:replace="~{fragments/studio :: coverThumb(${story.coverUrl})}"></div>
+            <div class="flex-grow-1 profile-identity">
+                <div class="fw-semibold text-truncate" th:text="${story.title}">Tên truyện</div>
+                <div class="small">
+                    <th:block th:replace="~{fragments/story :: badges(${story.type}, ${story.status})}"></th:block>
+                    <span th:replace="~{fragments/studio :: visibility(${story.visibility})}"></span>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/studio/stories/{id}/chapters(id=${story.id})}">
+                    <i class="bi bi-list-ol"></i> <span th:text="#{studio.story.chapters}">Chương</span>
+                </a>
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/studio/stories/{id}/edit(id=${story.id})}">
+                    <i class="bi bi-pencil"></i> <span th:text="#{studio.story.edit}">Sửa truyện</span>
+                </a>
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/stories/{slug}(slug=${story.slug})}">
+                    <i class="bi bi-eye"></i> <span th:text="#{studio.story.view}">Xem trang truyện</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-danger" role="alert" th:if="${story.visibility.name() == 'HIDDEN'}"
+         th:text="#{studio.story.hidden.notice(${story.hiddenReason})}">Truyện đang bị ẩn</div>
+</div>
+
+<!-- Dòng tình trạng của chương đang soạn: nhãn trạng thái, giờ hẹn, lý do bị ẩn. Chương mới (null) thì không hiện. -->
+<div th:fragment="chapterState(chapter)" th:if="${chapter != null}" class="mb-3">
+    <span th:replace="~{fragments/studio :: chapterStatus(${chapter.status})}"></span>
+    <span class="small text-secondary" th:if="${chapter.status.name() == 'SCHEDULED'}">
+        <span th:text="#{studio.chapter.scheduled.at}">Sẽ đăng lúc</span>
+        <th:block th:replace="~{fragments/display :: datetime(${chapter.scheduledAt})}"></th:block>
+    </span>
+    <span class="small text-secondary" th:if="${chapter.publishedAt != null}">
+        <span th:text="#{studio.chapter.published.at}">Đăng lúc</span>
+        <th:block th:replace="~{fragments/display :: datetime(${chapter.publishedAt})}"></th:block>
+    </span>
+    <div class="alert alert-danger mt-2 mb-0" role="alert" th:if="${chapter.status.name() == 'HIDDEN'}"
+         th:text="#{studio.chapter.hidden.notice(${chapter.hiddenReason})}">Chương đang bị ẩn</div>
+</div>
+
+<!--
+  Số chương và tên chương, dùng bên trong form có th:object. Số chương bị khóa sau khi chương đã đăng
+  (readonly chứ không disabled, để giá trị vẫn được gửi lên cùng form).
+-->
+<div th:fragment="chapterMeta(chapter)" class="row g-3 mb-3">
+    <div class="col-sm-4 col-md-3">
+        <label for="chapterNo" class="form-label" th:text="#{studio.chapter.no}">Số chương</label>
+        <input type="number" class="form-control" th:field="*{chapterNo}" th:errorclass="is-invalid" min="1"
+               th:readonly="${chapter != null and chapter.numberLocked()}">
+        <div class="invalid-feedback" th:errors="*{chapterNo}">Lỗi</div>
+    </div>
+    <div class="col-sm-8 col-md-9">
+        <label for="title" class="form-label" th:text="#{studio.chapter.title}">Tên chương</label>
+        <input type="text" class="form-control" th:field="*{title}" th:errorclass="is-invalid" autocomplete="off">
+        <div class="invalid-feedback" th:errors="*{title}">Lỗi</div>
+    </div>
+</div>
+
+<!--
+  Các nút của form soạn chương, dùng bên trong form có th:object. Mỗi nút gửi một giá trị action khác nhau;
+  máy chủ luôn lưu trước rồi mới đăng / hẹn giờ.
+  allowPublish: false khi chưa thể có nội dung (chương truyện tranh chưa được tạo nên chưa tải ảnh lên được).
+-->
+<div th:fragment="chapterActions(chapter, allowPublish)">
+    <div class="d-flex flex-wrap gap-2 align-items-start">
+        <button type="submit" name="action" value="SAVE" class="btn btn-primary">
+            <i class="bi bi-save"></i> <span th:text="#{studio.chapter.save}">Lưu</span>
+        </button>
+        <th:block th:if="${allowPublish and (chapter == null or !chapter.numberLocked())}">
+            <button type="submit" name="action" value="PUBLISH" class="btn btn-success">
+                <i class="bi bi-send"></i> <span th:text="#{studio.chapter.publish.now}">Đăng ngay</span>
+            </button>
+            <div class="input-group chapter-schedule">
+                <input type="datetime-local" class="form-control" th:field="*{scheduledAt}" th:errorclass="is-invalid"
+                       th:aria-label="#{studio.chapter.schedule.time}">
+                <button type="submit" name="action" value="SCHEDULE" class="btn btn-outline-primary">
+                    <i class="bi bi-clock"></i> <span th:text="#{studio.chapter.schedule}">Hẹn giờ</span>
+                </button>
+            </div>
+        </th:block>
+        <a class="btn btn-outline-secondary" th:href="@{/studio/stories/{id}/chapters(id=${story.id})}"
+           th:text="#{studio.chapter.back}">Về danh sách chương</a>
+    </div>
+    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('scheduledAt')}" th:errors="*{scheduledAt}">Lỗi</div>
+    <div class="form-text" th:if="${allowPublish and (chapter == null or !chapter.numberLocked())}"
+         th:text="#{studio.chapter.schedule.hint}">Giờ hẹn tính theo giờ Việt Nam</div>
+</div>
+
+<!-- Thao tác nằm ngoài form soạn chương (HTML không cho lồng form): hủy hẹn giờ, xóa bản nháp -->
+<div th:fragment="chapterSecondaryActions(chapter)" th:if="${chapter != null}" class="d-flex flex-wrap gap-2 mt-3">
+    <form th:if="${chapter.status.name() == 'SCHEDULED'}" method="post"
+          th:action="@{/studio/chapters/{id}/unschedule(id=${chapter.id})}">
+        <button type="submit" class="btn btn-outline-warning btn-sm">
+            <i class="bi bi-clock-history"></i> <span th:text="#{studio.chapter.unschedule}">Hủy hẹn giờ</span>
+        </button>
+    </form>
+    <form th:if="${chapter.status.name() == 'DRAFT'}" method="post"
+          th:action="@{/studio/chapters/{id}/delete(id=${chapter.id})}"
+          th:attr="data-confirm=#{studio.chapter.delete.confirm(${chapter.chapterNo})}">
+        <button type="submit" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-trash"></i> <span th:text="#{studio.chapter.delete}">Xóa bản nháp</span>
+        </button>
+    </form>
+    <a class="btn btn-outline-secondary btn-sm"
+       th:href="@{/stories/{slug}/chapters/{no}(slug=${story.slug}, no=${chapter.chapterNo})}">
+        <i class="bi bi-eye"></i> <span th:text="#{studio.chapter.preview}">Xem thử trang đọc</span>
+    </a>
+</div>
+
+<!-- Các con số tổng của tác giả, dùng ở trang tổng quan và trang thống kê -->
+<div th:fragment="overviewCards(overview)" class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-3 mb-3">
+    <div class="col" th:replace="~{fragments/studio :: statCard('bi-journals', #{studio.stats.stories}, ${overview.storyCount})}"></div>
+    <div class="col" th:replace="~{fragments/studio :: statCard('bi-list-ol', #{studio.stats.chapters}, ${overview.chapterCount})}"></div>
+    <div class="col" th:replace="~{fragments/studio :: statCard('bi-eye', #{studio.stats.views}, ${overview.viewCount})}"></div>
+    <div class="col" th:replace="~{fragments/studio :: statCard('bi-bookmark-heart', #{studio.stats.follows}, ${overview.followCount})}"></div>
+    <div class="col" th:replace="~{fragments/studio :: statCard('bi-chat-dots', #{studio.stats.comments}, ${overview.commentCount})}"></div>
+    <div class="col">
+        <div class="card border-0 shadow-sm h-100 stat-card">
+            <div class="card-body">
+                <div class="small text-secondary"><i class="bi bi-star"></i> <span th:text="#{studio.stats.rating}">Điểm đánh giá</span></div>
+                <div class="stat-value" th:if="${overview.ratingAverage() != null}"
+                     th:text="${#numbers.formatDecimal(overview.ratingAverage(), 1, 1)}">4,5</div>
+                <div class="stat-value text-secondary" th:if="${overview.ratingAverage() == null}" th:text="#{common.none}">—</div>
+                <div class="small text-secondary" th:text="#{story.rating.count(${overview.ratingCount})}">(12 lượt)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="statCard(icon, label, value)" class="col">
+    <div class="card border-0 shadow-sm h-100 stat-card">
+        <div class="card-body">
+            <div class="small text-secondary"><i class="bi" th:classappend="${icon}"></i> <span th:text="${label}">Nhãn</span></div>
+            <div class="stat-value" th:text="${#numbers.formatInteger(value, 1, 'POINT')}">1.234</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
