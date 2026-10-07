@@ -33,6 +33,21 @@
                 <a class="nav-link" th:href="@{/admin/genres}" th:classappend="${#strings.startsWith(requestPath, '/admin/genres')} ? 'active'">
                     <i class="bi bi-tags"></i> <span th:text="#{nav.genres}">Thể loại</span>
                 </a>
+                <a class="nav-link" th:href="@{/admin/stories}" th:classappend="${#strings.startsWith(requestPath, '/admin/stories')} ? 'active'">
+                    <i class="bi bi-journals"></i> <span th:text="#{nav.admin.stories}">Truyện</span>
+                </a>
+                <a class="nav-link" th:href="@{/admin/comments}" th:classappend="${#strings.startsWith(requestPath, '/admin/comments')} ? 'active'">
+                    <i class="bi bi-chat-dots"></i> <span th:text="#{nav.admin.comments}">Bình luận</span>
+                </a>
+                <a class="nav-link" th:href="@{/admin/reports}" th:classappend="${#strings.startsWith(requestPath, '/admin/reports')} ? 'active'">
+                    <i class="bi bi-flag"></i> <span th:text="#{nav.admin.reports}">Báo cáo vi phạm</span>
+                </a>
+                <a class="nav-link" th:href="@{/admin/settings}" th:classappend="${#strings.startsWith(requestPath, '/admin/settings')} ? 'active'">
+                    <i class="bi bi-sliders"></i> <span th:text="#{nav.admin.settings}">Tham số</span>
+                </a>
+                <a class="nav-link" th:href="@{/admin/audit-logs}" th:classappend="${#strings.startsWith(requestPath, '/admin/audit-logs')} ? 'active'">
+                    <i class="bi bi-journal-text"></i> <span th:text="#{nav.admin.audit.logs}">Nhật ký</span>
+                </a>
                 <a class="nav-link mt-auto" th:href="@{/}">
                     <i class="bi bi-arrow-left-circle"></i> <span th:text="#{nav.back.to.site}">Về trang đọc truyện</span>
                 </a>

@@ -567,3 +567,27 @@ a {
   right: 0.25rem;
   padding: 0 0.35rem;
 }
+
+/* ----- Khu vực quản trị: kiểm duyệt, tham số, nhật ký ----- */
+.setting-key-cell {
+  min-width: 16rem;
+}
+
+.setting-value-input {
+  max-width: 22rem;
+}
+
+/* Ô nội dung bình luận trong bảng kiểm duyệt: giới hạn bề rộng để bảng không bị một bình luận dài kéo giãn */
+.admin-comment-cell {
+  min-width: 18rem;
+  max-width: 32rem;
+}
+
+.audit-detail {
+  max-width: 28rem;
+  word-break: break-all;
+}
+
+a.stat-card:hover {
+  background: #f8f9fa;
+}

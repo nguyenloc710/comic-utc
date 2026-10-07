@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.settings.title}">Tham số vận hành</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.settings.title}">Tham số vận hành</h1>
+<div layout:fragment="content">
+    <p class="text-secondary" th:text="#{admin.settings.intro}">Thay đổi có hiệu lực ngay, không cần khởi động lại.</p>
+    <!-- Mỗi nhóm một thẻ, mỗi tham số một form nhỏ: lưu từng giá trị, lỗi sai kiểu báo ở flash -->
+    <div class="card border-0 shadow-sm mb-3" th:each="group : ${settingGroups}">
+        <div class="card-body">
+            <h2 class="h6 fw-bold mb-3" th:text="${group.key}">NHÓM</h2>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <tbody>
+                    <tr th:each="setting : ${group.value}">
+                        <td class="setting-key-cell">
+                            <code th:text="${setting.settingKey}">khóa</code>
+                            <div class="small text-secondary" th:text="${setting.description}">Mô tả</div>
+                        </td>
+                        <td>
+                            <form class="d-flex gap-1" method="post" th:action="@{/admin/settings/{key}(key=${setting.settingKey})}">
+                                <input type="text" class="form-control form-control-sm setting-value-input" name="value"
+                                       th:value="${setting.settingValue}" th:readonly="${setting.readOnly}"
+                                       th:aria-label="${setting.settingKey}">
+                                <span class="badge text-bg-light border align-self-center" th:text="${setting.valueType}">INTEGER</span>
+                                <button type="submit" class="btn btn-outline-primary btn-sm text-nowrap" th:unless="${setting.readOnly}"
+                                        th:text="#{common.save}">Lưu</button>
+                            </form>
+                            <div class="small text-secondary mt-1" th:if="${setting.updatedAt != null}">
+                                <span th:text="#{admin.settings.updated.at}">Sửa lúc</span>
+                                <th:block th:replace="~{fragments/display :: datetime(${setting.updatedAt})}"></th:block>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

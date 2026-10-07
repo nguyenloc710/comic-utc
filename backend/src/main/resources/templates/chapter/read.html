@@ -25,6 +25,9 @@
     </h1>
 
     <div th:replace="~{fragments/reader :: chapterNav(${chapter}, ${storyUrl})}"></div>
+    <div class="text-end mb-2" th:if="${chapter.publiclyReadable}">
+        <button th:replace="~{fragments/report :: reportButton('CHAPTER', ${chapter.chapterId}, ${currentUser != null and currentUser.id != chapter.authorId})}"></button>
+    </div>
 
     <!-- Truyện tranh: ảnh xếp dọc. width/height gốc giúp trình duyệt giữ sẵn chỗ, ảnh tải chậm không làm giật trang -->
     <div class="reader-comic" th:if="${chapter.storyType.name() == 'COMIC'}">
@@ -53,12 +56,14 @@
     <div class="mt-4" th:if="${chapter.publiclyReadable}">
         <section th:replace="~{fragments/comments :: section(${chapter.storyId}, ${chapter.chapterId})}"></section>
     </div>
+    <div th:replace="~{fragments/report :: modal}"></div>
 
 </div>
 
 <th:block layout:fragment="scripts">
     <script th:src="@{/js/reader.js}"></script>
     <script th:src="@{/js/comments.js}"></script>
+    <script th:src="@{/js/report.js}"></script>
 </th:block>
 </body>
 </html>

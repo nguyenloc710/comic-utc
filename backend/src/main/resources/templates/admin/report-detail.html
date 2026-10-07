@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.reports.detail}">Chi tiết báo cáo</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.reports.detail}">Chi tiết báo cáo</h1>
+<div layout:fragment="content">
+    <div class="card border-0 shadow-sm console-form-card mb-3">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4" th:text="#{admin.reports.column.target}">Nội dung bị báo cáo</dt>
+                <dd class="col-sm-8">
+                    <span class="badge text-bg-light border" th:text="#{'enum.ReportTargetType.' + ${report.targetType}}">Truyện</span>
+                    <a class="text-decoration-none" th:if="${report.targetLink != null}" th:href="${report.targetLink}"
+                       th:text="${report.targetLabel}">Tên nội dung</a>
+                    <span class="text-secondary" th:if="${report.targetLink == null}" th:text="#{admin.reports.target.missing}">Không còn</span>
+                    <span class="badge text-bg-dark" th:if="${report.targetHidden}" th:text="#{admin.reports.target.hidden}">Đã ẩn</span>
+                </dd>
+                <dt class="col-sm-4" th:text="#{report.reason}">Lý do</dt>
+                <dd class="col-sm-8" th:text="#{'enum.ReportReason.' + ${report.reason}}">Spam</dd>
+                <dt class="col-sm-4" th:text="#{report.detail}">Mô tả thêm</dt>
+                <dd class="col-sm-8 comment-content" th:text="${report.detail != null} ? ${report.detail} : #{common.none}">Mô tả</dd>
+                <dt class="col-sm-4" th:text="#{admin.reports.column.reporter}">Người báo cáo</dt>
+                <dd class="col-sm-8">
+                    <span th:text="${report.reporterUsername}">reader1</span> ·
+                    <th:block th:replace="~{fragments/display :: datetime(${report.createdAt})}"></th:block>
+                </dd>
+                <dt class="col-sm-4" th:text="#{author.request.status}">Trạng thái</dt>
+                <dd class="col-sm-8">
+                    <span class="badge"
+                          th:classappend="${report.status.name() == 'PENDING' ? 'text-bg-warning' : (report.status.name() == 'RESOLVED' ? 'text-bg-danger' : 'text-bg-secondary')}"
+                          th:text="#{'enum.ReportStatus.' + ${report.status}}">Chờ xử lý</span>
+                </dd>
+                <th:block th:if="${report.status.name() != 'PENDING'}">
+                    <dt class="col-sm-4" th:text="#{admin.reports.handled.by}">Xử lý bởi</dt>
+                    <dd class="col-sm-8">
+                        <span th:text="${report.handlerUsername}">admin</span> ·
+                        <th:block th:replace="~{fragments/display :: datetime(${report.handledAt})}"></th:block>
+                    </dd>
+                    <dt class="col-sm-4" th:text="#{admin.reports.note}">Ghi chú</dt>
+                    <dd class="col-sm-8 comment-content" th:text="${report.resolutionNote != null} ? ${report.resolutionNote} : #{common.none}">Ghi chú</dd>
+                </th:block>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm console-form-card mb-3" th:if="${report.status.name() == 'PENDING'}">
+        <div class="card-body">
+            <!-- Ẩn nội dung: lý do bắt buộc vì được gửi tới tác giả; điền sẵn từ lý do báo cáo cho nhanh -->
+            <form method="post" th:object="${form}" th:action="@{/admin/reports/{id}/resolve(id=${report.id})}" class="mb-4">
+                <div class="mb-3">
+                    <label for="reason" class="form-label" th:text="#{admin.moderation.reason}">Lý do ẩn</label>
+                    <textarea class="form-control" rows="2" th:field="*{reason}" th:errorclass="is-invalid"></textarea>
+                    <div class="invalid-feedback" th:errors="*{reason}">Lỗi</div>
+                    <div class="form-text" th:text="${report.targetHidden} ? #{admin.reports.resolve.already.hidden} : #{admin.moderation.reason.hint}">Hướng dẫn</div>
+                </div>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-eye-slash"></i> <span th:text="#{admin.reports.resolve}">Ẩn nội dung và đóng báo cáo</span>
+                </button>
+            </form>
+            <form method="post" th:action="@{/admin/reports/{id}/dismiss(id=${report.id})}">
+                <div class="mb-3">
+                    <label for="note" class="form-label" th:text="#{admin.reports.note}">Ghi chú (tùy chọn)</label>
+                    <input type="text" class="form-control" id="note" name="note" maxlength="1000">
+                </div>
+                <button type="submit" class="btn btn-outline-secondary">
+                    <i class="bi bi-check2"></i> <span th:text="#{admin.reports.dismiss}">Bỏ qua (không vi phạm)</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <a class="btn btn-outline-secondary" th:href="@{/admin/reports}" th:text="#{admin.author.requests.back}">Về danh sách</a>
+</div>
+</body>
+</html>

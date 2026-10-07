@@ -54,6 +54,7 @@
 
                         <!-- Theo dõi và đánh giá chỉ áp dụng với truyện đang công khai -->
                         <th:block th:unless="${story.preview}">
+                            <button th:replace="~{fragments/report :: reportButton('STORY', ${story.id}, ${currentUser != null and !ownStory})}"></button>
                             <button type="button" class="btn btn-outline-secondary" id="followButton" th:if="${currentUser != null}"
                                     th:attr="data-story-id=${story.id}, data-following=${viewerState.following},
                                              data-label-follow=#{story.follow}, data-label-unfollow=#{story.unfollow}">
@@ -105,11 +106,13 @@
     <div th:unless="${story.preview}">
         <section th:replace="~{fragments/comments :: section(${story.id}, null)}"></section>
     </div>
+    <div th:replace="~{fragments/report :: modal}"></div>
 </div>
 
 <th:block layout:fragment="scripts">
     <script th:src="@{/js/story.js}"></script>
     <script th:src="@{/js/comments.js}"></script>
+    <script th:src="@{/js/report.js}"></script>
 </th:block>
 </body>
 </html>

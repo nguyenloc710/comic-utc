@@ -12,6 +12,7 @@ import vn.edu.utc.comic.common.constant.ApiConstants;
 import vn.edu.utc.comic.common.util.StoryLinks;
 import vn.edu.utc.comic.interaction.event.CommentRepliedEvent;
 import vn.edu.utc.comic.notification.enums.NotificationType;
+import vn.edu.utc.comic.notification.event.ContentHiddenEvent;
 import vn.edu.utc.comic.notification.service.NotificationService;
 
 /**
@@ -57,5 +58,13 @@ public class NotificationListener {
     public void handleCommentReplied(CommentRepliedEvent event) {
         notificationService.notifyUser(event.recipientId(), NotificationType.COMMENT_REPLIED, event.link(),
                 event.replierName(), event.storyTitle());
+    }
+
+    /** Báo cho tác giả / người viết khi nội dung của họ bị quản trị viên ẩn, kèm lý do. */
+    @Async(AsyncSchedulingConfig.EVENT_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleContentHidden(ContentHiddenEvent event) {
+        notificationService.notifyUser(event.recipientId(), NotificationType.CONTENT_HIDDEN, event.link(),
+                event.contentLabel(), event.reason());
     }
 }

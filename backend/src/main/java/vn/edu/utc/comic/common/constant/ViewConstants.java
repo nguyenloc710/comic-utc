@@ -53,6 +53,13 @@ public final class ViewConstants {
     public static final String ADMIN_GENRE_FORM = "admin/genre-form";
     public static final String ADMIN_AUTHOR_REQUESTS = "admin/author-requests";
     public static final String ADMIN_AUTHOR_REQUEST_DETAIL = "admin/author-request-detail";
+    public static final String ADMIN_STORIES = "admin/stories";
+    public static final String ADMIN_STORY_DETAIL = "admin/story-detail";
+    public static final String ADMIN_COMMENTS = "admin/comments";
+    public static final String ADMIN_REPORTS = "admin/reports";
+    public static final String ADMIN_REPORT_DETAIL = "admin/report-detail";
+    public static final String ADMIN_SETTINGS = "admin/settings";
+    public static final String ADMIN_AUDIT_LOGS = "admin/audit-logs";
 
     public static final String ERROR_PAGE = "error/error";
 
@@ -64,6 +71,9 @@ public final class ViewConstants {
     public static final String REDIRECT_ADMIN_USERS = REDIRECT + ApiConstants.ADMIN_USERS_PATH;
     public static final String REDIRECT_ADMIN_GENRES = REDIRECT + ApiConstants.ADMIN_GENRES_PATH;
     public static final String REDIRECT_ADMIN_AUTHOR_REQUESTS = REDIRECT + ApiConstants.ADMIN_AUTHOR_REQUESTS_PATH;
+    public static final String REDIRECT_ADMIN_COMMENTS = REDIRECT + ApiConstants.ADMIN_COMMENTS_PATH;
+    public static final String REDIRECT_ADMIN_REPORTS = REDIRECT + ApiConstants.ADMIN_REPORTS_PATH;
+    public static final String REDIRECT_ADMIN_SETTINGS = REDIRECT + ApiConstants.ADMIN_SETTINGS_PATH;
     public static final String REDIRECT_AUTHOR_REQUEST = REDIRECT + ApiConstants.AUTHOR_REQUEST_PATH;
     public static final String REDIRECT_NOTIFICATIONS = REDIRECT + ApiConstants.NOTIFICATIONS_PATH;
     public static final String REDIRECT_STUDIO_STORIES = REDIRECT + ApiConstants.STUDIO_STORIES_PATH;

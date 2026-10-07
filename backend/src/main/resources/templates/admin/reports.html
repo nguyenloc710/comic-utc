@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.reports.title}">Báo cáo vi phạm</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.reports.title}">Báo cáo vi phạm</h1>
+<div layout:fragment="content">
+    <ul class="nav nav-pills mb-3">
+        <li class="nav-item" th:each="item : ${statuses}">
+            <a class="nav-link" th:classappend="${item == status} ? 'active'" th:href="@{/admin/reports(status=${item})}"
+               th:text="#{'enum.ReportStatus.' + ${item}}">Chờ xử lý</a>
+        </li>
+    </ul>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <p class="text-secondary small" th:text="#{admin.reports.total(${page.totalElements})}">3 báo cáo</p>
+            <p class="text-center text-secondary py-4 mb-0" th:if="${page.isEmpty()}" th:text="#{common.empty}">Chưa có dữ liệu</p>
+            <div class="table-responsive" th:unless="${page.isEmpty()}">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{admin.reports.column.target}">Nội dung bị báo cáo</th>
+                        <th scope="col" th:text="#{report.reason}">Lý do</th>
+                        <th scope="col" th:text="#{admin.reports.column.reporter}">Người báo cáo</th>
+                        <th scope="col" th:text="#{admin.reports.column.created}">Gửi lúc</th>
+                        <th scope="col" class="text-end" th:text="#{common.actions}">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${page.content}">
+                        <td>
+                            <span class="badge text-bg-light border" th:text="#{'enum.ReportTargetType.' + ${item.targetType}}">Truyện</span>
+                            <a class="text-decoration-none" th:if="${item.targetLink != null}" th:href="${item.targetLink}"
+                               th:text="${item.targetLabel}">Tên nội dung</a>
+                            <span class="text-secondary" th:if="${item.targetLink == null}" th:text="#{admin.reports.target.missing}">Không còn</span>
+                            <span class="badge text-bg-dark" th:if="${item.targetHidden}" th:text="#{admin.reports.target.hidden}">Đã ẩn</span>
+                        </td>
+                        <td>
+                            <div th:text="#{'enum.ReportReason.' + ${item.reason}}">Spam</div>
+                            <div class="small text-secondary comment-content" th:if="${item.detail != null}" th:text="${item.detail}">Mô tả</div>
+                        </td>
+                        <td th:text="${item.reporterUsername}">reader1</td>
+                        <td><th:block th:replace="~{fragments/display :: datetime(${item.createdAt})}"></th:block></td>
+                        <td class="text-end">
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/reports/{id}(id=${item.id})}"
+                               th:text="${item.status.name() == 'PENDING'} ? #{admin.reports.handle} : #{admin.author.requests.view}">Xử lý</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:replace="~{fragments/pagination :: pager(${page})}"></nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

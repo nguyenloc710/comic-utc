@@ -121,6 +121,36 @@ public final class MessageKeys {
     public static final String ERROR_CHAPTER_NO_DUPLICATED = "error.chapter.no.duplicated";
     public static final String ERROR_CHAPTER_NO_LOCKED = "error.chapter.no.locked";
     public static final String ERROR_CHAPTER_CONTENT_REQUIRED = "error.chapter.content.required";
+    // ----- Kiểm duyệt, báo cáo, hệ thống -----
+    /** {0}: tên truyện. */
+    public static final String FLASH_STORY_HIDDEN = "flash.story.hidden";
+    /** {0}: tên truyện. */
+    public static final String FLASH_STORY_UNHIDDEN = "flash.story.unhidden";
+    public static final String FLASH_CHAPTER_HIDDEN = "flash.chapter.hidden";
+    public static final String FLASH_CHAPTER_UNHIDDEN = "flash.chapter.unhidden";
+    public static final String FLASH_COMMENT_HIDDEN = "flash.comment.hidden";
+    public static final String FLASH_COMMENT_UNHIDDEN = "flash.comment.unhidden";
+    public static final String FLASH_REPORT_DISMISSED = "flash.report.dismissed";
+    public static final String FLASH_REPORT_RESOLVED = "flash.report.resolved";
+    /** {0}: tên đăng nhập, {1}: vai trò mới. */
+    public static final String FLASH_USER_ROLE_CHANGED = "flash.user.role.changed";
+    /** {0}: khóa tham số. */
+    public static final String FLASH_SETTING_SAVED = "flash.setting.saved";
+    public static final String ERROR_STORY_MODERATION_INVALID = "error.story.moderation.invalid";
+    public static final String ERROR_COMMENT_MODERATION_INVALID = "error.comment.moderation.invalid";
+    public static final String ERROR_REASON_REQUIRED = "error.reason.required";
+    public static final String ERROR_REPORT_NOT_FOUND = "error.report.not.found";
+    public static final String ERROR_REPORT_ALREADY_HANDLED = "error.report.already.handled";
+    public static final String ERROR_REPORT_ALREADY_PENDING = "error.report.already.pending";
+    public static final String ERROR_REPORT_TARGET_NOT_FOUND = "error.report.target.not.found";
+    public static final String ERROR_USER_LAST_ADMIN = "error.user.last.admin";
+    public static final String ERROR_USER_SELF_ROLE_CHANGE = "error.user.self.role.change";
+    /** {0}: khóa tham số. */
+    public static final String ERROR_SETTING_NOT_FOUND = "error.setting.not.found";
+    /** {0}: khóa tham số. */
+    public static final String ERROR_SETTING_READ_ONLY = "error.setting.read.only";
+    /** {0}: khóa tham số, {1}: kiểu giá trị. */
+    public static final String ERROR_SETTING_VALUE_INVALID = "error.setting.value.invalid";
     private MessageKeys() {
         throw new UnsupportedOperationException("Utility class");
     }

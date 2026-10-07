@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.edu.utc.comic.stats.dto.AuthorStatsOverview;
 import vn.edu.utc.comic.story.dto.StoryRatingSummary;
 import vn.edu.utc.comic.story.entity.Story;
+import vn.edu.utc.comic.story.enums.StoryType;
 
 /**
  * Truy vấn truyện; lọc động (tìm kiếm, thể loại, loại, trạng thái) đi qua Specification.
@@ -118,4 +119,17 @@ public interface StoryRepository extends JpaRepository<Story, Long>, JpaSpecific
             FROM Story s WHERE s.author.id = :authorId AND s.deletedAt IS NULL
             """)
     AuthorStatsOverview summarizeByAuthor(@Param("authorId") Long authorId);
+
+    /** Số truyện đang công khai theo loại, cho trang tổng quan quản trị. */
+    @Query("""
+            SELECT COUNT(s) FROM Story s
+            WHERE s.type = :type AND s.visibility = vn.edu.utc.comic.story.enums.StoryVisibility.PUBLISHED
+              AND s.deletedAt IS NULL
+            """)
+    long countPublicByType(@Param("type") StoryType type);
+
+    /** Ẩn / gỡ ẩn một chương đã đăng làm số chương hiển thị đổi theo. Chỉ ChapterPublishService được gọi. */
+    @Modifying
+    @Query("UPDATE Story s SET s.chapterCount = s.chapterCount + :delta WHERE s.id = :storyId")
+    int addChapterCount(@Param("storyId") Long storyId, @Param("delta") int delta);
 }

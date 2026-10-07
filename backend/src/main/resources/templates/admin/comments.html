@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.comments.title}">Bình luận</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.comments.title}">Bình luận</h1>
+<div layout:fragment="content">
+    <form class="card border-0 shadow-sm mb-3" th:action="@{/admin/comments}" method="get">
+        <div class="card-body row g-2 align-items-end">
+            <div class="col-12 col-md-7">
+                <label for="keyword" class="form-label small mb-1" th:text="#{admin.comments.filter.keyword}">Nội dung</label>
+                <input type="search" class="form-control" id="keyword" name="keyword" th:value="${filter.keyword}">
+            </div>
+            <div class="col-8 col-md-4">
+                <label for="status" class="form-label small mb-1" th:text="#{admin.users.filter.status}">Trạng thái</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="" th:text="#{common.all}">Tất cả</option>
+                    <option th:each="item : ${statuses}" th:value="${item}" th:selected="${item == filter.status}"
+                            th:text="#{'enum.CommentStatus.' + ${item}}">Hiển thị</option>
+                </select>
+            </div>
+            <div class="col-4 col-md-1 d-grid">
+                <button type="submit" class="btn btn-primary" th:aria-label="#{common.search}"><i class="bi bi-search"></i></button>
+            </div>
+        </div>
+    </form>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <p class="text-secondary small" th:text="#{admin.comments.total(${page.totalElements})}">20 bình luận</p>
+            <p class="text-center text-secondary py-4 mb-0" th:if="${page.isEmpty()}" th:text="#{common.empty}">Chưa có dữ liệu</p>
+            <div class="table-responsive" th:unless="${page.isEmpty()}">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{admin.comments.column.content}">Nội dung</th>
+                        <th scope="col" th:text="#{admin.comments.column.place}">Ở đâu</th>
+                        <th scope="col" th:text="#{admin.users.column.status}">Trạng thái</th>
+                        <th scope="col" class="text-end" th:text="#{common.actions}">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="comment : ${page.content}">
+                        <td class="admin-comment-cell">
+                            <div class="comment-content" th:text="${comment.content}">Nội dung</div>
+                            <div class="small text-secondary">
+                                <span th:text="${comment.authorUsername}">reader1</span> ·
+                                <th:block th:replace="~{fragments/display :: datetime(${comment.createdAt})}"></th:block>
+                            </div>
+                        </td>
+                        <td class="small">
+                            <a class="text-decoration-none" th:text="${comment.storyTitle}"
+                               th:href="${comment.chapterNo == null}
+                                   ? @{/stories/{slug}(slug=${comment.storySlug})}
+                                   : @{/stories/{slug}/chapters/{no}(slug=${comment.storySlug}, no=${comment.chapterNo})}">Tên truyện</a>
+                            <div class="text-secondary" th:if="${comment.chapterNo != null}" th:text="#{chapter.number(${comment.chapterNo})}">Chương 3</div>
+                        </td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${comment.status.name() == 'VISIBLE' ? 'text-bg-success' : (comment.status.name() == 'HIDDEN' ? 'text-bg-danger' : 'text-bg-secondary')}"
+                                  th:text="#{'enum.CommentStatus.' + ${comment.status}}">Hiển thị</span>
+                            <div class="small text-danger" th:if="${comment.hiddenReason != null}" th:text="${comment.hiddenReason}">Lý do</div>
+                        </td>
+                        <td class="text-end">
+                            <form class="d-inline-flex gap-1" th:if="${comment.status.name() == 'VISIBLE'}" method="post"
+                                  th:action="@{/admin/comments/{id}/hide(id=${comment.id})}">
+                                <input type="text" class="form-control form-control-sm" name="reason" maxlength="500"
+                                       th:placeholder="#{admin.moderation.reason}" th:aria-label="#{admin.moderation.reason}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm text-nowrap" th:text="#{admin.comments.hide}">Ẩn</button>
+                            </form>
+                            <form class="d-inline" th:if="${comment.status.name() == 'HIDDEN'}" method="post"
+                                  th:action="@{/admin/comments/{id}/unhide(id=${comment.id})}">
+                                <button type="submit" class="btn btn-outline-success btn-sm" th:text="#{admin.comments.unhide}">Gỡ ẩn</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:replace="~{fragments/pagination :: pager(${page})}"></nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

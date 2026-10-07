@@ -109,4 +109,16 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
             ORDER BY c.viewCount DESC, c.id DESC
             """)
     List<TopChapterResponse> findTopChaptersByAuthor(@Param("authorId") Long authorId, Pageable pageable);
+
+    /** Số chương người đọc đang thấy được (chương đã đăng của truyện đang công khai). */
+    @Query("""
+            SELECT COUNT(c) FROM Chapter c JOIN c.story s
+            WHERE c.status = vn.edu.utc.comic.chapter.enums.ChapterStatus.PUBLISHED
+              AND s.visibility = vn.edu.utc.comic.story.enums.StoryVisibility.PUBLISHED AND s.deletedAt IS NULL
+            """)
+    long countPubliclyReadable();
+
+    /** Chỉ id truyện của chương, để khóa dòng truyện trước khi nạp gì khác. */
+    @Query("SELECT c.story.id FROM Chapter c WHERE c.id = :chapterId")
+    Optional<Long> findStoryIdById(@Param("chapterId") Long chapterId);
 }

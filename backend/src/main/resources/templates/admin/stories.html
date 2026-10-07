@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.stories.title}">Truyện</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.stories.title}">Truyện</h1>
+<div layout:fragment="content">
+    <form class="card border-0 shadow-sm mb-3" th:action="@{/admin/stories}" method="get">
+        <div class="card-body row g-2 align-items-end">
+            <div class="col-12 col-md-5">
+                <label for="keyword" class="form-label small mb-1" th:text="#{admin.stories.filter.keyword}">Tên truyện hoặc slug</label>
+                <input type="search" class="form-control" id="keyword" name="keyword" th:value="${filter.keyword}">
+            </div>
+            <div class="col-6 col-md-3">
+                <label for="type" class="form-label small mb-1" th:text="#{story.filter.type}">Loại truyện</label>
+                <select class="form-select" id="type" name="type">
+                    <option value="" th:text="#{common.all}">Tất cả</option>
+                    <option th:each="type : ${types}" th:value="${type}" th:selected="${type == filter.type}"
+                            th:text="#{'enum.StoryType.' + ${type}}">Truyện tranh</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <label for="visibility" class="form-label small mb-1" th:text="#{studio.stories.column.visibility}">Hiển thị</label>
+                <select class="form-select" id="visibility" name="visibility">
+                    <option value="" th:text="#{common.all}">Tất cả</option>
+                    <option th:each="visibility : ${visibilities}" th:value="${visibility}" th:selected="${visibility == filter.visibility}"
+                            th:text="#{'enum.StoryVisibility.' + ${visibility}}">Công khai</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-1 d-grid">
+                <button type="submit" class="btn btn-primary" th:aria-label="#{common.search}"><i class="bi bi-search"></i></button>
+            </div>
+        </div>
+    </form>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <p class="text-secondary small" th:text="#{story.list.result(${page.totalElements})}">20 truyện</p>
+            <p class="text-center text-secondary py-4 mb-0" th:if="${page.isEmpty()}" th:text="#{common.empty}">Chưa có dữ liệu</p>
+            <div class="table-responsive" th:unless="${page.isEmpty()}">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{studio.stories.column.story}">Truyện</th>
+                        <th scope="col" th:text="#{admin.stories.column.author}">Tác giả</th>
+                        <th scope="col" th:text="#{studio.stories.column.visibility}">Hiển thị</th>
+                        <th scope="col" class="text-end" th:text="#{studio.stories.column.chapters}">Chương</th>
+                        <th scope="col" class="text-end" th:text="#{studio.stories.column.views}">Lượt xem</th>
+                        <th scope="col" class="text-end" th:text="#{common.actions}">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="story : ${page.content}">
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div th:replace="~{fragments/studio :: coverThumb(${story.coverUrl})}"></div>
+                                <div class="studio-story-name">
+                                    <a class="fw-semibold text-decoration-none" th:href="@{/admin/stories/{id}(id=${story.id})}"
+                                       th:text="${story.title}">Tên truyện</a>
+                                    <div class="small">
+                                        <th:block th:replace="~{fragments/story :: badges(${story.type}, ${story.status})}"></th:block>
+                                        <span class="badge text-bg-dark" th:if="${story.deletedAt != null}" th:text="#{admin.stories.deleted}">Đã xóa</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div th:text="${story.authorDisplayName}">Tác giả</div>
+                            <div class="small text-secondary" th:text="${story.authorUsername}">author1</div>
+                        </td>
+                        <td>
+                            <span th:replace="~{fragments/studio :: visibility(${story.visibility})}"></span>
+                            <div class="small text-danger" th:if="${story.hiddenReason != null}" th:text="${story.hiddenReason}">Lý do</div>
+                        </td>
+                        <td class="text-end" th:text="${story.chapterCount}">12</td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(story.viewCount, 1, 'POINT')}">1.234</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/stories/{id}(id=${story.id})}"
+                               th:text="#{admin.stories.moderate}">Kiểm duyệt</a>
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/stories/{slug}(slug=${story.slug})}"
+                               th:text="#{studio.story.view}">Xem</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:replace="~{fragments/pagination :: pager(${page})}"></nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

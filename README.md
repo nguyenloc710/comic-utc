@@ -8,7 +8,7 @@ Website đọc và đăng tải truyện tranh, truyện chữ tích hợp chatb
 - **Chatbot:** Spring AI + function calling
 - **Vai trò:** khách vãng lai, độc giả (`USER`), tác giả (`AUTHOR`), quản trị viên (`ADMIN`)
 
-> Trạng thái: xong **giai đoạn 4** — vòng đời tác giả đầy đủ: độc giả đăng ký làm tác giả, quản trị viên duyệt, tác giả tạo truyện (bìa, thể loại), soạn chương truyện chữ (Quill) hoặc tải ảnh chương truyện tranh (kéo thả sắp xếp), lưu nháp / đăng ngay / hẹn giờ (job tự đăng), thống kê và biểu đồ lượt xem; thông báo trong ứng dụng (chuông) cho duyệt tác giả, chương mới, trả lời bình luận. Trước đó: phía độc giả (GĐ 3), tài khoản và quản trị cơ bản (GĐ 2). Kiểm duyệt và quản trị nâng cao bắt đầu từ giai đoạn 5. Tiến độ chi tiết: [docs/02-LO-TRINH.md](docs/02-LO-TRINH.md).
+> Trạng thái: xong **giai đoạn 5** — quản trị hoàn chỉnh: kiểm duyệt truyện / chương / bình luận (ẩn kèm lý do, tác giả được báo), độc giả báo cáo vi phạm và quản trị viên xử lý trong hàng đợi, đổi vai trò tài khoản, dashboard KPI + biểu đồ, sửa tham số vận hành tại chỗ, nhật ký kiểm toán. Trước đó: vòng đời tác giả (GĐ 4), phía độc giả (GĐ 3), tài khoản (GĐ 2). Chatbot gợi ý truyện bắt đầu từ giai đoạn 6. Tiến độ chi tiết: [docs/02-LO-TRINH.md](docs/02-LO-TRINH.md).
 
 ## Chạy dự án
 
@@ -26,7 +26,7 @@ Mở http://localhost:8080. Profile mặc định là `dev`: Flyway tạo lượ
 |---|---|---|---|
 | `admin` | `Admin@123` | Quản trị viên | `/admin` (người dùng, thể loại) |
 | `author1` … `author3` | `Demo@123` | Tác giả | `/studio` (truyện, chương, thống kê); xem trước được truyện nháp/bị ẩn của chính mình |
-| `reader1` … `reader15` | `Demo@123` | Độc giả | theo dõi, đánh giá, bình luận, `/me/library`, `/me/history`, `/me/notifications`, `/me/author-request` |
+| `reader1` … `reader15` | `Demo@123` | Độc giả | theo dõi, đánh giá, bình luận, báo cáo vi phạm, `/me/library`, `/me/history`, `/me/notifications`, `/me/author-request` |
 
 Hoặc tự tạo tài khoản độc giả ở `/register`.
 
@@ -41,10 +41,12 @@ Tài khoản `admin` nằm trong dữ liệu khởi tạo của mọi môi trư�
 | http://localhost:8080/me/notifications · `/me/author-request` | Thông báo · đăng ký làm tác giả |
 | http://localhost:8080/studio/stories · `/studio/stats` | Tác giả: truyện và chương · thống kê |
 | http://localhost:8080/admin/author-requests | Quản trị: duyệt yêu cầu làm tác giả |
+| http://localhost:8080/admin/stories · `/admin/comments` · `/admin/reports` | Quản trị: kiểm duyệt truyện và chương · bình luận · hàng đợi báo cáo vi phạm |
+| http://localhost:8080/admin/settings · `/admin/audit-logs` | Quản trị: tham số vận hành · nhật ký kiểm toán |
 | http://localhost:8080/login · `/register` | Đăng nhập · đăng ký |
 | http://localhost:8080/me/profile | Hồ sơ cá nhân, đổi mật khẩu |
 | http://localhost:8080/studio | Khu vực tác giả |
-| http://localhost:8080/admin | Quản trị (người dùng, thể loại, yêu cầu tác giả) |
+| http://localhost:8080/admin | Quản trị: tổng quan (KPI, biểu đồ), người dùng, thể loại |
 | http://localhost:8080/swagger-ui.html | Tài liệu API JSON (`/api/**`, cần quyền ADMIN) |
 | http://localhost:8080/actuator/health | Kiểm tra tình trạng hệ thống |
 | http://localhost:8082 | Adminer — xem CSDL (server `mysql`, user `comic`, mật khẩu `comic_local_pwd`, DB `comic_utc`) |

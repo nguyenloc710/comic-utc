@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Nút "Báo cáo vi phạm" cho một truyện / chương; bình luận có nút riêng do comments.js dựng.
+  Chỉ hiện khi người xem đã đăng nhập và không phải tác giả của nội dung (enabled).
+-->
+<!-- Tên fragment không được trùng tên thẻ (button): Thymeleaf sẽ chọn theo tên thẻ và lấy nhầm nút của hộp thoại -->
+<button th:fragment="reportButton(targetType, targetId, enabled)" th:if="${enabled}" type="button"
+        class="btn btn-outline-secondary" data-report-button
+        th:attr="data-target-type=${targetType}, data-target-id=${targetId}">
+    <i class="bi bi-flag"></i> <span th:text="#{report.button}">Báo cáo</span>
+</button>
+
+<!--
+  Hộp thoại báo cáo dùng chung cho cả trang: report.js điền loại và id đối tượng khi mở, gửi tới /api/reports.
+  Chỉ dựng cho người đã đăng nhập (khách không báo cáo được).
+-->
+<div th:fragment="modal" class="modal fade" id="reportModal" tabindex="-1" th:if="${currentUser != null}"
+     aria-labelledby="reportModalTitle" aria-hidden="true"
+     th:attr="data-label-sent=#{report.sent}">
+    <div class="modal-dialog">
+        <form class="modal-content" data-report-form novalidate>
+            <div class="modal-header">
+                <h2 class="modal-title h6 fw-bold" id="reportModalTitle" th:text="#{report.title}">Báo cáo vi phạm</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" th:aria-label="#{common.cancel}"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-secondary small" th:text="#{report.intro}">Quản trị viên sẽ xem xét báo cáo của bạn.</p>
+                <div class="mb-3">
+                    <label for="reportReason" class="form-label" th:text="#{report.reason}">Lý do</label>
+                    <select class="form-select" id="reportReason" name="reason" required>
+                        <option th:each="reason : ${T(vn.edu.utc.comic.report.enums.ReportReason).values()}"
+                                th:value="${reason}" th:text="#{'enum.ReportReason.' + ${reason}}">Spam</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label for="reportDetail" class="form-label" th:text="#{report.detail}">Mô tả thêm</label>
+                    <textarea class="form-control" id="reportDetail" name="detail" rows="3" maxlength="1000"
+                              th:placeholder="#{report.detail.placeholder}"></textarea>
+                </div>
+                <div class="alert alert-danger d-none mb-0" role="alert" data-report-error></div>
+                <div class="alert alert-success d-none mb-0" role="alert" data-report-success></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" th:text="#{common.cancel}">Hủy</button>
+                <button type="submit" class="btn btn-danger" th:text="#{report.submit}">Gửi báo cáo</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -35,4 +35,6 @@ public interface AuthorRequestRepository extends JpaRepository<AuthorRequest, Lo
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM AuthorRequest r WHERE r.id = :requestId")
     Optional<AuthorRequest> findForReview(@Param("requestId") Long requestId);
+
+    long countByStatus(AuthorRequestStatus status);
 }

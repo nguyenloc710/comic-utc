@@ -52,4 +52,16 @@ public interface StoryViewDailyRepository extends JpaRepository<StoryViewDaily, 
             """)
     List<DailyViewPoint> findDailyViewsByAuthor(@Param("authorId") Long authorId, @Param("storyId") Long storyId,
                                                 @Param("fromDate") LocalDate fromDate);
+
+    /** Tổng lượt xem toàn hệ thống trong một ngày; 0 khi chưa có. */
+    @Query("SELECT COALESCE(SUM(v.viewCount), 0L) FROM StoryViewDaily v WHERE v.id.viewDate = :viewDate")
+    long sumViewsOn(@Param("viewDate") LocalDate viewDate);
+
+    /** Tổng lượt xem toàn hệ thống theo ngày từ một mốc; ngày không có lượt xem không có dòng. */
+    @Query("""
+            SELECT new vn.edu.utc.comic.stats.dto.DailyViewPoint(v.id.viewDate, SUM(v.viewCount))
+            FROM StoryViewDaily v WHERE v.id.viewDate >= :fromDate
+            GROUP BY v.id.viewDate
+            """)
+    List<DailyViewPoint> sumViewsByDay(@Param("fromDate") LocalDate fromDate);
 }

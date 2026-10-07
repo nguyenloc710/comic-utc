@@ -3,6 +3,7 @@ package vn.edu.utc.comic.chapter.service;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -12,10 +13,15 @@ import vn.edu.utc.comic.chapter.entity.Chapter;
 import vn.edu.utc.comic.chapter.enums.ChapterStatus;
 import vn.edu.utc.comic.chapter.event.ChapterPublishedEvent;
 import vn.edu.utc.comic.chapter.repository.ChapterRepository;
+import vn.edu.utc.comic.common.audit.AuditAction;
+import vn.edu.utc.comic.common.audit.AuditService;
+import vn.edu.utc.comic.common.audit.AuditService.AuditedEntity;
+import vn.edu.utc.comic.common.constant.ApiConstants;
 import vn.edu.utc.comic.common.constant.DateTimeConstants;
 import vn.edu.utc.comic.common.exception.ApiException;
 import vn.edu.utc.comic.common.exception.ErrorCode;
 import vn.edu.utc.comic.common.security.Viewer;
+import vn.edu.utc.comic.notification.event.ContentHiddenEvent;
 import vn.edu.utc.comic.story.entity.Story;
 import vn.edu.utc.comic.story.enums.StoryType;
 import vn.edu.utc.comic.story.repository.StoryRepository;
@@ -36,10 +42,17 @@ import vn.edu.utc.comic.story.service.StoryAccessPolicy;
 @RequiredArgsConstructor
 public class ChapterPublishService {
 
+    private static final String AUDIT_STORY_ID = "storyId";
+    private static final String AUDIT_REASON = "reason";
+    private static final String LABEL_SEPARATOR = " – ";
+    private static final String PATH_SEPARATOR = "/";
+    private static final String EDIT_SUFFIX = "/edit";
+
     private final ChapterRepository chapterRepository;
     private final StoryRepository storyRepository;
     private final StudioChapterService studioChapterService;
     private final StoryAccessPolicy accessPolicy;
+    private final AuditService auditService;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
@@ -127,6 +140,56 @@ public class ChapterPublishService {
         return true;
     }
 
+    /**
+     * Quản trị viên ẩn một chương đã đăng (kèm lý do): chương biến mất với người đọc, số chương của truyện
+     * giảm một, tác giả nhận thông báo kèm lý do.
+     *
+     * @throws ApiException CHAPTER_NOT_FOUND; CHAPTER_INVALID_TRANSITION nếu chương không đang đăng
+     */
+    @Transactional
+    public void hideChapter(Long chapterId, String reason) {
+        Chapter chapter = lockStoryThenLoad(chapterId);
+        requireTransition(chapter, ChapterStatus.HIDDEN);
+        Story story = chapter.getStory();
+        chapter.setStatus(ChapterStatus.HIDDEN);
+        chapter.setHiddenReason(reason.trim());
+        storyRepository.addChapterCount(story.getId(), -1);
+        auditService.recordForCurrentUser(AuditAction.CHAPTER_HIDDEN, AuditedEntity.of(Chapter.class, chapterId),
+                Map.of(AUDIT_STORY_ID, story.getId(), AUDIT_REASON, chapter.getHiddenReason()));
+        eventPublisher.publishEvent(new ContentHiddenEvent(story.getAuthor().getId(),
+                chapter.getChapterNo() + LABEL_SEPARATOR + story.getTitle(), chapter.getHiddenReason(),
+                ApiConstants.STUDIO_CHAPTERS_PATH + PATH_SEPARATOR + chapterId + EDIT_SUFFIX));
+        log.info("Ẩn chương {}", chapterId);
+    }
+
+    /**
+     * Gỡ ẩn: chương đăng trở lại, số chương cộng lại; KHÔNG phát sự kiện chương mới nên người theo dõi
+     * không nhận lại thông báo.
+     *
+     * @throws ApiException CHAPTER_NOT_FOUND; CHAPTER_INVALID_TRANSITION nếu chương không đang bị ẩn
+     */
+    @Transactional
+    public void unhideChapter(Long chapterId) {
+        Chapter chapter = lockStoryThenLoad(chapterId);
+        if (chapter.getStatus() != ChapterStatus.HIDDEN) {
+            throw new ApiException(ErrorCode.CHAPTER_INVALID_TRANSITION);
+        }
+        chapter.setStatus(ChapterStatus.PUBLISHED);
+        chapter.setHiddenReason(null);
+        storyRepository.addChapterCount(chapter.getStory().getId(), 1);
+        auditService.recordForCurrentUser(AuditAction.CHAPTER_UNHIDDEN, AuditedEntity.of(Chapter.class, chapterId),
+                Map.of(AUDIT_STORY_ID, chapter.getStory().getId()));
+        log.info("Gỡ ẩn chương {}", chapterId);
+    }
+
+    /** Khóa dòng truyện bằng câu lệnh đầu tiên của transaction rồi mới nạp chương (xem StoryRepository). */
+    private Chapter lockStoryThenLoad(Long chapterId) {
+        Long storyId = chapterRepository.findStoryIdById(chapterId)
+                .orElseThrow(() -> new ApiException(ErrorCode.CHAPTER_NOT_FOUND));
+        storyRepository.lockForCounterUpdate(storyId);
+        return chapterRepository.findWithStoryById(chapterId)
+                .orElseThrow(() -> new ApiException(ErrorCode.CHAPTER_NOT_FOUND));
+    }
     private void recordPublished(Story story, Chapter chapter, Instant now) {
         storyRepository.recordChapterPublished(story.getId(), now);
         eventPublisher.publishEvent(new ChapterPublishedEvent(story.getId(), story.getTitle(), story.getSlug(),

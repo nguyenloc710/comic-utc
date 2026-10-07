@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.stories.moderate}">Kiểm duyệt truyện</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.stories.moderate}">Kiểm duyệt truyện</h1>
+<div layout:fragment="content">
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body d-flex flex-wrap align-items-start gap-3">
+            <div th:replace="~{fragments/studio :: coverThumb(${story.coverUrl})}"></div>
+            <div class="flex-grow-1 profile-identity">
+                <div class="fw-semibold" th:text="${story.title}">Tên truyện</div>
+                <div class="small mb-1">
+                    <th:block th:replace="~{fragments/story :: badges(${story.type}, ${story.status})}"></th:block>
+                    <span th:replace="~{fragments/studio :: visibility(${story.visibility})}"></span>
+                    <span class="badge text-bg-dark" th:if="${story.deletedAt != null}" th:text="#{admin.stories.deleted}">Đã xóa</span>
+                </div>
+                <div class="small text-secondary">
+                    <span th:text="#{admin.stories.column.author}">Tác giả</span>:
+                    <span th:text="${story.authorDisplayName}">Tác giả</span> (<span th:text="${story.authorUsername}">author1</span>)
+                    · <span th:text="#{story.chapter.count(${story.chapterCount})}">12 chương</span>
+                    · <i class="bi bi-eye"></i> <span th:text="${#numbers.formatInteger(story.viewCount, 1, 'POINT')}">1.234</span>
+                    · <i class="bi bi-chat-dots"></i> <span th:text="${story.commentCount}">7</span>
+                </div>
+                <div class="small text-danger mt-1" th:if="${story.hiddenReason != null}"
+                     th:text="#{studio.story.hidden.notice(${story.hiddenReason})}">Lý do bị ẩn</div>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" th:href="@{/stories/{slug}(slug=${story.slug})}">
+                <i class="bi bi-eye"></i> <span th:text="#{studio.story.view}">Xem trang truyện</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm console-form-card mb-3" th:if="${story.deletedAt == null}">
+        <div class="card-body">
+            <!-- Ẩn truyện: lý do bắt buộc, được gửi tới tác giả -->
+            <form th:if="${story.visibility.name() == 'PUBLISHED'}" method="post" th:object="${form}"
+                  th:action="@{/admin/stories/{id}/hide(id=${story.id})}">
+                <div class="mb-3">
+                    <label for="reason" class="form-label" th:text="#{admin.moderation.reason}">Lý do ẩn</label>
+                    <textarea class="form-control" rows="2" th:field="*{reason}" th:errorclass="is-invalid"></textarea>
+                    <div class="invalid-feedback" th:errors="*{reason}">Lỗi</div>
+                    <div class="form-text" th:text="#{admin.moderation.reason.hint}">Tác giả sẽ đọc được lý do này</div>
+                </div>
+                <button type="submit" class="btn btn-danger" th:text="#{admin.stories.hide}">Ẩn truyện</button>
+            </form>
+            <form th:if="${story.visibility.name() == 'HIDDEN'}" method="post"
+                  th:action="@{/admin/stories/{id}/unhide(id=${story.id})}">
+                <button type="submit" class="btn btn-success" th:text="#{admin.stories.unhide}">Gỡ ẩn truyện</button>
+            </form>
+            <p class="text-secondary mb-0" th:if="${story.visibility.name() == 'DRAFT'}" th:text="#{admin.stories.draft.note}">Truyện còn là bản nháp.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h2 class="h6 fw-bold mb-3" th:text="#{studio.chapters.title}">Danh sách chương</h2>
+            <p class="text-center text-secondary py-4 mb-0" th:if="${chapters.isEmpty()}" th:text="#{studio.chapters.empty}">Chưa có chương</p>
+            <div class="table-responsive" th:unless="${chapters.isEmpty()}">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{studio.chapters.column.chapter}">Chương</th>
+                        <th scope="col" th:text="#{studio.chapters.column.status}">Trạng thái</th>
+                        <th scope="col" class="text-end" th:text="#{studio.chapters.column.views}">Lượt xem</th>
+                        <th scope="col" class="text-end" th:text="#{common.actions}">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="chapter : ${chapters}">
+                        <td>
+                            <a class="fw-semibold text-decoration-none"
+                               th:href="@{/stories/{slug}/chapters/{no}(slug=${story.slug}, no=${chapter.chapterNo})}"
+                               th:text="#{chapter.number(${chapter.chapterNo})}">Chương 1</a>
+                            <div class="small text-secondary" th:if="${chapter.title != null}" th:text="${chapter.title}">Tên chương</div>
+                        </td>
+                        <td>
+                            <span th:replace="~{fragments/studio :: chapterStatus(${chapter.status})}"></span>
+                            <div class="small text-danger" th:if="${chapter.hiddenReason != null}" th:text="${chapter.hiddenReason}">Lý do</div>
+                        </td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(chapter.viewCount, 1, 'POINT')}">1.234</td>
+                        <td class="text-end">
+                            <!-- Form ẩn chương nằm trong bảng nên không có ô lỗi riêng: thiếu lý do báo ở flash -->
+                            <form class="d-inline-flex gap-1" th:if="${chapter.status.name() == 'PUBLISHED'}" method="post"
+                                  th:action="@{/admin/stories/{id}/chapters/{chapterId}/hide(id=${story.id}, chapterId=${chapter.id})}">
+                                <input type="text" class="form-control form-control-sm" name="reason" maxlength="1000"
+                                       th:placeholder="#{admin.moderation.reason}" th:aria-label="#{admin.moderation.reason}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm text-nowrap" th:text="#{admin.chapters.hide}">Ẩn</button>
+                            </form>
+                            <form class="d-inline" th:if="${chapter.status.name() == 'HIDDEN'}" method="post"
+                                  th:action="@{/admin/stories/{id}/chapters/{chapterId}/unhide(id=${story.id}, chapterId=${chapter.id})}">
+                                <button type="submit" class="btn btn-outline-success btn-sm" th:text="#{admin.chapters.unhide}">Gỡ ẩn</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

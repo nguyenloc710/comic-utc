@@ -67,6 +67,13 @@
       remove.addEventListener('click', function () { deleteComment(comment); });
       actions.append(remove);
     }
+    // Báo cáo vi phạm: chỉ với bình luận của người khác; hộp thoại do report.js (window.App.openReport) phụ trách
+    if (authenticated && !comment.mine && comment.status === 'VISIBLE' && window.App.openReport) {
+      const report = element('button', 'comment-action', labels.labelReport);
+      report.type = 'button';
+      report.addEventListener('click', function () { window.App.openReport('COMMENT', comment.id); });
+      actions.append(report);
+    }
     return actions;
   }
 

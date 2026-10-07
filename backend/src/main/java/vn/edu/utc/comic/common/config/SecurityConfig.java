@@ -55,7 +55,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(ApiConstants.HEALTH_PATH).permitAll()
                         .requestMatchers(ADMIN_ONLY_TOOL_PATHS).hasRole(SecurityConstants.ROLE_ADMIN)
-                        .requestMatchers(ApiConstants.ADMIN_ROOT + ALL_SUB_PATHS).hasRole(SecurityConstants.ROLE_ADMIN)
+                        .requestMatchers(ApiConstants.ADMIN_ROOT + ALL_SUB_PATHS,
+                                ApiConstants.API_ADMIN_PATH + ALL_SUB_PATHS).hasRole(SecurityConstants.ROLE_ADMIN)
                         .requestMatchers(ApiConstants.STUDIO_ROOT + ALL_SUB_PATHS,
                                 ApiConstants.API_STUDIO_PATH + ALL_SUB_PATHS).hasRole(SecurityConstants.ROLE_AUTHOR)
                         .requestMatchers(ApiConstants.ME_ROOT + ALL_SUB_PATHS).hasRole(SecurityConstants.ROLE_USER)

@@ -8,11 +8,70 @@
 <body>
 <h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.dashboard.title}">Tổng quan</h1>
 <div layout:fragment="content">
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
-            <p class="text-secondary mb-0" th:text="#{admin.dashboard.building}">Thống kê hệ thống sẽ xuất hiện tại đây.</p>
+    <div class="row row-cols-2 row-cols-md-4 g-3 mb-3">
+        <div th:replace="~{fragments/studio :: statCard('bi-people', #{admin.dashboard.users}, ${overview.userCount})}"></div>
+        <div th:replace="~{fragments/studio :: statCard('bi-brush', #{admin.dashboard.authors}, ${overview.authorCount})}"></div>
+        <div th:replace="~{fragments/studio :: statCard('bi-image', #{admin.dashboard.comics}, ${overview.comicCount})}"></div>
+        <div th:replace="~{fragments/studio :: statCard('bi-book', #{admin.dashboard.novels}, ${overview.novelCount})}"></div>
+        <div th:replace="~{fragments/studio :: statCard('bi-list-ol', #{admin.dashboard.chapters}, ${overview.publishedChapterCount})}"></div>
+        <div th:replace="~{fragments/studio :: statCard('bi-eye', #{admin.dashboard.views.today}, ${overview.viewsToday})}"></div>
+        <div class="col">
+            <a class="card border-0 shadow-sm h-100 stat-card text-decoration-none" th:href="@{/admin/author-requests}">
+                <div class="card-body">
+                    <div class="small text-secondary"><i class="bi bi-person-check"></i> <span th:text="#{admin.dashboard.pending.requests}">Yêu cầu chờ duyệt</span></div>
+                    <div class="stat-value" th:classappend="${overview.pendingAuthorRequests > 0} ? 'text-warning'"
+                         th:text="${overview.pendingAuthorRequests}">2</div>
+                </div>
+            </a>
+        </div>
+        <div class="col">
+            <a class="card border-0 shadow-sm h-100 stat-card text-decoration-none" th:href="@{/admin/reports}">
+                <div class="card-body">
+                    <div class="small text-secondary"><i class="bi bi-flag"></i> <span th:text="#{admin.dashboard.pending.reports}">Báo cáo chờ xử lý</span></div>
+                    <div class="stat-value" th:classappend="${overview.pendingReports > 0} ? 'text-danger'"
+                         th:text="${overview.pendingReports}">3</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Biểu đồ do admin-dashboard.js vẽ từ một lời gọi API -->
+    <div data-admin-charts
+         th:attr="data-url=@{/api/admin/stats/charts}, data-label-registrations=#{admin.dashboard.chart.registrations},
+                  data-label-views=#{admin.dashboard.views}, data-label-stories=#{admin.dashboard.stories}">
+        <p class="alert alert-danger d-none" role="alert" data-charts-error th:text="#{studio.stats.chart.error}">Không tải được biểu đồ</p>
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100"><div class="card-body">
+                    <h2 class="h6 fw-bold mb-3" th:text="#{admin.dashboard.chart.registrations}">Đăng ký mới 30 ngày</h2>
+                    <div class="stats-chart"><canvas data-chart-registrations></canvas></div>
+                </div></div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100"><div class="card-body">
+                    <h2 class="h6 fw-bold mb-3" th:text="#{admin.dashboard.chart.views}">Lượt xem 30 ngày</h2>
+                    <div class="stats-chart"><canvas data-chart-views></canvas></div>
+                </div></div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100"><div class="card-body">
+                    <h2 class="h6 fw-bold mb-3" th:text="#{admin.dashboard.chart.genres}">Phân bố thể loại</h2>
+                    <div class="stats-chart"><canvas data-chart-genres></canvas></div>
+                </div></div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100"><div class="card-body">
+                    <h2 class="h6 fw-bold mb-3" th:text="#{admin.dashboard.chart.top}">Truyện xem nhiều nhất</h2>
+                    <div class="stats-chart"><canvas data-chart-top></canvas></div>
+                </div></div>
+            </div>
         </div>
     </div>
 </div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/webjars/chart.js/dist/chart.umd.js}"></script>
+    <script th:src="@{/js/admin-dashboard.js}"></script>
+</th:block>
 </body>
 </html>

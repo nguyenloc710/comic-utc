@@ -8,6 +8,7 @@ import org.mapstruct.Named;
 import vn.edu.utc.comic.common.storage.MediaUrlMapper;
 import vn.edu.utc.comic.genre.entity.Genre;
 import vn.edu.utc.comic.genre.mapper.GenreMapper;
+import vn.edu.utc.comic.story.dto.AdminStoryResponse;
 import vn.edu.utc.comic.story.dto.StoryCardResponse;
 import vn.edu.utc.comic.story.dto.StoryDetailResponse;
 import vn.edu.utc.comic.story.dto.StoryForm;
@@ -41,6 +42,13 @@ public interface StoryMapper {
 
     List<StudioStoryResponse> toStudioResponses(List<Story> stories);
 
+    @Mapping(target = "coverUrl", source = "coverPath", qualifiedByName = MediaUrlMapper.MEDIA_URL)
+    @Mapping(target = "authorId", source = "author.id")
+    @Mapping(target = "authorUsername", source = "author.username")
+    @Mapping(target = "authorDisplayName", source = "author.displayName")
+    AdminStoryResponse toAdminResponse(Story story);
+
+    List<AdminStoryResponse> toAdminResponses(List<Story> stories);
     /** Form sửa truyện điền sẵn; ô chọn ảnh bìa luôn để trống (bỏ trống nghĩa là giữ bìa hiện tại). */
     @Mapping(target = "genreIds", source = "genres", qualifiedByName = GENRE_IDS)
     @Mapping(target = "cover", ignore = true)

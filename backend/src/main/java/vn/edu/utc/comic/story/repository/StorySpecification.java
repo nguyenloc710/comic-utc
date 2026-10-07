@@ -14,6 +14,7 @@ import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.springframework.data.jpa.domain.Specification;
 import vn.edu.utc.comic.common.config.MysqlFulltextFunctionContributor;
 import vn.edu.utc.comic.genre.entity.Genre;
+import vn.edu.utc.comic.story.dto.AdminStoryFilterRequest;
 import vn.edu.utc.comic.story.dto.StoryFilterRequest;
 import vn.edu.utc.comic.story.entity.Story;
 import vn.edu.utc.comic.story.enums.StorySort;
@@ -41,6 +42,25 @@ public final class StorySpecification {
         return (root, query, builder) -> builder.greaterThanOrEqualTo(root.get("ratingCount"), minRatingCount);
     }
 
+    /** Bộ lọc của màn quản trị: không ghép điều kiện công khai, quản trị viên thấy cả nháp, ẩn và đã xóa. */
+    public static Specification<Story> adminMatching(AdminStoryFilterRequest filter) {
+        return (root, query, builder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (filter.keyword() != null && !filter.keyword().isBlank()) {
+                String pattern = "%" + escapeLike(filter.keyword().trim()) + "%";
+                predicates.add(builder.or(
+                        builder.like(root.get("title"), pattern, LIKE_ESCAPE),
+                        builder.like(root.get("slug"), pattern, LIKE_ESCAPE)));
+            }
+            if (filter.type() != null) {
+                predicates.add(builder.equal(root.get("type"), filter.type()));
+            }
+            if (filter.visibility() != null) {
+                predicates.add(builder.equal(root.get("visibility"), filter.visibility()));
+            }
+            return builder.and(predicates.toArray(new Predicate[0]));
+        };
+    }
     /** Các tiêu chí lọc của người dùng, kèm thứ tự sắp xếp tương ứng. */
     public static Specification<Story> matching(StoryFilterRequest filter) {
         return (root, query, builder) -> {

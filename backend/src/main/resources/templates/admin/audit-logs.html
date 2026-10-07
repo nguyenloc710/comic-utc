@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.audit.title}">Nhật ký kiểm toán</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.audit.title}">Nhật ký kiểm toán</h1>
+<div layout:fragment="content">
+    <form class="card border-0 shadow-sm mb-3" th:action="@{/admin/audit-logs}" method="get">
+        <div class="card-body row g-2 align-items-end">
+            <div class="col-12 col-md-5">
+                <label for="action" class="form-label small mb-1" th:text="#{admin.audit.column.action}">Hành động</label>
+                <select class="form-select" id="action" name="action">
+                    <option value="" th:text="#{common.all}">Tất cả</option>
+                    <option th:each="item : ${actions}" th:value="${item}" th:selected="${item == filter.action}"
+                            th:text="${item}">LOGIN_SUCCESS</option>
+                </select>
+            </div>
+            <div class="col-8 col-md-6">
+                <label for="actor" class="form-label small mb-1" th:text="#{admin.audit.column.actor}">Người thực hiện</label>
+                <input type="search" class="form-control" id="actor" name="actor" th:value="${filter.actor}">
+            </div>
+            <div class="col-4 col-md-1 d-grid">
+                <button type="submit" class="btn btn-primary" th:aria-label="#{common.search}"><i class="bi bi-search"></i></button>
+            </div>
+        </div>
+    </form>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <p class="text-secondary small" th:text="#{admin.audit.total(${page.totalElements})}">120 dòng</p>
+            <p class="text-center text-secondary py-4 mb-0" th:if="${page.isEmpty()}" th:text="#{common.empty}">Chưa có dữ liệu</p>
+            <div class="table-responsive" th:unless="${page.isEmpty()}">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th scope="col" th:text="#{admin.audit.column.time}">Thời điểm</th>
+                        <th scope="col" th:text="#{admin.audit.column.actor}">Người thực hiện</th>
+                        <th scope="col" th:text="#{admin.audit.column.action}">Hành động</th>
+                        <th scope="col" th:text="#{admin.audit.column.entity}">Đối tượng</th>
+                        <th scope="col" th:text="#{admin.audit.column.detail}">Chi tiết</th>
+                        <th scope="col" th:text="#{admin.audit.column.ip}">IP</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="entry : ${page.content}">
+                        <td class="text-nowrap small"><th:block th:replace="~{fragments/display :: datetime(${entry.createdAt})}"></th:block></td>
+                        <td class="small" th:text="${entry.actorName != null} ? ${entry.actorName} : #{common.none}">admin</td>
+                        <td><code th:text="${entry.action}">LOGIN_SUCCESS</code></td>
+                        <td class="small text-nowrap" th:text="${entry.entityType != null} ? ${entry.entityType + ' #' + entry.entityId} : ''">Story #1</td>
+                        <td class="small audit-detail"><code th:text="${entry.detail}">{}</code></td>
+                        <td class="small text-secondary" th:text="${entry.ipAddress}">127.0.0.1</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <nav th:replace="~{fragments/pagination :: pager(${page})}"></nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

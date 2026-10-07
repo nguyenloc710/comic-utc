@@ -68,4 +68,15 @@ public class AdminUserController {
         }
         return ViewConstants.REDIRECT_ADMIN_USERS;
     }
+
+    /** Đổi vai trò rồi quay lại danh sách (PRG); lỗi nghiệp vụ hiện ở thông báo flash. */
+    @PostMapping("/{id}/role")
+    public String changeRole(@PathVariable Long id, @RequestParam Role role, RedirectAttributes redirect) {
+        try {
+            flash.success(redirect, MessageKeys.FLASH_USER_ROLE_CHANGED, adminUserService.changeRole(id, role), role);
+        } catch (ApiException exception) {
+            flash.error(redirect, exception);
+        }
+        return ViewConstants.REDIRECT_ADMIN_USERS;
+    }
 }

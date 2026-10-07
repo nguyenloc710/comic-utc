@@ -4,6 +4,8 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ import vn.edu.utc.comic.story.service.StoryCatalogQueryService;
 /**
  * Bảng xếp hạng truyện.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RankingService {
@@ -63,5 +66,11 @@ public class RankingService {
         List<Long> storyIds = storyViewDailyRepository.findTopViewedStoryIds(
                 today.minusDays(windowDays - 1L), PageRequest.of(0, ApiConstants.RANKING_SIZE));
         return storyCatalogQueryService.findCardsByIds(storyIds);
+    }
+
+    /** Dựng lại bảng xếp hạng ở lần xem kế tiếp; gọi khi quản trị viên vừa ẩn một truyện. */
+    @CacheEvict(value = CacheConstants.RANKINGS, allEntries = true)
+    public void evictAll() {
+        log.debug("Đã xóa cache bảng xếp hạng");
     }
 }

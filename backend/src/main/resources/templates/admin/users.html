@@ -70,14 +70,23 @@
                         </td>
                         <td><th:block th:replace="~{fragments/display :: datetime(${user.lastLoginAt})}"></th:block></td>
                         <td><th:block th:replace="~{fragments/display :: datetime(${user.createdAt})}"></th:block></td>
-                        <td class="text-end">
+                        <td class="text-end text-nowrap">
+                            <!-- Đổi vai trò: không hiện ở dòng của chính mình; service vẫn chặn nếu ai đó tự gửi request -->
+                            <form class="d-inline-flex gap-1 me-1" th:if="${user.id != currentUser.id}" method="post"
+                                  th:action="@{/admin/users/{id}/role(id=${user.id})}">
+                                <select class="form-select form-select-sm w-auto" name="role" th:aria-label="#{admin.users.column.role}">
+                                    <option th:each="role : ${roles}" th:value="${role}" th:selected="${role == user.role}"
+                                            th:text="#{'enum.Role.' + ${role}}">Độc giả</option>
+                                </select>
+                                <button type="submit" class="btn btn-outline-secondary btn-sm" th:text="#{admin.users.change.role}">Đổi</button>
+                            </form>
                             <!-- Không hiện nút khóa ở dòng của chính mình; service vẫn chặn nếu ai đó tự gửi request -->
-                            <form th:if="${user.status.name() == 'ACTIVE' and !user.temporarilyLocked and user.id != currentUser.id}"
+                            <form class="d-inline" th:if="${user.status.name() == 'ACTIVE' and !user.temporarilyLocked and user.id != currentUser.id}"
                                   th:action="@{/admin/users/{id}/ban(id=${user.id})}" method="post"
                                   th:attr="data-confirm=#{admin.users.ban.confirm(${user.username})}">
                                 <button type="submit" class="btn btn-outline-danger btn-sm" th:text="#{admin.users.ban}">Khóa</button>
                             </form>
-                            <form th:if="${user.status.name() == 'BANNED' or user.temporarilyLocked}"
+                            <form class="d-inline" th:if="${user.status.name() == 'BANNED' or user.temporarilyLocked}"
                                   th:action="@{/admin/users/{id}/unban(id=${user.id})}" method="post">
                                 <button type="submit" class="btn btn-outline-success btn-sm" th:text="#{admin.users.unban}">Mở khóa</button>
                             </form>

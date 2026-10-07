@@ -1,6 +1,7 @@
 package vn.edu.utc.comic.user.repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -9,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import vn.edu.utc.comic.common.security.AccountState;
 import vn.edu.utc.comic.user.entity.UserAccount;
+import vn.edu.utc.comic.user.enums.Role;
+import vn.edu.utc.comic.user.enums.UserStatus;
 
 /** Truy vấn tài khoản. */
 public interface UserAccountRepository extends JpaRepository<UserAccount, Long>, JpaSpecificationExecutor<UserAccount> {
@@ -51,4 +54,13 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long>,
             WHERE u.id = :userId
             """)
     int resetFailedAttempts(@Param("userId") Long userId, @Param("loginAt") Instant loginAt);
+
+    long countByRole(Role role);
+
+    /** Số quản trị viên còn hoạt động: hệ thống không bao giờ được về 0. */
+    long countByRoleAndStatus(Role role, UserStatus status);
+
+    /** Thời điểm đăng ký của các tài khoản tạo từ một mốc, để gom số đăng ký theo ngày trên biểu đồ. */
+    @Query("SELECT u.createdAt FROM UserAccount u WHERE u.createdAt >= :from")
+    List<Instant> findRegistrationTimesSince(@Param("from") Instant from);
 }

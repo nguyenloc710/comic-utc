@@ -17,6 +17,9 @@ public final class ApiConstants {
     public static final String API_NOTIFICATIONS_PATH = API_ROOT + "/notifications";
     public static final String API_STUDIO_CHAPTERS_PATH = API_STUDIO_PATH + "/chapters";
     public static final String API_STUDIO_STATS_PATH = API_STUDIO_PATH + "/stats";
+    public static final String API_REPORTS_PATH = API_ROOT + "/reports";
+    public static final String API_ADMIN_PATH = API_ROOT + "/admin";
+    public static final String API_ADMIN_STATS_PATH = API_ADMIN_PATH + "/stats";
 
     /** Phần công khai: danh mục truyện, thể loại, bảng xếp hạng. */
     public static final String STORIES_PATH = "/stories";
@@ -42,6 +45,11 @@ public final class ApiConstants {
     public static final String ADMIN_USERS_PATH = ADMIN_ROOT + "/users";
     public static final String ADMIN_GENRES_PATH = ADMIN_ROOT + "/genres";
     public static final String ADMIN_AUTHOR_REQUESTS_PATH = ADMIN_ROOT + "/author-requests";
+    public static final String ADMIN_STORIES_PATH = ADMIN_ROOT + "/stories";
+    public static final String ADMIN_COMMENTS_PATH = ADMIN_ROOT + "/comments";
+    public static final String ADMIN_REPORTS_PATH = ADMIN_ROOT + "/reports";
+    public static final String ADMIN_SETTINGS_PATH = ADMIN_ROOT + "/settings";
+    public static final String ADMIN_AUDIT_LOGS_PATH = ADMIN_ROOT + "/audit-logs";
 
     public static final String FORBIDDEN_PAGE_PATH = "/error/403";
     public static final String HEALTH_PATH = "/actuator/health";
@@ -76,6 +84,9 @@ public final class ApiConstants {
 
     /** Số ngày (tính cả hôm nay) trên biểu đồ lượt xem của tác giả. */
     public static final int STATS_CHART_DAYS = 30;
+
+    /** Số phần tử của các bảng "nhiều nhất" (thể loại, truyện) trên trang tổng quan quản trị. */
+    public static final int ADMIN_TOP_SIZE = 10;
 
     private ApiConstants() {
         throw new UnsupportedOperationException("Utility class");

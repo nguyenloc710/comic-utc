@@ -186,12 +186,20 @@
 
 ## Giai đoạn 5 — Quản trị (14/11 – 18/11)
 
-- [ ] `StoryModerationService`: ẩn/hiện truyện, ẩn/hiện chương (qua `ChapterPublishService`) — bắt buộc lý do, thông báo tác giả, ghi audit.
-- [ ] `/admin/stories` (lọc theo loại/hiển thị/tác giả, xem cả nội dung ẩn), `/admin/comments` (ẩn/hiện), `/admin/reports` (hàng đợi báo cáo → mở đối tượng → bỏ qua / ẩn nội dung).
-- [ ] Nút "Báo cáo vi phạm" ở trang truyện, trang đọc, từng bình luận (`ReportService.submit`).
-- [ ] `/admin/users` hoàn chỉnh: lọc, khóa/mở, đổi vai trò; không tự khóa mình, không khóa admin cuối cùng.
-- [ ] `/admin` dashboard: KPI (người dùng, tác giả, truyện theo loại, chương, lượt xem hôm nay, yêu cầu chờ duyệt, báo cáo chờ xử lý) + biểu đồ (đăng ký mới & lượt xem 30 ngày, phân bố thể loại, top truyện).
-- [ ] `/admin/settings` (sửa tham số, validate theo kiểu, xóa cache), `/admin/audit-logs`.
+- [x] `StoryModerationService`: ẩn/hiện truyện, ẩn/hiện chương (qua `ChapterPublishService`) — bắt buộc lý do, thông báo tác giả, ghi audit.
+      Thêm `CommentModerationService` cho bình luận (trừ / cộng lại `comment_count`). Ẩn truyện xóa cache bảng xếp hạng ngay. Gỡ ẩn chương không phát `ChapterPublishedEvent` nên người theo dõi không nhận lại "chương mới". Mọi thao tác ghi đều khóa dòng truyện bằng câu lệnh đầu tiên của transaction (bài học GĐ 4).
+- [x] `/admin/stories` (lọc theo tên / loại / hiển thị, thấy cả nháp, ẩn, đã xóa), `/admin/stories/{id}` (chi tiết + mọi chương, form ẩn kèm lý do), `/admin/comments` (ẩn/hiện, đọc được cả nội dung đã ẩn), `/admin/reports` (hàng đợi báo cáo → trang xử lý → bỏ qua / ẩn nội dung).
+      Xử lý báo cáo ẩn nội dung qua đúng service kiểm duyệt của từng loại (cùng bộ đếm, thông báo, audit như ẩn trực tiếp); nội dung đã bị ẩn từ trước thì chỉ đóng báo cáo. Dòng báo cáo khóa PESSIMISTIC_WRITE khi xử lý.
+- [x] Nút "Báo cáo vi phạm" ở trang truyện, trang đọc, từng bình luận (`ReportService.submit`, `POST /api/reports`, hộp thoại Bootstrap dùng chung).
+      Chỉ báo cáo được nội dung đang công khai (nội dung khác trả 404 để không lộ bản nháp); mỗi người một báo cáo đang chờ cho mỗi nội dung; tác giả không có nút báo cáo truyện của mình.
+- [x] `/admin/users` hoàn chỉnh: lọc, khóa/mở, đổi vai trò; không tự khóa mình, không khóa admin cuối cùng.
+      Thêm: không tự đổi vai trò của mình. Hàng rào "quản trị viên cuối cùng" nằm ở service (qua giao diện, người thao tác luôn là một admin đang hoạt động khác nên chỉ chạm tới khi tự thao tác lên mình — đã bị chặn riêng).
+- [x] `/admin` dashboard: KPI (người dùng, tác giả, truyện theo loại, chương, lượt xem hôm nay, yêu cầu chờ duyệt, báo cáo chờ xử lý) + biểu đồ (đăng ký mới & lượt xem 30 ngày, phân bố thể loại, top truyện).
+      Biểu đồ tải một lần qua `GET /api/admin/stats/charts` (`/api/admin/**` chỉ ADMIN). Số đăng ký theo ngày gom trong Java từ `created_at` (lưu UTC, gom theo giờ Việt Nam).
+- [x] `/admin/settings` (sửa tham số, validate theo kiểu, xóa cache), `/admin/audit-logs`.
+      Giá trị được chuẩn hóa theo kiểu (`007` → `7`, `FALSE` → `false`, JSON được parse lại); tham số `is_read_only` không sửa được; mỗi lần đổi ghi audit `SETTING_CHANGED` kèm giá trị cũ / mới.
+
+**Đầu ra:** quản trị viên kiểm duyệt được mọi nội dung và theo dõi được hệ thống qua một màn hình.
 
 ---
 
