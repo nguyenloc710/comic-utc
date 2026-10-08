@@ -19,6 +19,7 @@ import vn.edu.utc.comic.common.exception.FieldValidationException;
 import vn.edu.utc.comic.common.exception.FieldValidationException.FieldViolation;
 import vn.edu.utc.comic.common.util.SlugUtils;
 import vn.edu.utc.comic.genre.dto.GenreForm;
+import vn.edu.utc.comic.genre.dto.GenrePromptItem;
 import vn.edu.utc.comic.genre.dto.GenreResponse;
 import vn.edu.utc.comic.genre.dto.GenreStoryCount;
 import vn.edu.utc.comic.genre.dto.GenreTagResponse;
@@ -57,6 +58,16 @@ public class GenreService {
     @Transactional(readOnly = true)
     public List<GenreTagResponse> findActiveGenres() {
         return genreMapper.toTags(genreRepository.findByActiveTrueOrderBySortOrderAscNameAsc());
+    }
+
+    /**
+     * Thể loại đang bật kèm mô tả, chèn vào system prompt của chatbot để mô hình ánh xạ lời người dùng sang slug.
+     * Đọc ở mọi lượt chat nên được cache cùng vùng với danh sách thể loại (tạo / sửa / xóa thể loại xóa cả hai).
+     */
+    @Cacheable(value = CacheConstants.GENRES, key = "'prompt'")
+    @Transactional(readOnly = true)
+    public List<GenrePromptItem> findPromptGenres() {
+        return genreMapper.toPromptItems(genreRepository.findByActiveTrueOrderBySortOrderAscNameAsc());
     }
 
     /**

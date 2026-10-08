@@ -45,7 +45,18 @@ spring:
       max-file-size: 10MB
       max-request-size: 12MB
 
+  # Thời gian chờ của mọi RestClient do Spring Boot dựng — thực tế chỉ có lời gọi tới nhà cung cấp mô hình.
+  # Quá thời gian thì chatbot rơi về tìm theo từ khóa thay vì để người dùng chờ mãi.
+  http:
+    client:
+      connect-timeout: ${AI_CONNECT_TIMEOUT:5s}
+      read-timeout: ${AI_READ_TIMEOUT:30s}
   ai:
+    retry:
+      # Thử lại một lần với lỗi tạm thời; nhiều hơn thì người dùng chờ quá lâu, đường lui có ích hơn
+      max-attempts: 2
+      backoff:
+        initial-interval: 1s
     anthropic:
       # Chưa đặt khóa thì ứng dụng vẫn khởi động; lời gọi LLM sẽ lỗi và chatbot rơi về tìm theo từ khóa
       api-key: ${AI_API_KEY:not-configured}
@@ -98,3 +109,7 @@ app:
       # Khoảng nghỉ giữa hai lượt quét chương hẹn giờ và độ trễ của lượt đầu sau khi khởi động (ISO-8601)
       fixed-delay: PT1M
       initial-delay: PT30S
+    chat-cleanup:
+      # Xóa hội thoại chatbot quá hạn lưu giữ, 3 giờ 30 sáng mỗi ngày theo giờ Việt Nam
+      cron: "0 30 3 * * *"
+      zone: Asia/Ho_Chi_Minh

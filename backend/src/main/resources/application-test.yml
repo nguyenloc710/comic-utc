@@ -13,6 +13,10 @@ app:
       # Test tự gọi job khi cần; không để bộ lập lịch chạy xen vào giữa các test
       fixed-delay: PT24H
       initial-delay: PT24H
+    chat-cleanup:
+      # "-" tắt bộ lập lịch; test tự gọi job khi cần
+      cron: "-"
+      zone: UTC
 
 logging:
   level:

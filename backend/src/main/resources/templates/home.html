@@ -7,38 +7,88 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <!-- Chỉ người đã đăng nhập và đã đọc ít nhất một chương mới có khối này -->
-    <section class="mb-5" th:unless="${continueReading.isEmpty()}">
-        <div th:replace="~{fragments/story :: sectionHeader(#{home.section.continue}, @{/me/history})}"></div>
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-            <div class="col" th:each="item : ${continueReading}">
-                <div th:replace="~{fragments/history :: item(${item})}"></div>
-            </div>
+    <!-- Truyện đề cử: hàng cuộn ngang các truyện nổi bật trong tuần -->
+    <section class="mb-4" th:unless="${featuredStories.isEmpty()}">
+        <h2 class="section-title"><i class="bi bi-fire"></i> <span th:text="#{home.section.featured}">Truyện đề cử</span></h2>
+        <div class="featured-row">
+            <a class="featured-item" th:each="story : ${featuredStories}" th:href="@{/stories/{slug}(slug=${story.slug})}">
+                <img th:if="${story.coverUrl != null}" th:src="${story.coverUrl}" th:alt="${story.title}" loading="lazy">
+                <div class="featured-caption">
+                    <div class="featured-title" th:text="${story.title}">Tên truyện</div>
+                    <div class="featured-meta" th:text="#{story.chapter.count(${story.chapterCount})}">120 chương</div>
+                </div>
+            </a>
         </div>
     </section>
 
-    <section class="mb-5">
-        <div th:replace="~{fragments/story :: sectionHeader(#{home.section.latest}, @{/stories})}"></div>
-        <div th:replace="~{fragments/story :: grid(${latestStories})}"></div>
-        <p class="text-center text-secondary py-5 mb-0" th:if="${latestStories.isEmpty()}" th:text="#{home.empty}">
-            Kho truyện chưa có truyện nào.
-        </p>
-    </section>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <section>
+                <div class="d-flex align-items-baseline justify-content-between">
+                    <h2 class="section-title"><span th:text="#{home.section.latest}">Truyện mới cập nhật</span> <i class="bi bi-chevron-right"></i></h2>
+                    <a class="small" th:href="@{/stories(sort='UPDATED')}" th:text="#{common.view.all}">Xem tất cả</a>
+                </div>
+                <p class="text-center text-secondary py-5 mb-0" th:if="${updates.isEmpty()}" th:text="#{home.empty}">Kho truyện chưa có truyện nào.</p>
+                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3" th:unless="${updates.isEmpty()}">
+                    <div class="col" th:each="update : ${updates}">
+                        <div th:replace="~{fragments/story :: updateCard(${update.story}, ${update.latestChapters})}"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
 
-    <section class="mb-5" th:unless="${weeklyTopStories.isEmpty()}">
-        <div th:replace="~{fragments/story :: sectionHeader(#{home.section.weekly.top}, @{/rankings})}"></div>
-        <div th:replace="~{fragments/story :: grid(${weeklyTopStories})}"></div>
-    </section>
+        <aside class="col-lg-4">
+            <!-- Lịch sử đọc: chỉ người đã đăng nhập và đã đọc ít nhất một chương -->
+            <section class="side-box mb-4" th:unless="${continueReading.isEmpty()}">
+                <div class="side-box-header d-flex justify-content-between align-items-center">
+                    <span th:text="#{home.section.continue}">Lịch sử đọc truyện</span>
+                    <a class="small" th:href="@{/me/history}" th:text="#{common.view.all}">Xem tất cả</a>
+                </div>
+                <ul class="list-unstyled mb-0">
+                    <li class="side-history-item" th:each="item : ${continueReading}">
+                        <a class="side-thumb" th:href="@{/stories/{slug}(slug=${item.story.slug})}">
+                            <img th:if="${item.story.coverUrl != null}" th:src="${item.story.coverUrl}" alt="" loading="lazy">
+                        </a>
+                        <div class="side-history-info">
+                            <a class="side-story-title" th:href="@{/stories/{slug}(slug=${item.story.slug})}" th:text="${item.story.title}">Tên truyện</a>
+                            <a class="small" th:href="@{/stories/{slug}/chapters/{no}(slug=${item.story.slug}, no=${item.chapterNo})}"
+                               th:text="#{story.continue(${item.chapterNo})}">Đọc tiếp chương 12</a>
+                            <div class="small text-secondary" th:text="${@fmt.timeAgo(item.readAt)}">2 giờ trước</div>
+                        </div>
+                    </li>
+                </ul>
+            </section>
 
-    <section class="mb-5" th:unless="${newestStories.isEmpty()}">
-        <div th:replace="~{fragments/story :: sectionHeader(#{home.section.newest}, @{/stories(sort='NEWEST')})}"></div>
-        <div th:replace="~{fragments/story :: grid(${newestStories})}"></div>
-    </section>
-
-    <section th:unless="${completedStories.isEmpty()}">
-        <div th:replace="~{fragments/story :: sectionHeader(#{home.section.completed}, @{/stories(status='COMPLETED')})}"></div>
-        <div th:replace="~{fragments/story :: grid(${completedStories})}"></div>
-    </section>
+            <!-- Top truyện theo tháng / tuần / ngày, chuyển bằng tab của Bootstrap (không cần JS riêng) -->
+            <section class="side-box">
+                <ul class="nav nav-tabs side-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#topMonth" type="button" role="tab"
+                                th:text="#{home.top.month}">Top tháng</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#topWeek" type="button" role="tab"
+                                th:text="#{home.top.week}">Top tuần</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#topDay" type="button" role="tab"
+                                th:text="#{home.top.day}">Top ngày</button>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="topMonth" role="tabpanel">
+                        <ol th:replace="~{fragments/story :: topList(${topMonth})}"></ol>
+                    </div>
+                    <div class="tab-pane fade" id="topWeek" role="tabpanel">
+                        <ol th:replace="~{fragments/story :: topList(${topWeek})}"></ol>
+                    </div>
+                    <div class="tab-pane fade" id="topDay" role="tabpanel">
+                        <ol th:replace="~{fragments/story :: topList(${topDay})}"></ol>
+                    </div>
+                </div>
+            </section>
+        </aside>
+    </div>
 </div>
 </body>
 </html>

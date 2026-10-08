@@ -16,6 +16,12 @@ public final class SettingKeys {
     public static final String RANKING_MIN_RATING_COUNT = "ranking.min_rating_count";
     public static final String AUTHOR_REQUEST_COOLDOWN_DAYS = "author.request.cooldown.days";
     public static final String UPLOAD_CHAPTER_MAX_PAGES = "upload.chapter.max_pages";
+    public static final String CHAT_ENABLED = "chat.enabled";
+    public static final String CHAT_DAILY_LIMIT_PER_USER = "chat.daily_limit_per_user";
+    public static final String CHAT_MAX_MESSAGE_LENGTH = "chat.max_message_length";
+    public static final String CHAT_HISTORY_WINDOW = "chat.history_window";
+    public static final String CHAT_MAX_RECOMMENDATIONS = "chat.max_recommendations";
+    public static final String CHAT_RETENTION_DAYS = "chat.retention.days";
 
     private SettingKeys() {
         throw new UnsupportedOperationException("Utility class");

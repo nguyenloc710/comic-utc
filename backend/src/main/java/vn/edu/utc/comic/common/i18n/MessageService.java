@@ -32,4 +32,9 @@ public class MessageService {
         // Không tìm thấy khóa thì trả về chính khóa đó để lỗi lộ ra ngay khi test, thay vì ném ngoại lệ
         return messageSource.getMessage(key, arguments, key, locale);
     }
+
+    /** Ngôn ngữ của request hiện tại, cho các định dạng số / ngày tự làm (không qua messages.properties). */
+    public Locale currentLocale() {
+        return LocaleContextHolder.getLocale();
+    }
 }

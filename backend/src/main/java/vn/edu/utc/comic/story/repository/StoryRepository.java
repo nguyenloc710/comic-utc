@@ -132,4 +132,18 @@ public interface StoryRepository extends JpaRepository<Story, Long>, JpaSpecific
     @Modifying
     @Query("UPDATE Story s SET s.chapterCount = s.chapterCount + :delta WHERE s.id = :storyId")
     int addChapterCount(@Param("storyId") Long storyId, @Param("delta") int delta);
+
+    /**
+     * Id các truyện công khai chung nhiều thể loại nhất với một truyện (cho hàm "truyện tương tự" của chatbot):
+     * nhiều thể loại chung trước, cùng số thì truyện nhiều lượt xem trước.
+     */
+    @Query("""
+            SELECT s.id FROM Story s JOIN s.genres g
+            WHERE g.id IN (SELECT g2.id FROM Story s2 JOIN s2.genres g2 WHERE s2.id = :storyId)
+              AND s.id <> :storyId
+              AND s.visibility = vn.edu.utc.comic.story.enums.StoryVisibility.PUBLISHED AND s.deletedAt IS NULL
+            GROUP BY s.id
+            ORDER BY COUNT(g.id) DESC, MAX(s.viewCount) DESC, s.id DESC
+            """)
+    List<Long> findSimilarStoryIds(@Param("storyId") Long storyId, Pageable pageable);
 }

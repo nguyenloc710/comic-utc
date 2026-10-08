@@ -7,59 +7,107 @@
     <th:block th:replace="~{fragments/head :: assets}"></th:block>
 </head>
 <body class="site-body d-flex flex-column min-vh-100">
-<!-- Layout cho phần công khai và độc giả. Mục menu chỉ được thêm vào khi trang đích đã tồn tại. -->
-<nav class="navbar navbar-expand-md site-navbar sticky-top">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" th:href="@{/}">
-            <i class="bi bi-book-half"></i> <span th:text="#{app.name}">Comic UTC</span>
-        </a>
-        <!-- Tài khoản luôn nằm ngoài phần thu gọn để trên điện thoại vẫn bấm được ngay -->
-        <div class="d-flex align-items-center gap-2 order-md-last">
-            <th:block sec:authorize="isAnonymous()">
-                <a class="btn btn-outline-secondary btn-sm d-none d-sm-inline-block" th:href="@{/register}" th:text="#{nav.register}">Đăng ký</a>
-                <a class="btn btn-primary btn-sm" th:href="@{/login}">
-                    <i class="bi bi-box-arrow-in-right"></i> <span th:text="#{nav.login}">Đăng nhập</span>
-                </a>
-            </th:block>
-            <a th:replace="~{fragments/user-menu :: bell}"></a>
-            <div th:replace="~{fragments/user-menu :: menu}"></div>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav"
-                    aria-controls="siteNav" aria-expanded="false" th:aria-label="#{nav.toggle.menu}">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
-        <div class="collapse navbar-collapse" id="siteNav">
-            <ul class="navbar-nav me-3">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/stories}" th:classappend="${#strings.startsWith(requestPath, '/stories')} ? 'active'"
-                       th:text="#{nav.stories}">Truyện</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/rankings}" th:classappend="${requestPath == '/rankings'} ? 'active'"
-                       th:text="#{nav.rankings}">Xếp hạng</a>
-                </li>
-            </ul>
-            <form class="site-search d-flex me-md-3 my-2 my-md-0" th:action="@{/stories}" method="get" role="search">
-                <input type="search" class="form-control form-control-sm" name="keyword" th:placeholder="#{nav.search.placeholder}"
+<!--
+  Layout phần công khai và độc giả, bố cục hai tầng quen thuộc của trang đọc truyện:
+  tầng trên tối màu (logo, ô tìm kiếm, chuông, tài khoản), tầng dưới là menu (trang chủ, thể loại, xếp hạng...).
+  Mục menu chỉ được thêm vào khi trang đích đã tồn tại.
+-->
+<header class="site-header sticky-top">
+    <div class="site-topbar">
+        <div class="container d-flex align-items-center gap-2 gap-md-3">
+            <a class="site-brand d-flex align-items-center gap-2 fw-bold text-decoration-none" th:href="@{/}">
+                <i class="bi bi-book-half"></i> <span th:text="#{app.name}">Comic UTC</span>
+            </a>
+            <form class="site-search flex-grow-1 d-none d-md-flex" th:action="@{/stories}" method="get" role="search">
+                <input type="search" class="form-control" name="keyword" th:placeholder="#{nav.search.placeholder}"
                        th:aria-label="#{nav.search.placeholder}">
-                <button type="submit" class="btn btn-sm btn-outline-secondary ms-1" th:aria-label="#{common.search}"><i class="bi bi-search"></i></button>
+                <button type="submit" class="btn" th:aria-label="#{common.search}"><i class="bi bi-search"></i></button>
             </form>
+            <!-- Tài khoản luôn hiện, kể cả trên điện thoại -->
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <th:block sec:authorize="isAnonymous()">
+                    <a class="btn btn-outline-light btn-sm d-none d-sm-inline-block" th:href="@{/register}" th:text="#{nav.register}">Đăng ký</a>
+                    <a class="btn btn-primary btn-sm" th:href="@{/login}">
+                        <i class="bi bi-box-arrow-in-right"></i> <span th:text="#{nav.login}">Đăng nhập</span>
+                    </a>
+                </th:block>
+                <a th:replace="~{fragments/user-menu :: bell}"></a>
+                <div th:replace="~{fragments/user-menu :: menu}"></div>
+                <button class="btn btn-outline-light btn-sm d-md-none" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" th:aria-label="#{nav.toggle.menu}">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
         </div>
     </div>
-</nav>
 
-<main class="container flex-grow-1 py-4">
+    <nav class="site-menu navbar navbar-expand-md py-0">
+        <div class="container">
+            <div class="collapse navbar-collapse" id="siteNav">
+                <form class="site-search d-flex d-md-none my-2" th:action="@{/stories}" method="get" role="search">
+                    <input type="search" class="form-control" name="keyword" th:placeholder="#{nav.search.placeholder}"
+                           th:aria-label="#{nav.search.placeholder}">
+                    <button type="submit" class="btn" th:aria-label="#{common.search}"><i class="bi bi-search"></i></button>
+                </form>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}" th:classappend="${requestPath == '/'} ? 'active'" th:aria-label="#{home.title}">
+                            <i class="bi bi-house-door-fill"></i>
+                        </a>
+                    </li>
+                    <!-- Thể loại: bảng chọn nhiều cột như các trang đọc truyện quen thuộc -->
+                    <li class="nav-item dropdown site-genre-menu">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                           th:classappend="${#strings.startsWith(requestPath, '/genres')} ? 'active'" th:text="#{nav.genres}">Thể loại</a>
+                        <div class="dropdown-menu site-genre-dropdown shadow">
+                            <a class="dropdown-item" th:each="genre : ${menuGenres}" th:href="@{/genres/{slug}(slug=${genre.slug})}"
+                               th:text="${genre.name}">Tu tiên</a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/rankings}" th:classappend="${requestPath == '/rankings'} ? 'active'"
+                           th:text="#{nav.rankings}">Xếp hạng</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/stories}" th:classappend="${requestPath == '/stories'} ? 'active'"
+                           th:text="#{nav.advanced.search}">Tìm truyện</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/stories(type='COMIC')}" th:text="#{enum.StoryType.COMIC}">Truyện tranh</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/stories(type='NOVEL')}" th:text="#{enum.StoryType.NOVEL}">Truyện chữ</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" th:href="@{/me/library}" th:classappend="${requestPath == '/me/library'} ? 'active'"
+                           th:text="#{nav.following}">Theo dõi</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" th:href="@{/me/history}" th:classappend="${requestPath == '/me/history'} ? 'active'"
+                           th:text="#{nav.history}">Lịch sử</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="container flex-grow-1 py-3 py-md-4">
     <div th:replace="~{fragments/flash :: flash}"></div>
     <div layout:fragment="content"></div>
 </main>
 
-<footer class="site-footer py-3 mt-4">
-    <div class="container small text-secondary text-center">
-        <span th:text="#{app.name}">Comic UTC</span> · <span th:text="#{app.tagline}">Đọc và đăng tải truyện</span>
+<footer class="site-footer py-4 mt-4">
+    <div class="container small text-center">
+        <div class="fw-bold mb-1" th:text="#{app.name}">Comic UTC</div>
+        <div class="opacity-75" th:text="#{app.tagline}">Đọc và đăng tải truyện</div>
     </div>
 </footer>
 
+<div th:replace="~{fragments/chat-widget :: widget}"></div>
+
 <th:block th:replace="~{fragments/head :: scripts}"></th:block>
+<script th:if="${currentUser != null}" th:src="@{/js/chat.js}"></script>
 <th:block layout:fragment="scripts"></th:block>
 </body>
 </html>

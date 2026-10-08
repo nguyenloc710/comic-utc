@@ -42,6 +42,9 @@
                 <a class="nav-link" th:href="@{/admin/reports}" th:classappend="${#strings.startsWith(requestPath, '/admin/reports')} ? 'active'">
                     <i class="bi bi-flag"></i> <span th:text="#{nav.admin.reports}">Báo cáo vi phạm</span>
                 </a>
+                <a class="nav-link" th:href="@{/admin/chatbot}" th:classappend="${#strings.startsWith(requestPath, '/admin/chatbot')} ? 'active'">
+                    <i class="bi bi-robot"></i> <span th:text="#{nav.admin.chatbot}">Chatbot</span>
+                </a>
                 <a class="nav-link" th:href="@{/admin/settings}" th:classappend="${#strings.startsWith(requestPath, '/admin/settings')} ? 'active'">
                     <i class="bi bi-sliders"></i> <span th:text="#{nav.admin.settings}">Tham số</span>
                 </a>

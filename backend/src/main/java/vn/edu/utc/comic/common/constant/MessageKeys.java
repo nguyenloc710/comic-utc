@@ -151,6 +151,31 @@ public final class MessageKeys {
     public static final String ERROR_SETTING_READ_ONLY = "error.setting.read.only";
     /** {0}: khóa tham số, {1}: kiểu giá trị. */
     public static final String ERROR_SETTING_VALUE_INVALID = "error.setting.value.invalid";
+    // ----- Chatbot -----
+    public static final String CHAT_FALLBACK_FOUND = "chat.fallback.found";
+    public static final String CHAT_FALLBACK_EMPTY = "chat.fallback.empty";
+    public static final String ERROR_CHAT_DISABLED = "error.chat.disabled";
+    /** {0}: số ký tự tối đa. */
+    public static final String ERROR_CHAT_MESSAGE_TOO_LONG = "error.chat.message.too.long";
+    /** {0}: số tin nhắn mỗi ngày. */
+    public static final String ERROR_CHAT_DAILY_LIMIT = "error.chat.daily.limit";
+    public static final String ERROR_CHAT_CONVERSATION_NOT_FOUND = "error.chat.conversation.not.found";
+    public static final String ERROR_CHAT_MESSAGE_NOT_FOUND = "error.chat.message.not.found";
+    // ----- Định dạng hiển thị -----
+    public static final String TIME_JUST_NOW = "time.just.now";
+    /** {0}: số phút. */
+    public static final String TIME_MINUTES_AGO = "time.minutes.ago";
+    /** {0}: số giờ. */
+    public static final String TIME_HOURS_AGO = "time.hours.ago";
+    /** {0}: số ngày. */
+    public static final String TIME_DAYS_AGO = "time.days.ago";
+    /** Mẫu ngày cho DateTimeFormatter, ví dụ dd/MM/yyyy. */
+    public static final String FORMAT_DATE = "format.date";
+    /** {0}: số đã chia cho một nghìn. */
+    public static final String NUMBER_THOUSAND = "number.thousand";
+    /** {0}: số đã chia cho một triệu. */
+    public static final String NUMBER_MILLION = "number.million";
+
     private MessageKeys() {
         throw new UnsupportedOperationException("Utility class");
     }

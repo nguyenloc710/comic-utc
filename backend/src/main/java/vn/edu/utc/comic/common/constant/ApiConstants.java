@@ -18,6 +18,7 @@ public final class ApiConstants {
     public static final String API_STUDIO_CHAPTERS_PATH = API_STUDIO_PATH + "/chapters";
     public static final String API_STUDIO_STATS_PATH = API_STUDIO_PATH + "/stats";
     public static final String API_REPORTS_PATH = API_ROOT + "/reports";
+    public static final String API_CHAT_PATH = API_ROOT + "/chat";
     public static final String API_ADMIN_PATH = API_ROOT + "/admin";
     public static final String API_ADMIN_STATS_PATH = API_ADMIN_PATH + "/stats";
 
@@ -50,6 +51,7 @@ public final class ApiConstants {
     public static final String ADMIN_REPORTS_PATH = ADMIN_ROOT + "/reports";
     public static final String ADMIN_SETTINGS_PATH = ADMIN_ROOT + "/settings";
     public static final String ADMIN_AUDIT_LOGS_PATH = ADMIN_ROOT + "/audit-logs";
+    public static final String ADMIN_CHATBOT_PATH = ADMIN_ROOT + "/chatbot";
 
     public static final String FORBIDDEN_PAGE_PATH = "/error/403";
     public static final String HEALTH_PATH = "/actuator/health";
@@ -69,6 +71,12 @@ public final class ApiConstants {
 
     /** Số thẻ truyện ở mỗi khối của trang chủ. */
     public static final int HOME_SECTION_SIZE = 12;
+
+    /** Trang chủ: số truyện đề cử, số truyện ở lưới mới cập nhật, số chương mới hiện dưới mỗi truyện, số dòng top. */
+    public static final int HOME_FEATURED_SIZE = 10;
+    public static final int HOME_UPDATES_SIZE = 24;
+    public static final int HOME_LATEST_CHAPTERS = 3;
+    public static final int HOME_TOP_SIZE = 10;
 
     public static final int RANKING_SIZE = 20;
     public static final int COMMENT_PAGE_SIZE = 20;

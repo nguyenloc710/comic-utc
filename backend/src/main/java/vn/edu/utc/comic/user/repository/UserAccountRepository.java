@@ -63,4 +63,11 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long>,
     /** Thời điểm đăng ký của các tài khoản tạo từ một mốc, để gom số đăng ký theo ngày trên biểu đồ. */
     @Query("SELECT u.createdAt FROM UserAccount u WHERE u.createdAt >= :from")
     List<Instant> findRegistrationTimesSince(@Param("from") Instant from);
+
+    /**
+     * Khóa dòng tài khoản tới hết transaction, để các thao tác đếm theo người dùng (hạn mức chat mỗi ngày) chạy
+     * lần lượt. Phải là câu lệnh đầu tiên của transaction (xem ghi chú ở StoryRepository.lockForCounterUpdate).
+     */
+    @Query(value = "SELECT id FROM user_account WHERE id = :userId FOR UPDATE", nativeQuery = true)
+    Optional<Long> lockForUpdate(@Param("userId") Long userId);
 }

@@ -32,6 +32,13 @@
     });
   }
 
+  /** Ô chọn chương: đổi lựa chọn là mở chương đó. */
+  function initChapterSelect() {
+    document.querySelectorAll('[data-reader-select]').forEach(function (select) {
+      select.addEventListener('change', function () { window.location.href = select.value; });
+    });
+  }
+
   function initFontSize() {
     let size = Number(readSetting(FONT_KEY)) || FONT_DEFAULT;
 
@@ -61,6 +68,7 @@
   }
 
   initKeyboardNavigation();
+  initChapterSelect();
   initFontSize();
   initTheme();
 })();

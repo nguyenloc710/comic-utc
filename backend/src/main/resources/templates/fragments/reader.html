@@ -5,21 +5,27 @@
   Thanh điều hướng chương, hiện ở cả đầu và cuối trang đọc. chapter: ChapterReadResponse.
   reader.js nghe phím ← → và bấm hộ các link mang data-reader-nav.
 -->
-<div th:fragment="chapterNav(chapter, storyUrl)" class="reader-nav d-flex justify-content-between align-items-center gap-2 my-3">
+<div th:fragment="chapterNav(chapter, storyUrl, chapters)" class="reader-nav d-flex justify-content-center align-items-center gap-2 my-3">
     <a class="btn btn-outline-primary" data-reader-nav="previous" th:if="${chapter.previousChapterNo != null}"
        th:href="@{/stories/{slug}/chapters/{no}(slug=${chapter.storySlug}, no=${chapter.previousChapterNo})}">
-        <i class="bi bi-chevron-left"></i> <span th:text="#{reader.previous}">Chương trước</span>
+        <i class="bi bi-chevron-left"></i> <span class="d-none d-sm-inline" th:text="#{reader.previous}">Chương trước</span>
     </a>
     <span class="btn btn-outline-secondary disabled" th:if="${chapter.previousChapterNo == null}">
-        <i class="bi bi-chevron-left"></i> <span th:text="#{reader.previous}">Chương trước</span>
+        <i class="bi bi-chevron-left"></i> <span class="d-none d-sm-inline" th:text="#{reader.previous}">Chương trước</span>
     </span>
-    <a class="btn btn-outline-secondary" th:href="${storyUrl}" th:aria-label="#{reader.back.to.story}"><i class="bi bi-list-ul"></i></a>
+    <a class="btn btn-outline-secondary" th:href="${storyUrl}" th:aria-label="#{reader.back.to.story}"><i class="bi bi-house-door"></i></a>
+    <!-- Chọn chương: reader.js chuyển trang khi đổi lựa chọn (CSP không cho script inline) -->
+    <select class="form-select reader-chapter-select" data-reader-select th:aria-label="#{reader.select.chapter}"
+            th:if="${!chapters.isEmpty()}">
+        <option th:each="item : ${chapters}" th:value="@{/stories/{slug}/chapters/{no}(slug=${chapter.storySlug}, no=${item.chapterNo})}"
+                th:selected="${item.chapterNo == chapter.chapterNo}" th:text="#{chapter.number(${item.chapterNo})}">Chương 1</option>
+    </select>
     <a class="btn btn-primary" data-reader-nav="next" th:if="${chapter.nextChapterNo != null}"
        th:href="@{/stories/{slug}/chapters/{no}(slug=${chapter.storySlug}, no=${chapter.nextChapterNo})}">
-        <span th:text="#{reader.next}">Chương sau</span> <i class="bi bi-chevron-right"></i>
+        <span class="d-none d-sm-inline" th:text="#{reader.next}">Chương sau</span> <i class="bi bi-chevron-right"></i>
     </a>
     <span class="btn btn-outline-secondary disabled" th:if="${chapter.nextChapterNo == null}">
-        <span th:text="#{reader.next}">Chương sau</span> <i class="bi bi-chevron-right"></i>
+        <span class="d-none d-sm-inline" th:text="#{reader.next}">Chương sau</span> <i class="bi bi-chevron-right"></i>
     </span>
 </div>
 </body>

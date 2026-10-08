@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.anthropic.AnthropicChatModel;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +26,9 @@ class SpringAiToolCallingSmokeTest extends AbstractIntegrationTest {
     /** Tên bịa không thể có trong dữ liệu huấn luyện: mô hình chỉ biết nó nếu thật sự đọc kết quả hàm. */
     private static final String FAKE_STORY_TITLE = "Vạn Cổ Thanh Đăng Lục 7391";
 
+    /** Lấy đúng mô hình thật: test khác thay ChatModel mặc định bằng mô hình giả (ScriptedChatModel). */
     @Autowired
-    private ChatModel chatModel;
+    private AnthropicChatModel chatModel;
 
     @Test
     void model_callsToolAndAnswersFromItsResult() {

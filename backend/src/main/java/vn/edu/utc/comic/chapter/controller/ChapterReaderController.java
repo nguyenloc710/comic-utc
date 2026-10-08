@@ -21,6 +21,7 @@ import vn.edu.utc.comic.common.security.Viewer;
 public class ChapterReaderController {
 
     private static final String ATTR_CHAPTER = "chapter";
+    private static final String ATTR_CHAPTERS = "chapters";
 
     private final ChapterReaderService chapterReaderService;
     private final ChapterReadingTracker chapterReadingTracker;
@@ -39,6 +40,8 @@ public class ChapterReaderController {
         ChapterReadResponse chapter = chapterReaderService.getChapterForReading(slug, chapterNo, viewer);
         chapterReadingTracker.trackRead(chapter, viewer, session.getId());
         model.addAttribute(ATTR_CHAPTER, chapter);
+        // Danh sách chương cho ô "chọn chương" trên thanh điều hướng của trang đọc
+        model.addAttribute(ATTR_CHAPTERS, chapterReaderService.findPublishedChapters(chapter.storyId()));
         return ViewConstants.CHAPTER_READ;
     }
 }

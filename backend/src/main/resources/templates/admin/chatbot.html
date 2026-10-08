@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/admin}">
+<head>
+    <title th:text="#{admin.chatbot.title}">Chatbot</title>
+</head>
+<body>
+<h1 layout:fragment="heading" class="h5 mb-0 text-truncate" th:text="#{admin.chatbot.title}">Chatbot</h1>
+<div layout:fragment="content" th:with="summary=${stats.summary}">
+    <p class="text-secondary">
+        <span th:text="#{admin.chatbot.period(${stats.days})}">Số liệu 30 ngày gần nhất.</span>
+        <a th:href="@{/admin/settings}" th:text="#{admin.chatbot.settings.link}">Bật/tắt và hạn mức ở trang tham số</a>
+    </p>
+
+    <div class="row row-cols-2 row-cols-md-4 g-3 mb-3">
+        <div th:replace="~{fragments/studio :: statCard('bi-chat-dots', #{admin.chatbot.messages}, ${summary.userMessages})}"></div>
+        <div th:replace="~{fragments/studio :: statCard('bi-people', #{admin.chatbot.users}, ${summary.users})}"></div>
+        <div th:replace="~{fragments/studio :: statCard('bi-stars', #{admin.chatbot.llm.answers}, ${summary.llmAnswers})}"></div>
+        <div class="col">
+            <div class="card border-0 shadow-sm h-100 stat-card"><div class="card-body">
+                <div class="small text-secondary"><i class="bi bi-life-preserver"></i> <span th:text="#{admin.chatbot.fallback.rate}">Tỉ lệ đường lui</span></div>
+                <div class="stat-value" th:text="${summary.fallbackRatePercent() == null} ? #{common.none}
+                        : ${#numbers.formatDecimal(summary.fallbackRatePercent(), 1, 1)} + '%'">5,0%</div>
+                <div class="small text-secondary" th:text="#{admin.chatbot.fallback.count(${summary.fallbackAnswers})}">(3 lượt)</div>
+            </div></div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm h-100 stat-card"><div class="card-body">
+                <div class="small text-secondary"><i class="bi bi-stopwatch"></i> <span th:text="#{admin.chatbot.latency}">Độ trễ trung bình</span></div>
+                <div class="stat-value" th:text="${summary.averageLatencyMs == null} ? #{common.none}
+                        : ${#numbers.formatInteger(summary.averageLatencyMs, 1, 'POINT')} + ' ms'">1.200 ms</div>
+            </div></div>
+        </div>
+        <div class="col">
+            <div class="card border-0 shadow-sm h-100 stat-card"><div class="card-body">
+                <div class="small text-secondary"><i class="bi bi-cpu"></i> <span th:text="#{admin.chatbot.tokens}">Token trung bình mỗi lượt</span></div>
+                <div class="stat-value" th:text="${summary.averagePromptTokens == null} ? #{common.none}
+                        : ${#numbers.formatInteger(summary.averagePromptTokens, 1, 'POINT')} + ' / '
+                          + ${#numbers.formatInteger(summary.averageCompletionTokens, 1, 'POINT')}">2.100 / 180</div>
+                <div class="small text-secondary" th:text="#{admin.chatbot.tokens.hint}">vào / ra</div>
+            </div></div>
+        </div>
+        <div th:replace="~{fragments/studio :: statCard('bi-shield-exclamation', #{admin.chatbot.rejected}, ${summary.rejectedRecommendations})}"></div>
+        <div class="col">
+            <div class="card border-0 shadow-sm h-100 stat-card"><div class="card-body">
+                <div class="small text-secondary"><i class="bi bi-hand-thumbs-up"></i> <span th:text="#{admin.chatbot.feedback}">Phản hồi</span></div>
+                <div class="stat-value">
+                    <span class="text-success" th:text="${summary.positiveFeedback}">12</span> /
+                    <span class="text-danger" th:text="${summary.negativeFeedback}">2</span>
+                </div>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100"><div class="card-body">
+                <h2 class="h6 fw-bold mb-3" th:text="#{admin.chatbot.reasons}">Nguyên nhân rơi về đường lui</h2>
+                <p class="text-secondary mb-0" th:if="${stats.fallbackReasons.isEmpty()}" th:text="#{common.empty}">Chưa có dữ liệu</p>
+                <table class="table table-sm mb-0" th:unless="${stats.fallbackReasons.isEmpty()}">
+                    <tbody>
+                    <tr th:each="item : ${stats.fallbackReasons}">
+                        <td th:text="#{'enum.FallbackReason.' + ${item.reason}}">Quá thời gian chờ</td>
+                        <td class="text-end" th:text="${item.count}">3</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div></div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm h-100"><div class="card-body">
+                <h2 class="h6 fw-bold mb-3" th:text="#{admin.chatbot.negative}">Câu trả lời bị chê gần đây</h2>
+                <p class="text-secondary mb-0" th:if="${stats.recentNegative.isEmpty()}" th:text="#{common.empty}">Chưa có dữ liệu</p>
+                <ul class="list-group list-group-flush" th:unless="${stats.recentNegative.isEmpty()}">
+                    <li class="list-group-item px-0" th:each="item : ${stats.recentNegative}">
+                        <div class="small text-secondary">
+                            <span th:text="${item.conversationTitle}">Câu hỏi</span> ·
+                            <th:block th:replace="~{fragments/display :: datetime(${item.createdAt})}"></th:block>
+                        </div>
+                        <div class="comment-content" th:text="${item.reply}">Câu trả lời</div>
+                    </li>
+                </ul>
+            </div></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

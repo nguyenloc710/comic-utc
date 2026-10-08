@@ -88,17 +88,25 @@
         <div class="card-body">
             <h2 class="h5 fw-bold mb-3" th:text="#{story.chapters.title}">Danh sách chương</h2>
             <p class="text-secondary mb-0" th:if="${chapters.isEmpty()}" th:text="#{story.chapters.empty}">Truyện chưa có chương nào.</p>
-            <div class="chapter-list list-group list-group-flush" th:unless="${chapters.isEmpty()}">
-                <a class="list-group-item list-group-item-action d-flex justify-content-between gap-3" th:each="chapter : ${chapters}"
-                   th:href="@{/stories/{slug}/chapters/{no}(slug=${story.slug}, no=${chapter.chapterNo})}">
-                    <span class="text-truncate">
-                        <span class="fw-semibold" th:text="#{chapter.number(${chapter.chapterNo})}">Chương 12</span><span
-                            th:if="${chapter.title != null}" th:text="': ' + ${chapter.title}">: Tên chương</span>
-                    </span>
-                    <span class="small text-secondary text-nowrap">
-                        <th:block th:replace="~{fragments/display :: datetime(${chapter.publishedAt})}"></th:block>
-                    </span>
-                </a>
+            <!-- Bảng chương: số chương, thời gian cập nhật tương đối, lượt xem; cuộn trong khung khi truyện dài -->
+            <div class="chapter-table" th:unless="${chapters.isEmpty()}">
+                <div class="chapter-row chapter-row-head">
+                    <span th:text="#{story.chapters.column.chapter}">Số chương</span>
+                    <span th:text="#{story.chapters.column.updated}">Cập nhật</span>
+                    <span th:text="#{story.chapters.column.views}">Lượt xem</span>
+                </div>
+                <div class="chapter-table-body">
+                    <a class="chapter-row" th:each="chapter : ${chapters}"
+                       th:href="@{/stories/{slug}/chapters/{no}(slug=${story.slug}, no=${chapter.chapterNo})}"
+                       th:classappend="${viewerState.continueChapterNo != null and viewerState.continueChapterNo == chapter.chapterNo} ? 'chapter-row-current'">
+                        <span class="text-truncate">
+                            <span th:text="#{chapter.number(${chapter.chapterNo})}">Chương 12</span><span
+                                th:if="${chapter.title != null}" th:text="': ' + ${chapter.title}">: Tên chương</span>
+                        </span>
+                        <span class="small text-secondary" th:text="${@fmt.timeAgo(chapter.publishedAt)}">2 giờ trước</span>
+                        <span class="small text-secondary" th:text="${@fmt.compact(chapter.viewCount)}">1,2K</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

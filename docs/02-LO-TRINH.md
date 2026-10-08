@@ -207,11 +207,21 @@
 
 Chi tiết từng bước ở [04 §10](04-KE-HOACH-CHATBOT.md). Tóm tắt theo ngày:
 
-- [ ] **19/11** — `V3__chatbot.sql`, entity; `StoryCatalogTools` (4 hàm) bọc `StoryCatalogQueryService`; test hàm chỉ trả truyện công khai.
-- [ ] **20/11** — `prompts/chatbot-system.txt`; `ChatbotService.reply` (lịch sử + gọi `ChatClient` + nhận JSON có cấu trúc); `RecommendationValidator` (hậu kiểm).
-- [ ] **21/11** — `/api/chat/**` + `chat-widget` + `chat.js` (thẻ truyện, đang gõ, lịch sử, gợi ý câu hỏi mẫu).
-- [ ] **22/11** — Giới hạn theo ngày, đường lui tìm theo từ khóa, xử lý timeout/lỗi; `/admin/chatbot` (số tin, tỉ lệ rơi đường lui, phản hồi 👍/👎).
+- [x] **19/11** — `V3__chatbot.sql`, entity; `StoryCatalogTools` (4 hàm) bọc `StoryCatalogQueryService`; test hàm chỉ trả truyện công khai.
+      Logic hàm nằm ở `ChatbotCatalogService` (transaction đọc, ánh xạ thể loại) để test được không cần mô hình. Thêm cột `rejected_count` vào `chat_message` (số gợi ý bị hậu kiểm loại) thay vì đếm trong JSON `tool_trace`.
+      Nới bộ lọc: nới dần (từ khóa → khoảng chương → trạng thái) tới khi có kết quả, rồi **trả lại** điều kiện không cần bỏ — người dùng nêu đúng tên truyện nhưng nhầm "đã hoàn thành" thì chỉ bỏ trạng thái, vẫn giữ tên (bản đầu bỏ luôn từ khóa; test bắt được).
+- [x] **20/11** — `prompts/chatbot-system.txt`; `ChatbotService.reply` (lịch sử + gọi `ChatClient` + nhận JSON có cấu trúc); `RecommendationValidator` (hậu kiểm).
+      Một lượt hỏi chia hai transaction ngắn (nhận câu hỏi / lưu câu trả lời), gọi mô hình ở giữa, ngoài transaction. Tin nhắn truyền dạng `Message` (không qua `.system(String)` vì JSON schema có ngoặc nhọn). Lịch sử: tin của trợ lý kèm dòng `[Hàm đã gọi: …. Đã gợi ý: #12 "…" (180 chương)]`.
+      Mô hình trả văn bản thường thay vì JSON vẫn dùng được (lời đáp + truyện của lần gọi hàm gần nhất); rỗng hoặc JSON hỏng ⇒ đường lui `INVALID_RESPONSE`.
+- [x] **21/11** — `/api/chat/**` + `chat-widget` + `chat.js` (thẻ truyện, đang gõ, lịch sử, gợi ý câu hỏi mẫu).
+      Mở khung chat lần đầu sẽ nạp lại hội thoại gần nhất, nên chuyển trang vẫn hỏi nối tiếp được. Enter gửi, Shift+Enter xuống dòng.
+- [x] **22/11** — Giới hạn theo ngày, đường lui tìm theo từ khóa, xử lý timeout/lỗi; `/admin/chatbot` (số tin, tỉ lệ rơi đường lui, phản hồi 👍/👎).
+      Hạn mức ngày khóa dòng tài khoản bằng câu lệnh đầu tiên — có test 6 tab gửi cùng lúc với hạn mức 3. Timeout qua `spring.http.client.read-timeout` (`AI_READ_TIMEOUT`, mặc định 30 s), thử lại 1 lần. Đường lui nhận ra tên thể loại và "truyện tranh/chữ" trong câu (tìm toàn văn với "truyện kinh dị" trả truyện chẳng liên quan — thấy khi chạy thật). Thêm `ChatCleanupJob` (3:30 sáng, xóa hội thoại quá `chat.retention.days`).
 - [ ] **23/11** — Chạy bộ câu hỏi đánh giá, chỉnh prompt/mô tả hàm, ghi số liệu cho báo cáo.
+      Đã có `src/test/resources/chatbot/eval-queries.tsv` (30 câu) và `ChatbotEvaluationRunner` (ghi `target/chatbot-eval.md`). **Chưa chạy** vì máy chưa có `AI_API_KEY`:
+      `AI_API_KEY=... ./mvnw test -Dtest=ChatbotEvaluationRunner -Dchatbot.eval=true` (cần MySQL dev có dữ liệu demo).
+
+> **Kiểm thử không gọi mạng.** Test dùng `ScriptedChatModel` (đăng ký `@Primary` trong `AbstractIntegrationTest`): kịch bản mỗi test gọi các hàm tra cứu THẬT bằng đúng dạng tham số mô hình gửi (`{"request": {...}}` — Spring AI bọc tham số record dưới tên tham số), nên test đi qua đúng đường hàm → bộ thu → hậu kiểm → lưu. `SpringAiToolCallingSmokeTest` lấy thẳng `AnthropicChatModel`.
 
 ---
 

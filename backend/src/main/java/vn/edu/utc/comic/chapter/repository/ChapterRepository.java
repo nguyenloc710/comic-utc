@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.utc.comic.chapter.dto.ChapterSummaryResponse;
+import vn.edu.utc.comic.chapter.dto.ChapterSummaryRow;
+import java.util.Collection;
 import vn.edu.utc.comic.chapter.entity.Chapter;
 import vn.edu.utc.comic.stats.dto.TopChapterResponse;
 
@@ -121,4 +123,17 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     /** Chỉ id truyện của chương, để khóa dòng truyện trước khi nạp gì khác. */
     @Query("SELECT c.story.id FROM Chapter c WHERE c.id = :chapterId")
     Optional<Long> findStoryIdById(@Param("chapterId") Long chapterId);
+
+    /**
+     * Chương đã đăng của nhiều truyện trong một truy vấn, mỗi truyện chương mới nhất trước. Chỉ dùng cho một trang
+     * danh sách (vài chục truyện), service tự cắt còn vài chương mỗi truyện.
+     */
+    @Query("""
+            SELECT new vn.edu.utc.comic.chapter.dto.ChapterSummaryRow(
+                c.story.id, c.chapterNo, c.title, c.publishedAt, c.viewCount)
+            FROM Chapter c
+            WHERE c.story.id IN :storyIds AND c.status = vn.edu.utc.comic.chapter.enums.ChapterStatus.PUBLISHED
+            ORDER BY c.story.id, c.chapterNo DESC
+            """)
+    List<ChapterSummaryRow> findPublishedSummariesOf(@Param("storyIds") Collection<Long> storyIds);
 }

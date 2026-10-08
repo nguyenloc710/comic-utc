@@ -15,6 +15,10 @@ import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpSession;
@@ -55,6 +59,7 @@ import vn.edu.utc.comic.user.repository.UserAccountRepository;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(AbstractIntegrationTest.ChatModelTestConfig.class)
 @ActiveProfiles("test")
 public abstract class AbstractIntegrationTest {
 
@@ -243,5 +248,19 @@ public abstract class AbstractIntegrationTest {
         Long value = jdbcTemplate.queryForObject("SELECT " + column + " FROM story WHERE id = ?", Long.class,
                 story.getId());
         return value == null ? 0 : value;
+    }
+
+    /**
+     * Mọi test dùng chung MỘT mô hình giả (không gọi mạng, không tốn tiền); là @Primary nên ChatClient của ứng dụng
+     * dùng nó thay cho mô hình thật. Dùng chung một cấu hình để Spring giữ được một ApplicationContext cho mọi lớp.
+     */
+    @TestConfiguration(proxyBeanMethods = false)
+    public static class ChatModelTestConfig {
+
+        @Bean
+        @Primary
+        public ScriptedChatModel scriptedChatModel() {
+            return new ScriptedChatModel();
+        }
     }
 }

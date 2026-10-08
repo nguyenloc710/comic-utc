@@ -5,6 +5,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import vn.edu.utc.comic.chapter.dto.ChapterPageResponse;
 import vn.edu.utc.comic.chapter.dto.ChapterReadResponse;
+import vn.edu.utc.comic.chapter.dto.ChapterSummaryResponse;
+import vn.edu.utc.comic.chapter.dto.ChapterSummaryRow;
 import vn.edu.utc.comic.chapter.dto.StudioChapterPageResponse;
 import vn.edu.utc.comic.chapter.dto.StudioChapterResponse;
 import vn.edu.utc.comic.chapter.entity.Chapter;
@@ -51,4 +53,6 @@ public interface ChapterMapper {
     @Mapping(target = "publiclyReadable", source = "publiclyReadable")
     ChapterReadResponse toReadResponse(Story story, Chapter chapter, ChapterReadResponse.Body body,
                                        ChapterReadResponse.Neighbors neighbors, boolean publiclyReadable);
+
+    ChapterSummaryResponse toSummary(ChapterSummaryRow row);
 }

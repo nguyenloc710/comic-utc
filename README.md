@@ -8,7 +8,7 @@ Website đọc và đăng tải truyện tranh, truyện chữ tích hợp chatb
 - **Chatbot:** Spring AI + function calling
 - **Vai trò:** khách vãng lai, độc giả (`USER`), tác giả (`AUTHOR`), quản trị viên (`ADMIN`)
 
-> Trạng thái: xong **giai đoạn 5** — quản trị hoàn chỉnh: kiểm duyệt truyện / chương / bình luận (ẩn kèm lý do, tác giả được báo), độc giả báo cáo vi phạm và quản trị viên xử lý trong hàng đợi, đổi vai trò tài khoản, dashboard KPI + biểu đồ, sửa tham số vận hành tại chỗ, nhật ký kiểm toán. Trước đó: vòng đời tác giả (GĐ 4), phía độc giả (GĐ 3), tài khoản (GĐ 2). Chatbot gợi ý truyện bắt đầu từ giai đoạn 6. Tiến độ chi tiết: [docs/02-LO-TRINH.md](docs/02-LO-TRINH.md).
+> Trạng thái: xong **giai đoạn 6** — chatbot gợi ý truyện (Spring AI function calling, 4 hàm tra cứu chỉ đọc, hậu kiểm gợi ý, lịch sử hỏi nối tiếp, đường lui tìm theo thể loại/từ khóa khi mô hình lỗi, hạn mức ngày, trang `/admin/chatbot`). Bộ câu hỏi đánh giá đã có nhưng chưa chạy với mô hình thật (cần `AI_API_KEY`). Trước đó: giai đoạn 5 — quản trị hoàn chỉnh: kiểm duyệt truyện / chương / bình luận (ẩn kèm lý do, tác giả được báo), độc giả báo cáo vi phạm và quản trị viên xử lý trong hàng đợi, đổi vai trò tài khoản, dashboard KPI + biểu đồ, sửa tham số vận hành tại chỗ, nhật ký kiểm toán. Trước đó: vòng đời tác giả (GĐ 4), phía độc giả (GĐ 3), tài khoản (GĐ 2). Tiếp theo: giai đoạn 7 (kiểm thử, triển khai). Tiến độ chi tiết: [docs/02-LO-TRINH.md](docs/02-LO-TRINH.md).
 
 ## Chạy dự án
 
@@ -19,7 +19,7 @@ docker compose up -d                     # MySQL (3308), Adminer (8082); chờ ~
 cd backend && ./mvnw spring-boot:run     # Windows CMD/PowerShell: mvnw.cmd spring-boot:run
 ```
 
-Mở http://localhost:8080. Profile mặc định là `dev`: Flyway tạo lược đồ (`db/migration`) rồi nạp tài khoản và 64 truyện demo (`db/demo`).
+Mở http://localhost:8080. Profile mặc định là `dev`: Flyway tạo lược đồ (`db/migration`) rồi nạp tài khoản và 65 truyện demo (`db/demo`), trong đó truyện tranh **Hạt Tiêu & Cà Rốt** là 6 tập thật của webcomic Pepper&Carrot (David Revoy, CC BY 4.0, bản dịch tiếng Việt của Binh Pham).
 `.env` là tùy chọn (compose và ứng dụng đã có giá trị mặc định khớp nhau); chỉ cần `cp .env.example .env` khi muốn đổi cổng, mật khẩu DB hoặc đặt khóa API cho chatbot.
 
 | Tài khoản | Mật khẩu | Vai trò | Vào được |
@@ -43,6 +43,7 @@ Tài khoản `admin` nằm trong dữ liệu khởi tạo của mọi môi trư�
 | http://localhost:8080/admin/author-requests | Quản trị: duyệt yêu cầu làm tác giả |
 | http://localhost:8080/admin/stories · `/admin/comments` · `/admin/reports` | Quản trị: kiểm duyệt truyện và chương · bình luận · hàng đợi báo cáo vi phạm |
 | http://localhost:8080/admin/settings · `/admin/audit-logs` | Quản trị: tham số vận hành · nhật ký kiểm toán |
+| http://localhost:8080/admin/chatbot | Quản trị: số liệu chatbot (lượng dùng, tỉ lệ đường lui, độ trễ, token, phản hồi) |
 | http://localhost:8080/login · `/register` | Đăng nhập · đăng ký |
 | http://localhost:8080/me/profile | Hồ sơ cá nhân, đổi mật khẩu |
 | http://localhost:8080/studio | Khu vực tác giả |
@@ -50,6 +51,12 @@ Tài khoản `admin` nằm trong dữ liệu khởi tạo của mọi môi trư�
 | http://localhost:8080/swagger-ui.html | Tài liệu API JSON (`/api/**`, cần quyền ADMIN) |
 | http://localhost:8080/actuator/health | Kiểm tra tình trạng hệ thống |
 | http://localhost:8082 | Adminer — xem CSDL (server `mysql`, user `comic`, mật khẩu `comic_local_pwd`, DB `comic_utc`) |
+
+### Chatbot
+
+Khung chat (nút tròn góc phải) hiện cho mọi người đã đăng nhập. Không đặt `AI_API_KEY` thì chatbot vẫn chạy ở chế độ
+đường lui: lọc theo thể loại / loại truyện nhận ra trong câu hoặc tìm theo từ khóa. Đặt khóa (và tùy chọn `AI_MODEL`,
+`AI_READ_TIMEOUT`) trong biến môi trường hoặc `.env` để dùng mô hình thật. Bật/tắt và hạn mức ở `/admin/settings`.
 
 ### Kiểm thử
 
@@ -60,6 +67,7 @@ cd backend && ./mvnw verify              # unit test + test tích hợp (Testcon
 Test gọi LLM thật (`SpringAiToolCallingSmokeTest`) tự bỏ qua khi chưa có khóa; để chạy: đặt biến môi trường `AI_API_KEY` rồi `./mvnw test -Dtest=SpringAiToolCallingSmokeTest`.
 
 Dữ liệu demo sinh bằng `node backend/scripts/generate-demo-data.mjs` (ghi đè `db/demo/V101__demo_content.sql` và ảnh trong `resources/demo-media`). Tệp SQL đã nằm sẵn trong repo; chỉ chạy lại script khi muốn đổi nội dung demo, và khi đó phải nạp lại dữ liệu từ đầu vì Flyway đã ghi nhận tệp cũ.
+Truyện Pepper&Carrot (`db/demo/V103__demo_peppercarrot.sql`, ảnh ở `resources/demo-media/demo/peppercarrot`) có nguồn gốc, giấy phép và cách dựng lại ghi ở [backend/scripts/peppercarrot/README.md](backend/scripts/peppercarrot/README.md).
 
 ### Nạp lại dữ liệu từ đầu
 

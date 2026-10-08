@@ -1,11 +1,15 @@
 package vn.edu.utc.comic.chapter.service;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.utc.comic.chapter.dto.ChapterReadResponse;
 import vn.edu.utc.comic.chapter.dto.ChapterSummaryResponse;
+import vn.edu.utc.comic.chapter.dto.ChapterSummaryRow;
 import vn.edu.utc.comic.chapter.entity.Chapter;
 import vn.edu.utc.comic.chapter.entity.ChapterContent;
 import vn.edu.utc.comic.chapter.mapper.ChapterMapper;
@@ -39,6 +43,26 @@ public class ChapterReaderService {
     /** Danh sách chương đã đăng của một truyện, mới nhất trước. */
     public List<ChapterSummaryResponse> findPublishedChapters(Long storyId) {
         return chapterRepository.findPublishedSummaries(storyId);
+    }
+
+    /**
+     * Vài chương đã đăng mới nhất của từng truyện (mới nhất trước), lấy bằng MỘT truy vấn cho cả danh sách thay vì
+     * một truy vấn mỗi truyện.
+     *
+     * @return id truyện → các chương; truyện chưa có chương nào không có trong kết quả
+     */
+    public Map<Long, List<ChapterSummaryResponse>> findLatestChapters(List<Long> storyIds, int perStory) {
+        if (storyIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, List<ChapterSummaryResponse>> result = new LinkedHashMap<>();
+        for (ChapterSummaryRow row : chapterRepository.findPublishedSummariesOf(storyIds)) {
+            List<ChapterSummaryResponse> chapters = result.computeIfAbsent(row.storyId(), id -> new ArrayList<>());
+            if (chapters.size() < perStory) {
+                chapters.add(chapterMapper.toSummary(row));
+            }
+        }
+        return result;
     }
 
     /**

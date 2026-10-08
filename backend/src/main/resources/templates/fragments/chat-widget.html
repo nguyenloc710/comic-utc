@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Khung chat gợi ý truyện: nút nổi góc phải và bảng chat. Chỉ dựng cho người đã đăng nhập (khách không chat được).
+  chat.js gọi /api/chat/** và dựng mọi nội dung bằng textContent; câu chữ JS cần đều đi qua data-label-*.
+-->
+<div th:fragment="widget" th:if="${currentUser != null}" class="chat-widget" id="chatWidget"
+     th:attr="data-label-user=#{chat.you}, data-label-assistant=#{chat.assistant},
+              data-label-error=#{chat.error}, data-label-fallback=#{chat.fallback.badge},
+              data-label-helpful=#{chat.feedback.helpful}, data-label-unhelpful=#{chat.feedback.unhelpful},
+              data-label-chapters=#{chat.card.chapters}">
+    <button type="button" class="btn btn-primary chat-toggle shadow" data-chat-toggle
+            th:aria-label="#{chat.open}" aria-expanded="false" aria-controls="chatPanel">
+        <i class="bi bi-chat-heart-fill"></i>
+    </button>
+
+    <section class="chat-panel card shadow d-none" id="chatPanel" th:aria-label="#{chat.title}">
+        <header class="card-header d-flex align-items-center gap-2">
+            <i class="bi bi-stars text-primary"></i>
+            <span class="fw-semibold flex-grow-1" th:text="#{chat.title}">Trợ lý gợi ý truyện</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-chat-new th:title="#{chat.new}"
+                    th:aria-label="#{chat.new}"><i class="bi bi-plus-lg"></i></button>
+            <button type="button" class="btn-close" data-chat-close th:aria-label="#{common.cancel}"></button>
+        </header>
+
+        <div class="chat-messages card-body" data-chat-messages aria-live="polite">
+            <div class="chat-welcome" data-chat-welcome>
+                <p class="small text-secondary mb-2" th:text="#{chat.welcome}">Hãy kể loại truyện bạn muốn đọc.</p>
+                <div class="d-flex flex-column gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary text-start" data-chat-suggestion
+                            th:each="suggestion : ${ {#messages.msg('chat.suggestion.1'), #messages.msg('chat.suggestion.2'),
+                                                      #messages.msg('chat.suggestion.3'), #messages.msg('chat.suggestion.4')} }"
+                            th:text="${suggestion}">Gợi ý</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-typing small text-secondary px-3 pb-2 d-none" data-chat-typing>
+            <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+            <span th:text="#{chat.typing}">Đang soạn câu trả lời…</span>
+        </div>
+        <div class="alert alert-danger small mx-3 mb-2 py-2 d-none" role="alert" data-chat-error></div>
+
+        <form class="card-footer d-flex gap-2" data-chat-form>
+            <label for="chatInput" class="visually-hidden" th:text="#{chat.placeholder}">Nhập tin nhắn</label>
+            <textarea class="form-control form-control-sm" id="chatInput" rows="1" maxlength="2000" required
+                      th:placeholder="#{chat.placeholder}"></textarea>
+            <button type="submit" class="btn btn-primary btn-sm" th:aria-label="#{comment.send}">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </form>
+    </section>
+</div>
+</body>
+</html>

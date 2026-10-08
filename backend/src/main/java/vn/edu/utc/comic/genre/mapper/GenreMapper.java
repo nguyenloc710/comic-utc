@@ -6,6 +6,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import vn.edu.utc.comic.genre.dto.GenreForm;
 import vn.edu.utc.comic.genre.dto.GenreOptionResponse;
+import vn.edu.utc.comic.genre.dto.GenrePromptItem;
 import vn.edu.utc.comic.genre.dto.GenreResponse;
 import vn.edu.utc.comic.genre.dto.GenreTagResponse;
 import vn.edu.utc.comic.genre.entity.Genre;
@@ -35,4 +36,8 @@ public interface GenreMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     void updateFromForm(GenreForm form, @MappingTarget Genre genre);
+
+    GenrePromptItem toPromptItem(Genre genre);
+
+    List<GenrePromptItem> toPromptItems(List<Genre> genres);
 }

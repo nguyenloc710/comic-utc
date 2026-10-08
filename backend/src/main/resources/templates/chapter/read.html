@@ -24,7 +24,7 @@
             th:if="${chapter.title != null}" th:text="': ' + ${chapter.title}">: Tên chương</span>
     </h1>
 
-    <div th:replace="~{fragments/reader :: chapterNav(${chapter}, ${storyUrl})}"></div>
+    <div th:replace="~{fragments/reader :: chapterNav(${chapter}, ${storyUrl}, ${chapters})}"></div>
     <div class="text-end mb-2" th:if="${chapter.publiclyReadable}">
         <button th:replace="~{fragments/report :: reportButton('CHAPTER', ${chapter.chapterId}, ${currentUser != null and currentUser.id != chapter.authorId})}"></button>
     </div>
@@ -51,7 +51,7 @@
         <article class="reader-novel" th:utext="${chapter.contentHtml}">Nội dung chương</article>
     </th:block>
 
-    <div th:replace="~{fragments/reader :: chapterNav(${chapter}, ${storyUrl})}"></div>
+    <div th:replace="~{fragments/reader :: chapterNav(${chapter}, ${storyUrl}, ${chapters})}"></div>
 
     <div class="mt-4" th:if="${chapter.publiclyReadable}">
         <section th:replace="~{fragments/comments :: section(${chapter.storyId}, ${chapter.chapterId})}"></section>

@@ -60,6 +60,7 @@ public final class ViewConstants {
     public static final String ADMIN_REPORT_DETAIL = "admin/report-detail";
     public static final String ADMIN_SETTINGS = "admin/settings";
     public static final String ADMIN_AUDIT_LOGS = "admin/audit-logs";
+    public static final String ADMIN_CHATBOT = "admin/chatbot";
 
     public static final String ERROR_PAGE = "error/error";
 

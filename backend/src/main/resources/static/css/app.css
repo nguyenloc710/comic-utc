@@ -591,3 +591,582 @@ a {
 a.stat-card:hover {
   background: #f8f9fa;
 }
+
+/* ----- Khung chat gợi ý truyện ----- */
+.chat-widget {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1050;
+}
+
+.chat-toggle {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  font-size: 1.35rem;
+}
+
+.chat-panel {
+  position: absolute;
+  right: 0;
+  bottom: 4rem;
+  width: min(24rem, calc(100vw - 2rem));
+  height: min(36rem, calc(100vh - 6rem));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-panel.d-none {
+  display: none !important;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chat-bubble {
+  max-width: 92%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.925rem;
+}
+
+.chat-bubble-user {
+  align-self: flex-end;
+  background: var(--comic-primary);
+  color: #fff;
+}
+
+.chat-bubble-assistant {
+  align-self: flex-start;
+  background: #f1f3f5;
+}
+
+/* Lời người dùng và lời trợ lý là văn bản thuần: giữ xuống dòng, bẻ chuỗi dài */
+.chat-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.chat-fallback-badge {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+.chat-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.chat-card {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.4rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid #e9ecef;
+}
+
+.chat-card:hover {
+  border-color: var(--comic-primary);
+}
+
+.chat-card-cover {
+  flex-shrink: 0;
+  width: 3rem;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 0.3rem;
+  background: #e9ecef;
+}
+
+.chat-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-card-body {
+  min-width: 0;
+}
+
+.chat-card-title {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.chat-card-meta,
+.chat-card-reason {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.chat-card-reason {
+  color: #495057;
+}
+
+.chat-feedback {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.chat-feedback .btn-link {
+  color: #6c757d;
+}
+
+.chat-panel textarea {
+  resize: none;
+}
+
+/* =====================================================================
+ * Giao diện trang đọc truyện (bố cục quen thuộc của các trang truyện tranh Việt Nam):
+ * header hai tầng, truyện đề cử cuộn ngang, lưới "mới cập nhật" kèm chương mới nhất, cột top truyện.
+ * Đặt sau cùng để ghi đè các khối cũ cùng tên.
+ * ===================================================================== */
+:root {
+  --site-header-dark: #141a24;
+  --site-menu-bg: #ffffff;
+  --site-box-border: #e7e9ee;
+}
+
+.site-header {
+  z-index: 1030;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.site-topbar {
+  background: var(--site-header-dark);
+  padding: 0.55rem 0;
+}
+
+.site-brand {
+  color: var(--comic-primary);
+  font-size: 1.35rem;
+  white-space: nowrap;
+}
+
+.site-brand:hover {
+  color: #ff7a4f;
+}
+
+.site-search {
+  max-width: 34rem;
+  position: relative;
+}
+
+.site-search .form-control {
+  border-radius: 999px;
+  padding-right: 2.6rem;
+}
+
+.site-search .btn {
+  position: absolute;
+  right: 0.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  color: #6c757d;
+}
+
+.site-topbar .btn-light {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: transparent;
+  color: #fff;
+}
+
+.site-topbar .btn-light:hover,
+.site-topbar .btn-light.show {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.site-menu {
+  background: var(--site-menu-bg);
+  border-bottom: 1px solid var(--site-box-border);
+}
+
+.site-menu .nav-link {
+  color: var(--comic-ink);
+  font-weight: 500;
+  padding: 0.7rem 0.9rem !important;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.site-menu .nav-link:hover,
+.site-menu .nav-link.active {
+  color: var(--comic-primary);
+}
+
+.site-menu .nav-link.active {
+  box-shadow: inset 0 -3px 0 var(--comic-primary);
+}
+
+/* Menu thể loại: bảng nhiều cột thay vì một danh sách dài */
+.site-genre-dropdown {
+  padding: 0.75rem;
+  min-width: min(44rem, calc(100vw - 2rem));
+  column-count: 4;
+  column-gap: 0.25rem;
+}
+
+.site-genre-dropdown .dropdown-item {
+  border-radius: 0.3rem;
+  font-size: 0.9rem;
+  break-inside: avoid;
+}
+
+.site-genre-dropdown .dropdown-item:hover {
+  color: var(--comic-primary);
+  background: #fff3ee;
+}
+
+@media (max-width: 767.98px) {
+  .site-genre-dropdown {
+    column-count: 2;
+    min-width: 0;
+    border: 0;
+    box-shadow: none !important;
+  }
+}
+
+.site-footer {
+  background: var(--site-header-dark);
+  color: #cbd2dc;
+  border-top: 0;
+}
+
+/* ----- Tiêu đề khối ----- */
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--comic-primary);
+  margin-bottom: 0.85rem;
+  text-transform: uppercase;
+}
+
+/* ----- Truyện đề cử: hàng cuộn ngang, có nút cuộn bằng tay trên điện thoại ----- */
+.featured-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(150px, 1fr);
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+}
+
+@media (min-width: 992px) {
+  .featured-row {
+    grid-auto-columns: calc((100% - 4 * 0.75rem) / 5);
+  }
+}
+
+.featured-item {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #dfe3ea;
+  scroll-snap-align: start;
+}
+
+.featured-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.25s ease;
+}
+
+.featured-item:hover img {
+  transform: scale(1.05);
+}
+
+.featured-caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 2rem 0.6rem 0.55rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
+  color: #fff;
+}
+
+.featured-title {
+  font-weight: 700;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.featured-meta {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+/* ----- Bìa truyện: dải số liệu ở chân ----- */
+.story-cover-stats {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.25rem;
+  padding: 1.2rem 0.45rem 0.35rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+/* ----- Thẻ "mới cập nhật": vài chương mới nhất dưới tên truyện ----- */
+.story-update-chapters {
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+}
+
+.story-update-chapters li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 0.12rem 0;
+}
+
+.story-update-chapters a {
+  color: var(--comic-ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.story-update-chapters a:visited {
+  color: #8a94a6;
+}
+
+.story-update-chapters a:hover {
+  color: var(--comic-primary);
+}
+
+.story-update-time {
+  color: #8a94a6;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ----- Hộp ở cột phải ----- */
+.side-box {
+  background: #fff;
+  border: 1px solid var(--site-box-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.side-box-header {
+  padding: 0.7rem 0.9rem;
+  font-weight: 700;
+  color: var(--comic-primary);
+  border-bottom: 1px solid var(--site-box-border);
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.side-tabs {
+  border-bottom: 1px solid var(--site-box-border);
+}
+
+.side-tabs .nav-link {
+  border: 0;
+  border-radius: 0;
+  color: var(--comic-ink);
+  font-weight: 600;
+  flex: 1;
+}
+
+.side-tabs .nav-item {
+  flex: 1;
+  text-align: center;
+}
+
+.side-tabs .nav-link.active {
+  color: var(--comic-primary);
+  box-shadow: inset 0 -3px 0 var(--comic-primary);
+}
+
+.top-item,
+.side-history-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px dashed var(--site-box-border);
+}
+
+.top-item:last-child,
+.side-history-item:last-child {
+  border-bottom: 0;
+}
+
+.top-rank {
+  flex-shrink: 0;
+  width: 2rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #b8c0cc;
+  text-align: center;
+}
+
+.top-rank-1 { color: #e4572e; }
+.top-rank-2 { color: #f08a24; }
+.top-rank-3 { color: #f2b705; }
+
+.side-thumb {
+  flex-shrink: 0;
+  width: 3.2rem;
+  aspect-ratio: 3 / 4;
+  border-radius: 0.3rem;
+  overflow: hidden;
+  background: #e9ecef;
+}
+
+.side-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.top-info,
+.side-history-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-story-title {
+  font-weight: 600;
+  color: var(--comic-ink);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.side-story-title:hover {
+  color: var(--comic-primary);
+}
+
+/* ----- Bảng chương ở trang chi tiết ----- */
+.chapter-table {
+  border: 1px solid var(--site-box-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.chapter-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 7.5rem 5rem;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem 0.9rem;
+  color: var(--comic-ink);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--site-box-border);
+}
+
+.chapter-row > span:not(:first-child) {
+  text-align: right;
+}
+
+.chapter-row-head {
+  background: #f3f5f8;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--site-box-border);
+}
+
+a.chapter-row:hover {
+  color: var(--comic-primary);
+  background: #fff8f5;
+}
+
+a.chapter-row:visited {
+  color: #8a94a6;
+}
+
+.chapter-row-current {
+  background: #fff3ee;
+  font-weight: 600;
+}
+
+/* Truyện dài thì cuộn trong khung, trang không bị kéo dài vô tận */
+.chapter-table-body {
+  max-height: 32rem;
+  overflow-y: auto;
+}
+
+.chapter-table-body .chapter-row:last-child {
+  border-bottom: 0;
+}
+
+@media (max-width: 575.98px) {
+  .chapter-row {
+    grid-template-columns: minmax(0, 1fr) 6rem;
+  }
+
+  .chapter-row > span:last-child {
+    display: none;
+  }
+}
+
+/* ----- Trang đọc truyện tranh: nền tối, ảnh liền mạch, thanh điều hướng có ô chọn chương ----- */
+body:has(.reader-comic) {
+  background: #111;
+  color: #e6e6e6;
+}
+
+body:has(.reader-comic) .breadcrumb-item,
+body:has(.reader-comic) .breadcrumb-item.active,
+body:has(.reader-comic) .breadcrumb-item + .breadcrumb-item::before {
+  color: #aaa;
+}
+
+body:has(.reader-comic) .site-footer {
+  margin-top: 0 !important;
+}
+
+.reader-comic {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.reader-comic img {
+  margin: 0 auto;
+}
+
+.reader-chapter-select {
+  width: auto;
+  max-width: 12rem;
+}
+
+body:has(.reader-comic) .reader-nav .btn-outline-secondary {
+  color: #ddd;
+  border-color: #555;
+}
+
+body:has(.reader-comic) .reader-nav .btn-outline-primary {
+  color: #fff;
+  border-color: var(--comic-primary);
+}

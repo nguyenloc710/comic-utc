@@ -44,6 +44,7 @@ Tài liệu: [docs/00 kế hoạch tổng thể](docs/00-KE-HOACH-TONG-THE.md) �
 - **HTML chương truyện chữ** làm sạch bằng `HtmlSanitizer` (jsoup whitelist) **lúc lưu**; đó là chỗ duy nhất được `th:utext`. Bình luận, mô tả là text thuần.
 - **Ảnh**: `ImageValidator` xác định định dạng từ nội dung tệp (không tin đuôi/MIME), tên UUID, DB giữ khóa tương đối, URL dựng qua `StorageService.resolveUrl`; upload từng ảnh một request, thứ tự do service ghi lại 1..n.
 - **Thông báo** qua `@TransactionalEventListener(AFTER_COMMIT)` + `@Async`; chương mới phát cho người theo dõi bằng một câu `INSERT … SELECT`.
+- **Chatbot — chi tiết đã làm**: hàm tra cứu ở `chatbot/tool/StoryCatalogTools`, logic ở `ChatbotCatalogService` (chỉ dùng `StoryCatalogQueryService`). Không giữ transaction trong lúc gọi mô hình (`ChatHistoryService.startTurn` / `finishTurn`). Test không gọi mạng: `ScriptedChatModel` + `ScriptedChatModel.callTool(prompt, "searchStories", "{\"request\": {...}}")` — tham số record của hàm nằm dưới khóa tên tham số.
 - **Chatbot**: hàm chỉ đọc; thẻ truyện dựng từ DB theo id đã qua `RecommendationValidator` (id phải nằm trong kết quả hàm của hội thoại và còn công khai); `userId` lấy từ `SecurityContext`, không nhận từ mô hình; LLM lỗi ⇒ `KeywordFallbackResponder`; khóa API chỉ qua biến môi trường.
 
 ## Thymeleaf
@@ -59,6 +60,7 @@ docker compose up -d                                   # mysql (3308), adminer (
 cd backend && ./mvnw spring-boot:run                   # profile mặc định là dev; http://localhost:8080
 ./mvnw verify                                          # test (Testcontainers MySQL, cần Docker đang chạy) + JaCoCo
 AI_API_KEY=... ./mvnw test -Dtest=SpringAiToolCallingSmokeTest   # gọi LLM thật; không có khóa thì tự bỏ qua
+AI_API_KEY=... ./mvnw test -Dtest=ChatbotEvaluationRunner -Dchatbot.eval=true   # chạy bộ câu hỏi đánh giá trên DB dev → target/chatbot-eval.md
 ```
 
 Tài khoản dev: `admin` / `Admin@123` · `author1..3`, `reader1..15` / `Demo@123`. Bộ đếm (`*_count`, `rating_sum`) là cột `updatable = false`: chỉ đổi bằng câu UPDATE cộng dồn, đừng `setXxxCount` rồi `save`.

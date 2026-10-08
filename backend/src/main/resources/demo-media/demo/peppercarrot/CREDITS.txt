@@ -1,0 +1,4 @@
+Pepper&Carrot - David Revoy - https://www.peppercarrot.com
+License: Creative Commons Attribution 4.0 (CC BY 4.0) - https://creativecommons.org/licenses/by/4.0/
+Vietnamese translation: Binh Pham
+Changes: Vietnamese text layer merged into the artwork, images resized to 800px wide, blank spacer pages removed.

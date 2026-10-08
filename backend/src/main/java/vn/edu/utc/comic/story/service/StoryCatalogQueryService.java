@@ -2,6 +2,7 @@ package vn.edu.utc.comic.story.service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -121,6 +122,40 @@ public class StoryCatalogQueryService {
                 .orElseThrow(() -> new ApiException(ErrorCode.STORY_NOT_FOUND));
     }
 
+    /** Truyện đang công khai theo id; rỗng nếu không có hoặc không công khai (không ném lỗi). */
+    public Optional<Story> findPublicStory(Long storyId) {
+        return storyRepository.findById(storyId).filter(story -> accessPolicy.canView(story, Viewer.anonymous()));
+    }
+
+    /**
+     * Thực thể các truyện công khai khớp bộ lọc, cho service cần tự ánh xạ sang dạng riêng (hàm tra cứu của
+     * chatbot). Phải gọi trong transaction của service gọi nếu cần đọc thể loại.
+     */
+    public List<Story> findPublicStories(StoryFilterRequest filter, int limit) {
+        return storyRepository.findAll(publicMatching(filter), PageRequest.of(0, limit)).getContent();
+    }
+
+    /** Số truyện công khai khớp bộ lọc. */
+    public long countPublicStories(StoryFilterRequest filter) {
+        return storyRepository.count(publicMatching(filter));
+    }
+
+    /** Thực thể truyện công khai theo danh sách id, GIỮ đúng thứ tự; id không còn công khai bị bỏ qua. */
+    public List<Story> findPublicStoriesByIds(List<Long> storyIds) {
+        if (storyIds.isEmpty()) {
+            return List.of();
+        }
+        Specification<Story> specification = StorySpecification.publiclyVisible()
+                .and((root, query, builder) -> root.get("id").in(storyIds));
+        return storyRepository.findAll(specification).stream()
+                .sorted(Comparator.comparingInt(story -> storyIds.indexOf(story.getId())))
+                .toList();
+    }
+
+    /** Id các truyện công khai chung nhiều thể loại nhất với một truyện. */
+    public List<Long> findSimilarStoryIds(Long storyId, int limit) {
+        return storyRepository.findSimilarStoryIds(storyId, PageRequest.of(0, limit));
+    }
     private static Specification<Story> publicMatching(StoryFilterRequest filter) {
         return StorySpecification.publiclyVisible().and(StorySpecification.matching(filter));
     }

@@ -1,22 +1,64 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
-<!-- Thẻ truyện dùng ở mọi danh sách. story: StoryCardResponse -->
+<!-- Thẻ truyện dùng ở mọi danh sách: bìa có dải số liệu ở chân (lượt xem, theo dõi). story: StoryCardResponse -->
 <a th:fragment="card(story)" class="story-card" th:href="@{/stories/{slug}(slug=${story.slug})}">
-    <div class="story-cover">
-        <img th:if="${story.coverUrl != null}" th:src="${story.coverUrl}" th:alt="${story.title}" loading="lazy">
-        <div th:if="${story.coverUrl == null}" class="story-cover-empty"><i class="bi bi-book"></i></div>
-        <span class="story-badge story-badge-type" th:classappend="'story-type-' + ${#strings.toLowerCase(story.type)}"
-              th:text="#{'enum.StoryType.' + ${story.type}}">Truyện tranh</span>
-        <span class="story-badge story-badge-status" th:if="${story.status.name() == 'COMPLETED'}"
-              th:text="#{enum.StoryStatus.COMPLETED}">Hoàn thành</span>
-    </div>
+    <div th:replace="~{fragments/story :: cover(${story})}"></div>
     <div class="story-card-title" th:text="${story.title}">Tên truyện</div>
     <div class="story-card-meta">
         <span th:text="#{story.chapter.count(${story.chapterCount})}">120 chương</span>
-        <span><i class="bi bi-eye"></i> <span th:text="${#numbers.formatInteger(story.viewCount, 1, 'POINT')}">12.345</span></span>
     </div>
 </a>
+
+<!-- Bìa truyện kèm nhãn loại / trạng thái và dải số liệu ở chân -->
+<div th:fragment="cover(story)" class="story-cover">
+    <img th:if="${story.coverUrl != null}" th:src="${story.coverUrl}" th:alt="${story.title}" loading="lazy">
+    <div th:if="${story.coverUrl == null}" class="story-cover-empty"><i class="bi bi-book"></i></div>
+    <span class="story-badge story-badge-type" th:classappend="'story-type-' + ${#strings.toLowerCase(story.type)}"
+          th:text="#{'enum.StoryType.' + ${story.type}}">Truyện tranh</span>
+    <span class="story-badge story-badge-status" th:if="${story.status.name() == 'COMPLETED'}"
+          th:text="#{enum.StoryStatus.COMPLETED}">Hoàn thành</span>
+    <div class="story-cover-stats">
+        <span><i class="bi bi-eye-fill"></i> <span th:text="${@fmt.compact(story.viewCount)}">12,3K</span></span>
+        <span><i class="bi bi-heart-fill"></i> <span th:text="${@fmt.compact(story.followCount)}">321</span></span>
+    </div>
+</div>
+
+<!--
+  Thẻ ở khối "Truyện mới cập nhật": thêm vài chương mới nhất, mỗi chương một dòng kèm thời gian tương đối.
+  story: StoryCardResponse · chapters: List<ChapterSummaryResponse> (mới nhất trước)
+-->
+<div th:fragment="updateCard(story, chapters)" class="story-update">
+    <a class="story-card" th:href="@{/stories/{slug}(slug=${story.slug})}">
+        <div th:replace="~{fragments/story :: cover(${story})}"></div>
+        <div class="story-card-title" th:text="${story.title}">Tên truyện</div>
+    </a>
+    <ul class="story-update-chapters list-unstyled mb-0">
+        <li th:each="chapter : ${chapters}">
+            <a th:href="@{/stories/{slug}/chapters/{no}(slug=${story.slug}, no=${chapter.chapterNo})}"
+               th:text="#{chapter.short(${chapter.chapterNo})}">Chương 12</a>
+            <span class="story-update-time" th:text="${@fmt.timeAgo(chapter.publishedAt)}">2 giờ trước</span>
+        </li>
+    </ul>
+</div>
+
+<!-- Danh sách xếp hạng đánh số ở cột phải trang chủ. stories: List<StoryCardResponse> -->
+<ol th:fragment="topList(stories)" class="top-list list-unstyled mb-0">
+    <li th:if="${stories.isEmpty()}" class="text-secondary small py-3 text-center" th:text="#{ranking.empty}">Chưa đủ dữ liệu</li>
+    <li class="top-item" th:each="story, stat : ${stories}">
+        <span class="top-rank" th:classappend="'top-rank-' + ${stat.count}" th:text="${#numbers.formatInteger(stat.count, 2)}">01</span>
+        <a class="side-thumb" th:href="@{/stories/{slug}(slug=${story.slug})}">
+            <img th:if="${story.coverUrl != null}" th:src="${story.coverUrl}" alt="" loading="lazy">
+        </a>
+        <div class="top-info">
+            <a class="side-story-title" th:href="@{/stories/{slug}(slug=${story.slug})}" th:text="${story.title}">Tên truyện</a>
+            <div class="small text-secondary">
+                <span th:text="#{story.chapter.count(${story.chapterCount})}">120 chương</span> ·
+                <i class="bi bi-eye"></i> <span th:text="${@fmt.compact(story.viewCount)}">12K</span>
+            </div>
+        </div>
+    </li>
+</ol>
 
 <!-- Lưới thẻ truyện: 2 cột trên điện thoại, 6 cột trên màn hình rộng. stories: List<StoryCardResponse> -->
 <div th:fragment="grid(stories)" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
