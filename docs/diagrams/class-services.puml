@@ -1,0 +1,139 @@
+@startuml class-services
+!pragma layout smetana
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #4A5A70
+  HeaderBackgroundColor #E8EEF6
+}
+hide empty fields
+title Biểu đồ lớp — các service "một cửa" và quan hệ phụ thuộc
+
+package "Phía độc giả (chỉ đọc, lọc công khai)" {
+  class StoryCatalogQueryService {
+    + searchStories(filter, page) : PageResponse
+    + getStoryDetail(slug, viewer) : StoryDetailResponse
+    + getViewableStory(slug, viewer) : Story
+    + findCardsByIds(storyIds) : List<StoryCardResponse>
+    + findSimilarStoryIds(storyId, limit) : List<Long>
+  }
+  class ChapterReaderService {
+    + getChapterForReading(slug, chapterNo, viewer) : ChapterReadResponse
+    + findPublishedChapters(storyId) : List
+    + findLatestChapters(storyIds, perStory) : Map
+  }
+  class StoryAccessPolicy {
+    + canView(story, viewer) : boolean
+    + canRead(chapter, story, viewer) : boolean
+    + isPubliclyReadable(chapter, story) : boolean
+    + canManage(story, userId) : boolean
+  }
+}
+
+package "Tác giả" {
+  class StudioStoryService {
+    + createStory(authorId, form) : Long
+    + updateStory(storyId, authorId, form)
+    + getOwnedStory(storyId, authorId) : Story
+  }
+  class StudioChapterService {
+    + createChapter(storyId, authorId, form) : Long
+    + updateChapter(chapterId, authorId, form)
+    + getOwnedChapter(chapterId, authorId) : Chapter
+  }
+  class ChapterPublishService {
+    + publishNow(chapterId, authorId)
+    + schedule(chapterId, authorId, localTime) : Instant
+    + cancelSchedule(chapterId, authorId)
+    + publishDueChapter(chapterId) : boolean
+    + hideChapter(chapterId, reason)
+    + unhideChapter(chapterId)
+  }
+  class ChapterPublishJob <<@Scheduled>> {
+    + publishDueChapters() : int
+  }
+  class AuthorRequestService {
+    + submit(userId, form)
+    + approve(requestId, reviewerId) : String
+    + reject(requestId, reviewerId, reason)
+  }
+}
+
+package "Quản trị" {
+  class StoryModerationService {
+    + hideStory(storyId, reason) : String
+    + unhideStory(storyId) : String
+  }
+  class CommentModerationService {
+    + hideComment(commentId, reason)
+    + unhideComment(commentId)
+  }
+  class ReportService {
+    + submit(reporterId, request)
+    + resolve(reportId, adminId, reason)
+    + dismiss(reportId, adminId, note)
+  }
+}
+
+package "Chatbot" {
+  class ChatbotService {
+    + reply(userId, request) : ChatReplyResponse
+  }
+  class ChatHistoryService {
+    + startTurn(userId, request) : ChatTurn
+    + finishTurn(turn, draft, latencyMs) : ChatReplyResponse
+  }
+  class StoryCatalogTools <<@Tool>> {
+    + searchStories(request, toolContext)
+    + getStoryDetail(storyId, toolContext)
+    + findSimilarStories(storyId, limit, toolContext)
+    + getTrendingStories(period, type, limit, toolContext)
+  }
+  class ChatbotCatalogService {
+    + searchStories(request) : StorySearchToolResult
+    + getStoryDetail(storyId) : StoryDetailToolResult
+    + findSimilarStories(storyId, limit) : StoryListToolResult
+    + findTrendingStories(period, type, limit) : StoryListToolResult
+    + searchForFallback(content, limit) : List
+  }
+  class RecommendationValidator {
+    + validate(recommendations, allowedStoryIds) : ValidatedRecommendations
+  }
+  class KeywordFallbackResponder {
+    + respond(content, reason) : AssistantDraft
+  }
+}
+
+class NotificationListener <<@Async AFTER_COMMIT>> {
+  + handleChapterPublished(event)
+  + handleAuthorRequestReviewed(event)
+  + handleContentHidden(event)
+}
+
+StoryCatalogQueryService --> StoryAccessPolicy
+ChapterReaderService --> StoryCatalogQueryService
+ChapterReaderService --> StoryAccessPolicy
+StudioStoryService --> StoryAccessPolicy
+StudioChapterService --> StudioStoryService
+ChapterPublishService --> StudioChapterService
+ChapterPublishJob --> ChapterPublishService
+ReportService --> StoryModerationService
+ReportService --> ChapterPublishService
+ReportService --> CommentModerationService
+ChatbotService --> ChatHistoryService
+ChatbotService --> StoryCatalogTools
+ChatbotService --> RecommendationValidator
+ChatbotService --> KeywordFallbackResponder
+StoryCatalogTools --> ChatbotCatalogService
+ChatbotCatalogService --> StoryCatalogQueryService
+RecommendationValidator --> StoryCatalogQueryService
+KeywordFallbackResponder --> ChatbotCatalogService
+ChapterPublishService ..> NotificationListener : ChapterPublishedEvent
+AuthorRequestService ..> NotificationListener : AuthorRequestReviewedEvent
+' Xếp các nhóm thành hai tầng để ảnh vừa khổ giấy A4
+ReportService -[hidden]down- ChatbotService
+StudioStoryService -[hidden]down- ChatbotService
+@enduml

@@ -1,0 +1,59 @@
+@startuml seq-author-request
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+title Biểu đồ tuần tự — đăng ký làm tác giả, duyệt và cấp quyền cho phiên đang mở
+
+actor "Độc giả" as Reader
+actor "Quản trị viên" as Admin
+participant "AuthorRequestController\nAdminAuthorRequestController" as Ctl
+participant AuthorRequestService as Svc
+database MySQL as DB
+participant AccountStateService as State
+participant NotificationListener as Notify
+participant AuthorityRefreshFilter as Filter
+
+== Gửi yêu cầu ==
+Reader -> Ctl : POST /me/author-request\n(bút danh, giới thiệu, loại truyện dự định)
+Ctl -> Svc : submit(userId, form)
+Svc -> DB : validateMaySubmit: vai trò là USER, yêu cầu gần nhất\nkhông còn PENDING, đã hết thời gian chờ nếu bị từ chối
+Svc -> DB : kiểm tra bút danh chưa có trong author_profile\nvà các yêu cầu đang chờ
+Svc -> DB : INSERT author_request (status = PENDING)
+note right of DB
+  UNIQUE trên cột sinh pending_user_id:
+  bấm gửi hai lần cùng lúc thì lần sau
+  bị chặn → AUTHOR_REQUEST_ALREADY_PENDING
+end note
+Ctl --> Reader : redirect + thông báo "đã gửi"
+
+== Duyệt ==
+Admin -> Ctl : POST /admin/author-requests/{id}/approve
+Ctl -> Svc : approve(requestId, reviewerId)
+activate Svc
+Svc -> DB : nạp yêu cầu PENDING, kiểm tra vai trò còn là USER\nvà bút danh chưa bị người khác lấy
+Svc -> DB : author_request.status = APPROVED, reviewed_by, reviewed_at
+Svc -> DB : INSERT author_profile (pen_name, approved_at)
+Svc -> DB : user_account.role = AUTHOR
+Svc -> DB : INSERT audit_log (AUTHOR_REQUEST_APPROVED)
+Svc -> Svc : publishEvent(AccountChangedEvent)\npublishEvent(AuthorRequestReviewedEvent)
+deactivate Svc
+note over Svc, DB : COMMIT
+Svc ->> State : AFTER_COMMIT: xóa cache trạng thái tài khoản
+Svc ->> Notify : AFTER_COMMIT, @Async
+Notify -> DB : INSERT notification (AUTHOR_REQUEST_APPROVED)
+Ctl --> Admin : redirect + thông báo "đã duyệt"
+
+== Phiên của độc giả nhận quyền mới (không phải đăng nhập lại) ==
+Reader -> Filter : request kế tiếp bất kỳ (vd. GET /studio)
+Filter -> State : findState(userId)
+State -> DB : đọc role, status (cache trống nên đọc lại)
+State --> Filter : AccountState(role = AUTHOR, ACTIVE)
+alt trạng thái khác với principal trong phiên
+  Filter -> Filter : refreshSession: dựng lại Authentication\nvới quyền ROLE_AUTHOR, lưu vào phiên
+end
+Filter -> Filter : chuỗi filter tiếp tục: /studio/** cần ROLE_AUTHOR → cho qua
+Filter --> Reader : trang khu vực tác giả
+@enduml

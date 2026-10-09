@@ -1,0 +1,93 @@
+@startuml usecase
+!pragma layout smetana
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #4A5A70
+}
+skinparam actorBorderColor #2B3A4F
+left to right direction
+title Biểu đồ use case tổng quát — website đọc và đăng tải truyện
+
+actor "Khách vãng lai" as Guest
+actor "Độc giả" as Reader
+actor "Tác giả" as Author
+actor "Quản trị viên" as Admin
+actor "Hệ thống\n(job định kỳ)" as Scheduler
+
+Guest <|-- Reader
+Reader <|-- Author
+Reader <|-- Admin
+
+rectangle "Website truyện" {
+  package "Đọc và tìm truyện" {
+    usecase "Xem trang chủ,\nbảng xếp hạng" as UC_Home
+    usecase "Tìm kiếm, lọc truyện\n(thể loại, trạng thái, loại)" as UC_Search
+    usecase "Xem chi tiết truyện" as UC_Detail
+    usecase "Đọc chương\n(truyện tranh / truyện chữ)" as UC_Read
+    usecase "Đăng ký, đăng nhập" as UC_Register
+  }
+
+  package "Độc giả" {
+    usecase "Quản lý hồ sơ,\nđổi mật khẩu" as UC_Profile
+    usecase "Theo dõi truyện,\nlịch sử đọc, đọc tiếp" as UC_Follow
+    usecase "Bình luận, đánh giá sao" as UC_Comment
+    usecase "Nhận thông báo" as UC_Notify
+    usecase "Chat với chatbot\ngợi ý truyện" as UC_Chat
+    usecase "Báo cáo vi phạm" as UC_Report
+    usecase "Gửi yêu cầu làm tác giả" as UC_AuthorReq
+  }
+
+  package "Tác giả (/studio)" {
+    usecase "Tạo, sửa, xóa truyện" as UC_Story
+    usecase "Soạn chương: tải ảnh /\nsoạn văn bản, lưu nháp" as UC_Chapter
+    usecase "Đăng ngay / hẹn giờ đăng" as UC_Publish
+    usecase "Xem thống kê truyện" as UC_AuthorStats
+  }
+
+  package "Quản trị (/admin)" {
+    usecase "Duyệt / từ chối\nyêu cầu tác giả" as UC_Review
+    usecase "Ẩn / hiện truyện, chương,\nbình luận (kèm lý do)" as UC_Moderate
+    usecase "Xử lý báo cáo vi phạm" as UC_HandleReport
+    usecase "Quản lý người dùng,\nthể loại" as UC_Users
+    usecase "Dashboard, thống kê chatbot,\ntham số, nhật ký" as UC_Dashboard
+  }
+
+  package "Tác vụ nền" {
+    usecase "Đăng chương hẹn giờ\nđến hạn" as UC_Job
+    usecase "Dọn hội thoại\nchatbot quá hạn" as UC_Cleanup
+  }
+}
+
+Guest --> UC_Home
+Guest --> UC_Search
+Guest --> UC_Detail
+Guest --> UC_Read
+Guest --> UC_Register
+
+Reader --> UC_Profile
+Reader --> UC_Follow
+Reader --> UC_Comment
+Reader --> UC_Notify
+Reader --> UC_Chat
+Reader --> UC_Report
+Reader --> UC_AuthorReq
+
+Author --> UC_Story
+Author --> UC_Chapter
+Author --> UC_Publish
+Author --> UC_AuthorStats
+
+Admin --> UC_Review
+Admin --> UC_Moderate
+Admin --> UC_HandleReport
+Admin --> UC_Users
+Admin --> UC_Dashboard
+
+UC_Job <-- Scheduler
+UC_Cleanup <-- Scheduler
+
+@enduml

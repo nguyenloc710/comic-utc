@@ -1,0 +1,66 @@
+@startuml seq-publish-chapter
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+title Biểu đồ tuần tự — đăng chương ngay / hẹn giờ, job đăng chương và thông báo cho người theo dõi
+
+actor "Tác giả" as Author
+participant StudioChapterController as Ctl
+participant ChapterPublishService as Pub
+participant StudioChapterService as Studio
+participant "ChapterPublishJob\n(@Scheduled mỗi phút)" as Job
+database MySQL as DB
+participant "NotificationListener\n(@Async, AFTER_COMMIT)" as Listener
+participant NotificationService as Notif
+
+== Đăng ngay ==
+Author -> Ctl : POST /studio/chapters/{id} (action = PUBLISH)
+Ctl -> Studio : updateChapter(chapterId, authorId, form)
+Ctl -> Pub : publishNow(chapterId, authorId)
+activate Pub
+Pub -> Studio : getOwnedChapter → 404 nếu không phải chương của mình
+Pub -> Pub : ChapterStatus.canTransitionTo(PUBLISHED)\nvà page_count > 0 hoặc word_count > 0
+Pub -> DB : lockForCounterUpdate(storyId) — SELECT … FOR UPDATE dòng story
+Pub -> DB : chapter.status = PUBLISHED, published_at = now
+Pub -> DB : UPDATE story SET chapter_count = chapter_count + 1,\nlast_chapter_at = now
+Pub -> Pub : publishEvent(ChapterPublishedEvent)
+deactivate Pub
+note over Pub, DB : COMMIT
+Ctl --> Author : redirect về trình soạn + thông báo "đã đăng"
+
+== Hẹn giờ ==
+Author -> Ctl : POST /studio/chapters/{id} (action = SCHEDULE, giờ Việt Nam)
+Ctl -> Pub : schedule(chapterId, authorId, localTime)
+Pub -> DB : chapter.status = SCHEDULED, scheduled_at (UTC, phải ở tương lai)
+Ctl --> Author : redirect + thông báo "đã hẹn giờ"
+
+== Job đăng chương tới hạn ==
+loop mỗi phút
+  Job -> DB : SELECT id FROM chapter WHERE status = SCHEDULED\nAND scheduled_at <= now (theo lô)
+  loop từng chương — mỗi chương một transaction
+    Job -> Pub : publishDueChapter(chapterId)
+    activate Pub
+    Pub -> DB : nạp chương kèm truyện
+    Pub -> DB : lockForCounterUpdate(storyId)
+    Pub -> DB : UPDATE chapter SET status = PUBLISHED …\nWHERE id = ? AND status = SCHEDULED AND scheduled_at <= now
+    alt số dòng đổi = 1
+      Pub -> DB : UPDATE story SET chapter_count = chapter_count + 1, last_chapter_at
+      Pub -> Pub : publishEvent(ChapterPublishedEvent)
+    else số dòng đổi = 0 (lượt khác đã đăng, hoặc tác giả vừa hủy hẹn)
+      Pub --> Job : false — bỏ qua, không đăng trùng
+    end
+    deactivate Pub
+  end
+  Job -> DB : INSERT job_run (số chương đã đăng, số lỗi)
+end
+
+== Thông báo sau khi commit ==
+Pub ->> Listener : ChapterPublishedEvent (chỉ chạy khi transaction đã COMMIT)
+alt truyện đang công khai
+  Listener -> Notif : notifyFollowers(storyId, NEW_CHAPTER, link, …)
+  Notif -> DB : INSERT INTO notification (…)\nSELECT f.user_id, … FROM story_follow f WHERE f.story_id = ?
+end
+@enduml

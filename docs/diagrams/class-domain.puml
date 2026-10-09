@@ -1,0 +1,175 @@
+@startuml class-domain
+!pragma layout smetana
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #4A5A70
+  HeaderBackgroundColor #E8EEF6
+}
+hide empty methods
+title Biểu đồ lớp — lớp miền chính (JPA entity) và các trạng thái
+
+class UserAccount {
+  username : String
+  email : String
+  passwordHash : String
+  displayName : String
+  role : Role
+  status : UserStatus
+  failedAttempts : int
+  lockedUntil : Instant
+}
+class AuthorProfile {
+  userId : Long
+  penName : String
+  approvedAt : Instant
+}
+class AuthorRequest {
+  penName : String
+  introduction : String
+  intendedType : IntendedStoryType
+  status : AuthorRequestStatus
+  rejectReason : String
+  reviewedAt : Instant
+}
+class Genre {
+  name : String
+  slug : String
+  sortOrder : int
+  active : boolean
+}
+class Story {
+  slug : String
+  title : String
+  type : StoryType
+  status : StoryStatus
+  visibility : StoryVisibility
+  hiddenReason : String
+  chapterCount : int
+  viewCount : long
+  followCount : int
+  ratingSum : int
+  ratingCount : int
+  commentCount : int
+  lastChapterAt : Instant
+  deletedAt : Instant
+}
+class Chapter {
+  chapterNo : int
+  title : String
+  status : ChapterStatus
+  scheduledAt : Instant
+  publishedAt : Instant
+  pageCount : int
+  wordCount : int
+  viewCount : long
+}
+class ChapterPage {
+  pageNo : int
+  imagePath : String
+  width : int
+  height : int
+}
+class ChapterContent {
+  chapterId : Long
+  content : String <<HTML đã làm sạch>>
+}
+class Comment {
+  content : String
+  status : CommentStatus
+  hiddenReason : String
+}
+class Report {
+  targetType : ReportTargetType
+  targetId : Long
+  reason : ReportReason
+  status : ReportStatus
+}
+class ChatConversation {
+  userId : Long
+  title : String
+  lastMessageAt : Instant
+}
+class ChatMessage {
+  role : ChatRole
+  content : String
+  recommendations : JSON
+  answerSource : AnswerSource
+  fallbackReason : FallbackReason
+  rejectedCount : Integer
+}
+
+UserAccount "1" -- "0..1" AuthorProfile
+AuthorRequest "*" --> "1" UserAccount : user
+AuthorRequest "*" --> "0..1" UserAccount : reviewedBy
+Story "*" --> "1" UserAccount : author
+Story "*" --> "*" Genre : genres
+Chapter "*" --> "1" Story
+ChapterPage "*" --> "1" Chapter
+ChapterContent ..> Chapter : chapterId
+Comment "*" --> "1" Story
+Comment "*" --> "0..1" Chapter
+Comment "*" --> "1" UserAccount : user
+Comment "*" --> "0..1" Comment : parent
+Report "*" --> "1" UserAccount : reporter
+ChatMessage "*" --> "1" ChatConversation
+ChatConversation ..> UserAccount : userId
+
+enum Role {
+  USER
+  AUTHOR
+  ADMIN
+}
+enum StoryType {
+  COMIC
+  NOVEL
+}
+enum StoryVisibility {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+enum StoryStatus {
+  ONGOING
+  COMPLETED
+  PAUSED
+}
+enum ChapterStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  HIDDEN
+  --
+  canTransitionTo(target) : boolean
+  hasBeenPublished() : boolean
+}
+enum AuthorRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+note bottom of ChapterStatus
+  DRAFT → SCHEDULED, PUBLISHED
+  SCHEDULED → DRAFT, PUBLISHED
+  PUBLISHED → HIDDEN
+  HIDDEN → PUBLISHED
+end note
+
+UserAccount ..> Role
+Story ..> StoryType
+Story ..> StoryVisibility
+Story ..> StoryStatus
+Chapter ..> ChapterStatus
+AuthorRequest ..> AuthorRequestStatus
+
+legend right
+  Lớp cha dùng chung (không vẽ):
+  BaseEntity (id) ← CreatedAtEntity (createdAt) ← AuditableEntity (updatedAt, createdBy, updatedBy)
+  AuditableEntity: UserAccount, AuthorRequest, Genre, Story, Chapter
+  CreatedAtEntity: Comment, Report, ChatConversation, ChatMessage
+  Bộ đếm của Story / Chapter là cột updatable = false, chỉ đổi bằng UPDATE cộng dồn.
+endlegend
+@enduml

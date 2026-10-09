@@ -1,0 +1,67 @@
+@startuml seq-chatbot
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+title Biểu đồ tuần tự — chatbot gợi ý truyện (Spring AI function calling, hậu kiểm, đường lui)
+
+actor "Độc giả" as Reader
+participant ChatApiController as Api
+participant ChatbotService as Bot
+participant ChatHistoryService as History
+participant "ChatClient\n(Spring AI)" as Client
+participant "Mô hình ngôn ngữ\n(LLM)" as LLM
+participant "StoryCatalogTools\n(@Tool)" as Tools
+participant ChatbotCatalogService as Catalog
+participant RecommendationValidator as Validator
+participant KeywordFallbackResponder as Fallback
+database MySQL as DB
+
+Reader -> Api : khung chat (chat.js) gửi POST /api/chat/messages\n{content: "truyện tu tiên, nữ chính mạnh mẽ, đã hoàn thành"}\nkèm X-CSRF-TOKEN
+Api -> Bot : reply(userId lấy từ phiên đăng nhập, request)
+
+== Transaction 1: nhận câu hỏi ==
+Bot -> History : startTurn(userId, request)
+History -> DB : SELECT … FOR UPDATE dòng user_account (câu lệnh đầu tiên)
+History -> DB : kiểm tra chat.enabled, độ dài tin,\nsố tin trong ngày (giờ Việt Nam) < hạn mức
+History -> DB : tạo / nạp hội thoại của chính người dùng,\nđọc các tin gần nhất (cửa sổ lịch sử)
+History -> DB : INSERT chat_message (role = USER)
+History --> Bot : ChatTurn (lịch sử, id truyện đã gợi ý trước đó)
+note over Bot, DB : COMMIT — không giữ transaction trong lúc chờ mô hình
+
+== Gọi mô hình (ngoài transaction) ==
+Bot -> Client : prompt(system prompt + lịch sử + câu hỏi)\n.tools(StoryCatalogTools).toolContext(collector)
+Client -> LLM : tin nhắn + mô tả 4 hàm tra cứu
+loop mô hình yêu cầu gọi hàm (0..n lần)
+  LLM --> Client : tool call, vd. searchStories({genres, type, status, keyword})
+  Client -> Tools : searchStories(request, toolContext)
+  Tools -> Catalog : searchStories(request)
+  Catalog -> DB : qua StoryCatalogQueryService: chỉ truyện CÔNG KHAI\n(FULLTEXT / LIKE, thể loại, trạng thái);\nkhông có kết quả thì nới dần điều kiện
+  Catalog --> Tools : StorySearchToolResult (id, tên, thể loại, số chương…)
+  Tools -> Tools : collector.record(tên hàm, tham số, id truyện trả về)
+  Tools --> Client : kết quả hàm (JSON)
+  Client -> LLM : kết quả hàm
+end
+LLM --> Client : JSON {reply, recommendations: [{storyId, reason}]}
+Client --> Bot : ChatResponse (kèm số token)
+
+alt mô hình trả lời được
+  Bot -> Validator : validate(recommendations, id có trong kết quả hàm\n+ id đã gợi ý ở lượt trước)
+  Validator -> Validator : loại id không nằm trong danh sách cho phép, bỏ trùng
+  Validator -> DB : StoryCatalogQueryService.findCardsByIds(ids)\n— nạp lại, chỉ truyện còn công khai
+  Validator --> Bot : thẻ truyện (dựng từ DB) + số gợi ý bị loại
+else hết thời gian chờ / lỗi nhà cung cấp / JSON hỏng
+  Bot -> Fallback : respond(content, reason)
+  Fallback -> Catalog : searchForFallback(content, limit)\n(nhận ra thể loại, "truyện tranh/chữ"; còn lại tìm theo từ khóa)
+  Fallback --> Bot : AssistantDraft (answer_source = FALLBACK_KEYWORD)
+end
+
+== Transaction 2: lưu câu trả lời ==
+Bot -> History : finishTurn(turn, draft, latencyMs)
+History -> DB : INSERT chat_message (role = ASSISTANT, recommendations,\ntool_trace, answer_source, fallback_reason,\nrejected_count, token, latency_ms)
+History --> Bot : ChatReplyResponse
+Bot --> Api : ChatReplyResponse
+Api --> Reader : 200 JSON {conversationId, messageId, reply, cards[], source}\n→ khung chat hiện lời đáp + thẻ truyện có liên kết
+@enduml

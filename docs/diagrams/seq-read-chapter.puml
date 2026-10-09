@@ -1,0 +1,60 @@
+@startuml seq-read-chapter
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+autonumber
+title Biểu đồ tuần tự — đọc một chương: kiểm tra công khai, đếm lượt xem, lưu tiến độ đọc
+
+actor "Người đọc\n(khách hoặc thành viên)" as Reader
+participant ChapterReaderController as Ctl
+participant ChapterReaderService as ReadSvc
+participant StoryCatalogQueryService as Catalog
+participant StoryAccessPolicy as Policy
+participant ChapterReadingTracker as Tracker
+participant ReadingHistoryService as History
+participant "ViewCountService\n(@Async)" as Views
+database MySQL as DB
+
+Reader -> Ctl : GET /stories/{slug}/chapters/{chapterNo}
+Ctl -> ReadSvc : getChapterForReading(slug, chapterNo, viewer)
+ReadSvc -> Catalog : getViewableStory(slug, viewer)
+Catalog -> DB : tìm truyện theo slug, chưa xóa mềm
+Catalog -> Policy : canView(story, viewer)
+alt truyện không tồn tại / chưa công khai và người xem\nkhông phải tác giả hoặc quản trị viên
+  Catalog --> Ctl : ApiException(STORY_NOT_FOUND)
+  Ctl --> Reader : 404 (không trả 403 để không lộ là nội dung có tồn tại)
+end
+ReadSvc -> DB : tìm chương theo (story_id, chapter_no)
+ReadSvc -> Policy : canRead(chapter, story, viewer)
+alt chương không có hoặc chưa đăng (nháp, hẹn giờ, bị ẩn)
+  ReadSvc --> Ctl : ApiException(CHAPTER_NOT_FOUND)
+  Ctl --> Reader : 404
+end
+ReadSvc -> DB : số chương trước / sau đã đăng
+ReadSvc -> DB : nội dung: chapter_page (truyện tranh)\nhoặc chapter_content (truyện chữ)
+ReadSvc --> Ctl : ChapterReadResponse (DTO, có cờ publiclyReadable)
+
+Ctl -> Tracker : trackRead(chapter, viewer, sessionId)
+alt chương công khai và người đọc không phải tác giả của truyện
+  Tracker ->> Views : publishEvent(ChapterViewedEvent)\n(khóa người xem = user:id hoặc session:id)
+  opt người đọc đã đăng nhập
+    Tracker -> History : recordProgress(userId, storyId, chapterId)
+    History -> DB : INSERT … ON DUPLICATE KEY UPDATE reading_history
+  end
+end
+Ctl --> Reader : trang đọc (Thymeleaf)
+
+== Chạy nền, sau khi đã trả trang ==
+Views -> Views : khử trùng lặp: cùng người xem + cùng chương\ntrong khoảng view.dedupe.minutes (bảng setting) thì bỏ qua
+Views -> DB : tx 1: UPDATE chapter SET view_count = view_count + 1
+Views -> DB : tx 2: UPDATE story SET view_count = view_count + 1
+Views -> DB : tx 3: INSERT story_view_daily … ON DUPLICATE KEY UPDATE\nview_count = view_count + 1 (ngày theo giờ Việt Nam)
+note right of DB
+  Ba transaction riêng: luồng này không bao giờ vừa giữ
+  khóa dòng chapter vừa chờ khóa dòng story, nên không
+  deadlock với request lưu tiến độ đọc / bình luận
+  (giữ khóa story, chờ chapter khi kiểm tra khóa ngoại).
+end note
+@enduml

@@ -24,11 +24,11 @@
 
 ## Giai đoạn 0 — Phân tích thiết kế (02/10 – 07/10)
 
-- [ ] `docs/diagrams/usecase.puml`: 4 tác nhân + hệ thống, gom theo ma trận ở [00 §2.2](00-KE-HOACH-TONG-THE.md).
-- [ ] `docs/diagrams/erd.puml` đúng với [01](01-MO-HINH-DU-LIEU.md).
-- [ ] Biểu đồ tuần tự: `seq-author-request.puml` (gửi → duyệt → cấp quyền → phiên nhận quyền), `seq-publish-chapter.puml` (đăng ngay / hẹn giờ → job → thông báo),
+- [x] `docs/diagrams/usecase.puml`: 4 tác nhân + hệ thống, gom theo ma trận ở [00 §2.2](00-KE-HOACH-TONG-THE.md).
+- [x] `docs/diagrams/erd.puml` đúng với [01](01-MO-HINH-DU-LIEU.md).
+- [x] Biểu đồ tuần tự: `seq-author-request.puml` (gửi → duyệt → cấp quyền → phiên nhận quyền), `seq-publish-chapter.puml` (đăng ngay / hẹn giờ → job → thông báo),
       `seq-read-chapter.puml` (kiểm tra công khai → đếm lượt xem → lưu tiến độ), `seq-chatbot.puml` (tin nhắn → LLM → gọi hàm → hậu kiểm → thẻ truyện).
-- [ ] `class.puml`: lớp miền chính (`Story`, `Chapter`, `ChapterPage`, `AuthorRequest`, …) và các service một cửa.
+- [x] `class.puml` (tách thành `class-domain.puml` + `class-services.puml`, làm ở GĐ 8): lớp miền chính (`Story`, `Chapter`, `ChapterPage`, `AuthorRequest`, …) và các service một cửa.
 - [ ] Đặc tả use case chi tiết cho 6 UC: đăng ký tác giả, duyệt tác giả, đăng chương truyện tranh, đọc chương, tìm kiếm & lọc, chat gợi ý truyện.
 - [ ] Giao diện mẫu (HTML tĩnh + Bootstrap trong `docs/mockups/`): trang chủ, chi tiết truyện, đọc truyện tranh, đọc truyện chữ, studio soạn chương, khung chat.
 - [ ] Chốt các quyết định mở ở cuối tài liệu này.
@@ -246,7 +246,10 @@ Chi tiết từng bước ở [04 §10](04-KE-HOACH-CHATBOT.md). Tóm tắt theo
 
 ## Giai đoạn 8 — Báo cáo & slide (14/12 – 18/12)
 
-- [ ] Xuất PNG sơ đồ; ảnh chụp màn hình theo vai trò; bảng kết quả kiểm thử; số liệu đánh giá chatbot.
+- [x] Xuất PNG sơ đồ; ảnh chụp màn hình theo vai trò; bảng kết quả kiểm thử. ~~Số liệu đánh giá chatbot~~ — còn chờ `AI_API_KEY`.
+      Sơ đồ: 8 tệp PlantUML ở `docs/diagrams/` (use case, ERD, lớp miền, lớp service, 4 biểu đồ tuần tự), `docs/diagrams/render.sh` xuất PNG vào `docs/diagrams/out/` (không commit, dựng lại khi cần).
+      Ảnh chụp: 34 ảnh ở `docs/report/images/` (khách, độc giả, tác giả, quản trị; 2 ảnh khổ điện thoại) chụp trên image Docker với profile `prod,demo`. Ảnh chatbot là chế độ đường lui (chưa có khóa API) — chụp lại khi có khóa.
+      Kết quả kiểm thử: `docs/report/ket-qua-kiem-thu.md`, sinh bằng `python backend/scripts/report/test-summary.py backend/target docs/report/ket-qua-kiem-thu.md` sau `./mvnw verify`.
 - [ ] Báo cáo theo bố cục đề cương §7; slide; video demo dự phòng.
 
 ---

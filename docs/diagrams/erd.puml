@@ -1,0 +1,316 @@
+@startuml erd
+!pragma layout smetana
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #4A5A70
+  HeaderBackgroundColor #E8EEF6
+}
+hide circle
+hide methods
+hide stereotypes
+title Mô hình dữ liệu (ERD) — MySQL 8.4, Flyway V1 + V3
+
+' Quy ước: * NOT NULL, <<PK>> khóa chính, <<FK>> khóa ngoại.
+' Không vẽ cột kiểm toán created_by / updated_by (có ở user_account, author_request, genre, story, chapter).
+
+package "Tài khoản" #F7F9FC {
+  entity user_account {
+    * id : BIGINT <<PK>>
+    --
+    * username : VARCHAR(50) <<UK>>
+    * email : VARCHAR(255) <<UK>>
+    * password_hash : VARCHAR(255)
+    * display_name : VARCHAR(100)
+    avatar_path : VARCHAR(500)
+    bio : VARCHAR(500)
+    * role : USER | AUTHOR | ADMIN
+    * status : ACTIVE | BANNED
+    * failed_attempts : INT
+    locked_until : DATETIME(6)
+    last_login_at : DATETIME(6)
+    * created_at : DATETIME(6)
+    updated_at : DATETIME(6)
+  }
+
+  entity author_profile {
+    * user_id : BIGINT <<PK, FK>>
+    --
+    * pen_name : VARCHAR(100) <<UK>>
+    bio : VARCHAR(1000)
+    * approved_at : DATETIME(6)
+  }
+
+  entity author_request {
+    * id : BIGINT <<PK>>
+    --
+    * user_id : BIGINT <<FK>>
+    * pen_name : VARCHAR(100)
+    * introduction : VARCHAR(2000)
+    * intended_type : COMIC | NOVEL | BOTH
+    * status : PENDING | APPROVED | REJECTED
+    reject_reason : VARCHAR(1000)
+    reviewed_by : BIGINT <<FK>>
+    reviewed_at : DATETIME(6)
+    * created_at : DATETIME(6)
+    updated_at : DATETIME(6)
+    pending_user_id : BIGINT <<UK, cột sinh>>
+  }
+}
+
+package "Truyện và chương" #F7F9FC {
+  entity genre {
+    * id : BIGINT <<PK>>
+    --
+    * name : VARCHAR(100) <<UK>>
+    * slug : VARCHAR(120) <<UK>>
+    description : VARCHAR(500)
+    * sort_order : INT
+    * is_active : TINYINT(1)
+    * created_at : DATETIME(6)
+    updated_at : DATETIME(6)
+  }
+
+  entity story {
+    * id : BIGINT <<PK>>
+    --
+    * slug : VARCHAR(220) <<UK>>
+    * title : VARCHAR(200)
+    alt_title : VARCHAR(200)
+    * description : TEXT
+    cover_path : VARCHAR(500)
+    * type : COMIC | NOVEL
+    * status : ONGOING | COMPLETED | PAUSED
+    * visibility : DRAFT | PUBLISHED | HIDDEN
+    hidden_reason : VARCHAR(1000)
+    * author_id : BIGINT <<FK>>
+    * chapter_count : INT
+    * view_count : BIGINT
+    * follow_count : INT
+    * rating_sum : INT
+    * rating_count : INT
+    * comment_count : INT
+    published_at : DATETIME(6)
+    last_chapter_at : DATETIME(6)
+    deleted_at : DATETIME(6)
+    * version : INT
+    * created_at : DATETIME(6)
+    updated_at : DATETIME(6)
+    ..
+    FULLTEXT (title, alt_title, description)
+  }
+
+  entity story_genre {
+    * story_id : BIGINT <<PK, FK>>
+    * genre_id : BIGINT <<PK, FK>>
+  }
+
+  entity chapter {
+    * id : BIGINT <<PK>>
+    --
+    * story_id : BIGINT <<FK>>
+    * chapter_no : INT
+    title : VARCHAR(200)
+    * status : DRAFT | SCHEDULED | PUBLISHED | HIDDEN
+    scheduled_at : DATETIME(6)
+    published_at : DATETIME(6)
+    hidden_reason : VARCHAR(1000)
+    * page_count : INT
+    * word_count : INT
+    * view_count : BIGINT
+    * version : INT
+    * created_at : DATETIME(6)
+    updated_at : DATETIME(6)
+    ..
+    UNIQUE (story_id, chapter_no)
+  }
+
+  entity chapter_content {
+    * chapter_id : BIGINT <<PK, FK>>
+    --
+    * content : LONGTEXT
+  }
+
+  entity chapter_page {
+    * id : BIGINT <<PK>>
+    --
+    * chapter_id : BIGINT <<FK>>
+    * page_no : INT
+    * image_path : VARCHAR(500)
+    * width : INT
+    * height : INT
+    * size_bytes : BIGINT
+  }
+}
+
+package "Tương tác" #F7F9FC {
+  entity story_follow {
+    * user_id : BIGINT <<PK, FK>>
+    * story_id : BIGINT <<PK, FK>>
+    --
+    * created_at : DATETIME(6)
+  }
+
+  entity reading_history {
+    * user_id : BIGINT <<PK, FK>>
+    * story_id : BIGINT <<PK, FK>>
+    --
+    * chapter_id : BIGINT <<FK>>
+    * updated_at : DATETIME(6)
+  }
+
+  entity story_rating {
+    * user_id : BIGINT <<PK, FK>>
+    * story_id : BIGINT <<PK, FK>>
+    --
+    * stars : TINYINT (1..5)
+    * updated_at : DATETIME(6)
+  }
+
+  entity comment {
+    * id : BIGINT <<PK>>
+    --
+    * story_id : BIGINT <<FK>>
+    chapter_id : BIGINT <<FK>>
+    * user_id : BIGINT <<FK>>
+    parent_id : BIGINT <<FK>>
+    * content : VARCHAR(1000)
+    * status : VISIBLE | HIDDEN | DELETED
+    hidden_reason : VARCHAR(500)
+    * created_at : DATETIME(6)
+  }
+
+  entity report {
+    * id : BIGINT <<PK>>
+    --
+    * reporter_id : BIGINT <<FK>>
+    * target_type : STORY | CHAPTER | COMMENT
+    * target_id : BIGINT
+    * reason : VARCHAR(30)
+    detail : VARCHAR(1000)
+    * status : PENDING | RESOLVED | DISMISSED
+    handled_by : BIGINT <<FK>>
+    handled_at : DATETIME(6)
+    resolution_note : VARCHAR(1000)
+    * created_at : DATETIME(6)
+  }
+
+  entity notification {
+    * id : BIGINT <<PK>>
+    --
+    * recipient_id : BIGINT <<FK>>
+    * type : VARCHAR(40)
+    message_args : JSON
+    link : VARCHAR(500)
+    * is_read : TINYINT(1)
+    * created_at : DATETIME(6)
+  }
+
+  entity story_view_daily {
+    * story_id : BIGINT <<PK, FK>>
+    * view_date : DATE <<PK>>
+    --
+    * view_count : INT
+  }
+}
+
+package "Chatbot" #F7F9FC {
+  entity chat_conversation {
+    * id : BIGINT <<PK>>
+    --
+    * user_id : BIGINT <<FK>>
+    title : VARCHAR(200)
+    * created_at : DATETIME(6)
+    * last_message_at : DATETIME(6)
+  }
+
+  entity chat_message {
+    * id : BIGINT <<PK>>
+    --
+    * conversation_id : BIGINT <<FK>>
+    * role : USER | ASSISTANT
+    * content : TEXT
+    recommendations : JSON
+    tool_trace : JSON
+    answer_source : LLM | FALLBACK_KEYWORD
+    fallback_reason : VARCHAR(50)
+    rejected_count : INT
+    prompt_tokens : INT
+    completion_tokens : INT
+    latency_ms : INT
+    feedback : TINYINT (-1 | 1)
+    * created_at : DATETIME(6)
+  }
+}
+
+package "Hệ thống (không khóa ngoại)" #F7F9FC {
+  entity setting {
+    * setting_key : VARCHAR(100) <<PK>>
+    --
+    * setting_value : TEXT
+    * value_type : STRING | INTEGER | DECIMAL | BOOLEAN | JSON
+    * group_name : VARCHAR(50)
+    description : VARCHAR(500)
+    * is_read_only : TINYINT(1)
+    updated_at : DATETIME(6)
+    updated_by : BIGINT
+  }
+
+  entity audit_log {
+    * id : BIGINT <<PK>>
+    --
+    actor_id : BIGINT
+    actor_name : VARCHAR(50)
+    * action : VARCHAR(40)
+    entity_type : VARCHAR(50)
+    entity_id : VARCHAR(50)
+    detail : JSON
+    ip_address : VARCHAR(45)
+    user_agent : VARCHAR(255)
+    request_id : VARCHAR(36)
+    * created_at : DATETIME(6)
+  }
+
+  entity job_run {
+    * id : BIGINT <<PK>>
+    --
+    * job_name : VARCHAR(50)
+    * started_at : DATETIME(6)
+    finished_at : DATETIME(6)
+    * status : RUNNING | SUCCESS | FAILED
+    * processed_count : INT
+    * error_count : INT
+    error_message : VARCHAR(1000)
+  }
+}
+
+user_account ||--o| author_profile
+user_account ||--o{ author_request : gửi
+user_account |o--o{ author_request : duyệt (reviewed_by)
+user_account ||--o{ story : sáng tác (author_id)
+story ||--o{ story_genre
+genre ||--o{ story_genre
+story ||--o{ chapter
+chapter ||--o| chapter_content
+chapter ||--o{ chapter_page
+user_account ||--o{ story_follow
+story ||--o{ story_follow
+user_account ||--o{ reading_history
+story ||--o{ reading_history
+chapter ||--o{ reading_history
+user_account ||--o{ story_rating
+story ||--o{ story_rating
+story ||--o{ comment
+chapter |o--o{ comment
+user_account ||--o{ comment
+comment |o--o{ comment : trả lời (parent_id)
+user_account ||--o{ report : gửi (reporter_id)
+user_account |o--o{ report : xử lý (handled_by)
+user_account ||--o{ notification
+story ||--o{ story_view_daily
+user_account ||--o{ chat_conversation
+chat_conversation ||--o{ chat_message
+@enduml
