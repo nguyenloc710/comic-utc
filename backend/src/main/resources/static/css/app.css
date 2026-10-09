@@ -577,6 +577,25 @@ a {
   max-width: 22rem;
 }
 
+/* Màn hình hẹp: khóa và ô nhập xếp chồng thay vì hai cột, để ô nhập và nút Lưu không bị đẩy ra khỏi khung */
+@media (max-width: 575.98px) {
+  .setting-table tr,
+  .setting-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .setting-table .setting-key-cell {
+    min-width: 0;
+    border-bottom: 0;
+    padding-bottom: 0.25rem;
+  }
+
+  .setting-value-input {
+    max-width: none;
+  }
+}
+
 /* Ô nội dung bình luận trong bảng kiểm duyệt: giới hạn bề rộng để bảng không bị một bình luận dài kéo giãn */
 .admin-comment-cell {
   min-width: 18rem;

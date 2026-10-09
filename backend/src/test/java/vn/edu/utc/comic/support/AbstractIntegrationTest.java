@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import javax.imageio.ImageIO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -261,6 +262,13 @@ public abstract class AbstractIntegrationTest {
         @Primary
         public ScriptedChatModel scriptedChatModel() {
             return new ScriptedChatModel();
+        }
+
+        /** Đếm câu SQL cho test N+1; đặt chung ở đây để mọi lớp test vẫn dùng một ApplicationContext. */
+        @Bean
+        public HibernatePropertiesCustomizer sqlStatementCounter() {
+            return properties -> properties.put("hibernate.session_factory.statement_inspector",
+                    new SqlStatementCounter());
         }
     }
 }

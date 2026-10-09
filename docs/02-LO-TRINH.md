@@ -227,13 +227,21 @@ Chi tiết từng bước ở [04 §10](04-KE-HOACH-CHATBOT.md). Tóm tắt theo
 
 ## Giai đoạn 7 — Kiểm thử, sửa lỗi, triển khai (24/11 – 13/12)
 
-- [ ] Bổ sung unit/integration test theo [00 §8](00-KE-HOACH-TONG-THE.md); coverage service ≥ 60% (JaCoCo).
-- [ ] Soi N+1 (`show-sql`) ở trang chủ, danh sách, chi tiết truyện; `@EntityGraph`/projection; `EXPLAIN` truy vấn tìm kiếm và xếp hạng.
-- [ ] Rà bảo mật: `th:utext` ngoài nội dung chương, CSRF bằng curl không token ⇒ 403, IDOR ở `/studio/**` và `/api/studio/**`, path traversal khi upload, tệp giả đuôi ảnh.
-- [ ] Rà chuỗi viết cứng (grep tiếng Việt ngoài `messages.properties`, `prompts/` và comment).
+- [x] Bổ sung unit/integration test theo [00 §8](00-KE-HOACH-TONG-THE.md); coverage service ≥ 60% (JaCoCo).
+      Ngưỡng nằm trong `pom.xml` (goal `check` ở pha `verify`, theo từng package `*.service`); hiện thấp nhất là `notification.service` ~83%.
+- [x] Soi N+1 ở trang chủ, danh sách, chi tiết truyện; `EXPLAIN` truy vấn tìm kiếm và xếp hạng.
+      `QueryCountIntegrationTest` đếm câu SQL Hibernate (`SqlStatementCounter`, gắn qua `HibernatePropertiesCustomizer`) và so hai lần đo: thêm truyện / chương / thể loại thì số câu không tăng.
+      `EXPLAIN` trên dữ liệu demo: tìm kiếm dùng `ft_story_search`; danh sách mới cập nhật dùng `idx_story_public_updated` (quét ngược, chỉ đọc index); xếp hạng đọc `idx_story_view_daily_date` (covering) + `eq_ref` sang `story` — có `Using temporary; filesort` do GROUP BY tổng lượt xem, không tránh được và chỉ trên số dòng của 30 ngày; chương mới nhất cho trang chủ dùng `idx_chapter_story_status`.
+      Còn biết trước: `findPublishedSummariesOf` đọc mọi chương đã đăng của 24 truyện rồi cắt 3 chương/truyện trong Java — đủ nhanh với vài trăm chương/truyện; nếu truyện có hàng nghìn chương thì đổi sang `ROW_NUMBER()`.
+- [x] Rà bảo mật: `th:utext` ngoài nội dung chương, CSRF không token ⇒ 403, IDOR ở `/studio/**` và `/api/studio/**`, path traversal khi upload, tệp giả đuôi ảnh.
+      `th:utext` chỉ có ở `chapter/read.html`. IDOR, tệp giả đuôi ảnh, khóa lưu trữ thoát thư mục đã có test từ GĐ 2–4. Thêm `SecurityRulesIntegrationTest`: thiếu CSRF ở API / form / đăng nhập ⇒ 403 và không đổi dữ liệu; `/v3/api-docs` chỉ ADMIN; header CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`; `/media/..`, `%2e%2e`, `..%2f` ⇒ 4xx. Kiểm tra lại bằng curl trên image Docker: đăng nhập có token ⇒ 302, POST không token ⇒ 403.
+- [x] Rà chuỗi viết cứng (grep tiếng Việt ngoài `messages.properties`, `prompts/` và comment).
+      Còn lại là chuỗi không hiển thị cho người dùng: log, thông điệp ngoại lệ nội bộ, chú thích Swagger, mô tả hàm cho LLM (`ChatToolDescriptions` — annotation cần hằng số lúc biên dịch), văn bản mẫu trong template bị `th:text` thay thế.
 - [ ] Responsive 360 / 768 / 1440 px toàn bộ trang; kiểm thử trên điện thoại thật.
-- [ ] `backend/Dockerfile` nhiều tầng (theo mẫu) + compose prod (app + mysql + volume `uploads`); hướng dẫn cài đặt trong README.
-- [ ] (Tùy chọn) `CloudinaryStorageService` + triển khai lên máy chủ/VPS; GitHub Actions build + test.
+      Đã quét tự động 36 trang × 3 khổ (khách, độc giả, tác giả, quản trị; Edge headless): không trang nào tràn ngang, không lỗi JS. Sửa: trang tham số xếp chồng khóa / ô nhập dưới 576px (trước bị đẩy nút Lưu ra ngoài khung); thêm favicon. **Còn** thử trên điện thoại thật.
+- [x] `backend/Dockerfile` nhiều tầng (theo mẫu) + compose prod (app + mysql + volume `uploads`); hướng dẫn cài đặt trong README.
+      `docker-compose.prod.yml` + `.env.prod.example`; profile `demo` (bật cùng `prod`) nạp dữ liệu demo cho buổi bảo vệ. Đã chạy thử từ CSDL trống: Flyway V1–V3 + V100–V103, trang chủ / đọc truyện / ảnh demo / đăng nhập đều 200. `IMAGE_REGISTRY` để đổi nơi tải image gốc (mạng hiện tại có lúc không vào được ECR Public; `mirror.gcr.io/library` dùng được).
+- [ ] (Tùy chọn) `CloudinaryStorageService` + triển khai lên máy chủ/VPS; ~~GitHub Actions build + test~~ (đã có `.github/workflows/ci.yml`).
 - [ ] Dữ liệu demo bản cuối; kịch bản demo chạy trơn từ máy sạch.
 
 ## Giai đoạn 8 — Báo cáo & slide (14/12 – 18/12)

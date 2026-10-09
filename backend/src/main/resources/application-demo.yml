@@ -1,0 +1,11 @@
+# Bật thêm cùng profile prod ("prod,demo") khi dựng máy chấm/bảo vệ: nạp tài khoản và truyện demo.
+# KHÔNG bật trên máy chủ thật — tài khoản demo có mật khẩu công khai trong README.
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/demo
+    # Cùng lý do với application-dev.yml: dữ liệu demo đánh số từ V100 nên migration lược đồ thêm sau sẽ "ngoài thứ tự"
+    out-of-order: true
+
+app:
+  storage:
+    demo-media-location: classpath:/demo-media/

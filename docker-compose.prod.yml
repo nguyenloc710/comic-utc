@@ -1,0 +1,62 @@
+# Chạy toàn bộ hệ thống bằng Docker (không cần JDK trên máy):
+#     cp .env.prod.example .env.prod      # rồi đổi mật khẩu
+#     docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+# MySQL không mở cổng ra ngoài; chỉ ứng dụng đi tới nó qua mạng nội bộ của compose.
+# Muốn có dữ liệu demo (máy chấm, buổi bảo vệ) thì đặt SPRING_PROFILES_ACTIVE=prod,demo trong .env.prod.
+name: comic-utc-prod
+
+services:
+
+  mysql:
+    image: ${IMAGE_REGISTRY:-public.ecr.aws/docker/library}/mysql:8.4
+    restart: unless-stopped
+    # Giống docker-compose.yml: FULLTEXT cần từ ngắn tiếng Việt, DB phải chạy giờ UTC cùng ứng dụng
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-ft-min-token-size=1
+      --default-time-zone=+00:00
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-comic_utc}
+      MYSQL_USER: ${MYSQL_USER:-comic}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Đặt MYSQL_PASSWORD trong .env.prod}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Đặt MYSQL_ROOT_PASSWORD trong .env.prod}
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: ./backend
+      args:
+        IMAGE_REGISTRY: ${IMAGE_REGISTRY:-public.ecr.aws/docker/library}
+    image: comic-utc:latest
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-comic_utc}
+      DB_USERNAME: ${MYSQL_USER:-comic}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+      AI_API_KEY: ${AI_API_KEY:-not-configured}
+      AI_MODEL: ${AI_MODEL:-claude-haiku-4-5-20251001}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      # Ảnh người dùng tải lên và log phải sống qua các lần dựng lại image
+      - uploads:/app/uploads
+      - applogs:/app/logs
+
+volumes:
+  mysqldata:
+  uploads:
+  applogs:

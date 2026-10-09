@@ -16,7 +16,8 @@ server:
   servlet:
     session:
       cookie:
-        secure: true
+        # Mặc định chỉ gửi cookie qua HTTPS; chỉ đặt false khi chạy thử bằng http trên mạng LAN
+        secure: ${SESSION_COOKIE_SECURE:true}
 
 logging:
   level:

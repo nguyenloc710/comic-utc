@@ -8,7 +8,7 @@ Website đọc và đăng tải truyện tranh, truyện chữ tích hợp chatb
 - **Chatbot:** Spring AI + function calling
 - **Vai trò:** khách vãng lai, độc giả (`USER`), tác giả (`AUTHOR`), quản trị viên (`ADMIN`)
 
-> Trạng thái: xong **giai đoạn 6** — chatbot gợi ý truyện (Spring AI function calling, 4 hàm tra cứu chỉ đọc, hậu kiểm gợi ý, lịch sử hỏi nối tiếp, đường lui tìm theo thể loại/từ khóa khi mô hình lỗi, hạn mức ngày, trang `/admin/chatbot`). Bộ câu hỏi đánh giá đã có nhưng chưa chạy với mô hình thật (cần `AI_API_KEY`). Trước đó: giai đoạn 5 — quản trị hoàn chỉnh: kiểm duyệt truyện / chương / bình luận (ẩn kèm lý do, tác giả được báo), độc giả báo cáo vi phạm và quản trị viên xử lý trong hàng đợi, đổi vai trò tài khoản, dashboard KPI + biểu đồ, sửa tham số vận hành tại chỗ, nhật ký kiểm toán. Trước đó: vòng đời tác giả (GĐ 4), phía độc giả (GĐ 3), tài khoản (GĐ 2). Tiếp theo: giai đoạn 7 (kiểm thử, triển khai). Tiến độ chi tiết: [docs/02-LO-TRINH.md](docs/02-LO-TRINH.md).
+> Trạng thái: xong **giai đoạn 6** — chatbot gợi ý truyện (Spring AI function calling, 4 hàm tra cứu chỉ đọc, hậu kiểm gợi ý, lịch sử hỏi nối tiếp, đường lui tìm theo thể loại/từ khóa khi mô hình lỗi, hạn mức ngày, trang `/admin/chatbot`). Bộ câu hỏi đánh giá đã có nhưng chưa chạy với mô hình thật (cần `AI_API_KEY`). Trước đó: giai đoạn 5 — quản trị hoàn chỉnh: kiểm duyệt truyện / chương / bình luận (ẩn kèm lý do, tác giả được báo), độc giả báo cáo vi phạm và quản trị viên xử lý trong hàng đợi, đổi vai trò tài khoản, dashboard KPI + biểu đồ, sửa tham số vận hành tại chỗ, nhật ký kiểm toán. Trước đó: vòng đời tác giả (GĐ 4), phía độc giả (GĐ 3), tài khoản (GĐ 2). Đang làm **giai đoạn 7**: đã có Docker cho môi trường thật (`docker-compose.prod.yml`), GitHub Actions, ngưỡng độ phủ 60% cho tầng service, test chống N+1 và rà soát bảo mật, quét responsive; còn thử trên điện thoại thật và chốt kịch bản demo. Tiến độ chi tiết: [docs/02-LO-TRINH.md](docs/02-LO-TRINH.md).
 
 ## Chạy dự án
 
@@ -74,6 +74,31 @@ Truyện Pepper&Carrot (`db/demo/V103__demo_peppercarrot.sql`, ảnh ở `resour
 ```bash
 docker compose down -v && docker compose up -d      # xóa volume MySQL, Flyway nạp lại khi ứng dụng khởi động
 ```
+
+## Chạy toàn bộ bằng Docker (máy chấm, máy chủ)
+
+Chỉ cần Docker, không cần JDK. Image ứng dụng dựng từ `backend/Dockerfile` (Maven đóng gói → JRE 21, chạy bằng user
+thường); MySQL không mở cổng ra ngoài; ảnh tải lên và log nằm trong volume `uploads`, `applogs`.
+
+```bash
+cp .env.prod.example .env.prod           # đổi MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.prod logs -f app      # chờ dòng "Started ComicApplication"
+```
+
+| Biến trong `.env.prod` | Ý nghĩa |
+|---|---|
+| `SPRING_PROFILES_ACTIVE` | `prod`: CSDL trống, chỉ có tài khoản `admin`. `prod,demo`: nạp thêm tài khoản và 65 truyện demo — dùng cho buổi bảo vệ, **không** dùng trên máy chủ thật |
+| `SESSION_COOKIE_SECURE` | `true` (mặc định) khi chạy sau HTTPS; đặt `false` nếu mở bằng `http://` qua mạng LAN, nếu không sẽ không đăng nhập được (riêng `http://localhost` trình duyệt vẫn chấp nhận) |
+| `IMAGE_REGISTRY` | Nơi tải image gốc; mạng không vào được ECR Public thì đổi thành `mirror.gcr.io/library` hoặc `docker.io/library` |
+| `AI_API_KEY`, `AI_MODEL` | Khóa và mô hình cho chatbot; để trống thì chatbot dùng đường lui tìm theo từ khóa |
+| `APP_PORT` | Cổng mở ra ngoài, mặc định 8080 |
+
+Sau lần chạy đầu: đăng nhập `admin` / `Admin@123` và **đổi mật khẩu ngay** ở `/me/password`.
+Xóa sạch để làm lại: `docker compose -f docker-compose.prod.yml --env-file .env.prod down -v`.
+
+GitHub Actions (`.github/workflows/ci.yml`) chạy `./mvnw verify` và dựng thử image mỗi lần đẩy lên `main` / `develop`.
+`verify` thất bại nếu độ phủ dòng của bất kỳ package `*.service` nào dưới 60%.
 
 ## Tài liệu kế hoạch
 

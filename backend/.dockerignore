@@ -1,0 +1,9 @@
+target/
+uploads/
+logs/
+scripts/
+.mvn/
+mvnw
+mvnw.cmd
+*.iml
+.idea/

@@ -34,6 +34,7 @@ target/
 
 # Env & uploads & logs
 .env
+.env.prod
 uploads/
 logs/
 
